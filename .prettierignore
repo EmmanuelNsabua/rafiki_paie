@@ -1,0 +1,8 @@
+docs/annexes/
+apps/api/
+node_modules/
+dist/
+out/
+.next/
+release/
+vendor/
