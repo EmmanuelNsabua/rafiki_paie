@@ -1,0 +1,54 @@
+name: CI Paie Rafiki
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test-and-build:
+    name: Validation technique et tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: 'npm'
+
+      - name: Setup PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_pgsql, pdo_sqlite, mbstring, openssl, curl, fileinfo, zip, intl, bcmath
+          coverage: none
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install PHP dependencies
+        run: |
+          cd apps/api
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Typecheck
+        run: npm run typecheck
+
+      - name: Test Calcul (TypeScript)
+        run: npm run test:calcul
+
+      - name: Test Calcul & API (PHP)
+        run: |
+          cd apps/api
+          php artisan test
+
+      - name: Build Web Export
+        run: npm run build:web
