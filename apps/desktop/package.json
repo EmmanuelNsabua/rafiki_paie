@@ -1,0 +1,47 @@
+{
+  "name": "@rafiki/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/main/index.js",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "dev": "concurrently -k \"npm run dev:web --workspace=apps/web\" \"wait-on http://localhost:3000 && electron .\"",
+    "build:electron": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@rafiki/calcul": "*",
+    "better-sqlite3": "12.11.1",
+    "electron-log": "5.4.4",
+    "electron-updater": "6.8.11",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "4.2.1",
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "26.6.6",
+    "electron": "42.11.18",
+    "electron-builder": "26.18.0",
+    "tsup": "9.0.0",
+    "typescript": "5.8.2",
+    "wait-on": "8.0.4"
+  },
+  "build": {
+    "appId": "cd.rafiki.paie",
+    "productName": "Paie Rafiki",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "dir"
+      ]
+    },
+    "files": [
+      "dist/**/*",
+      "../web/out/**/*"
+    ]
+  }
+}

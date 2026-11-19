@@ -1,0 +1,71 @@
+{
+  "complet": {
+    "description": "Cas complet de référence du classeur",
+    "input": {
+      "salaire": 500,
+      "hs": 40,
+      "retrait": 20,
+      "jours_ouvrables": 22,
+      "jours_maladie": 2,
+      "jours_conge": 1,
+      "jours_absence": 1
+    },
+    "expected": {
+      "salaire_a_payer": "520.00",
+      "jours_prestes": 18,
+      "retenue_maladie_display": "15.15",
+      "retenue_conge_display": "7.58",
+      "retenue_absence_display": "22.73",
+      "global_display": "474.55",
+      "virement": 470
+    }
+  },
+  "arrondi": [
+    { "salaire": 554.99, "expected_virement": 550 },
+    { "salaire": 555.0, "expected_virement": 560 },
+    { "salaire": 557.2, "expected_virement": 560 },
+    { "salaire": 474.55, "expected_virement": 470 },
+    { "salaire": 0.0, "expected_virement": 0 }
+  ],
+  "erreurs": [
+    {
+      "description": "Jours ouvrables égal à 0",
+      "input": {
+        "salaire": 500,
+        "hs": 0,
+        "retrait": 0,
+        "jours_ouvrables": 0,
+        "jours_maladie": 0,
+        "jours_conge": 0,
+        "jours_absence": 0
+      },
+      "expected_error": "JOURS_OUVRABLES_INVALID"
+    },
+    {
+      "description": "Somme maladie + conge + absence supérieure aux jours ouvrables",
+      "input": {
+        "salaire": 500,
+        "hs": 0,
+        "retrait": 0,
+        "jours_ouvrables": 22,
+        "jours_maladie": 15,
+        "jours_conge": 5,
+        "jours_absence": 5
+      },
+      "expected_error": "ABSENCES_DEPASSEE"
+    },
+    {
+      "description": "Global négatif",
+      "input": {
+        "salaire": 100,
+        "hs": 0,
+        "retrait": 200,
+        "jours_ouvrables": 22,
+        "jours_maladie": 0,
+        "jours_conge": 0,
+        "jours_absence": 0
+      },
+      "expected_error": "GLOBAL_NEGATIF"
+    }
+  ]
+}
