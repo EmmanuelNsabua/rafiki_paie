@@ -1,0 +1,37 @@
+{
+  "name": "rafiki-paie",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=26.13.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/web",
+    "apps/desktop"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:desktop": "npm run build --workspace=apps/desktop && npm run build:electron --workspace=apps/desktop",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:desktop": "npm run dev --workspace=apps/desktop",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "test:calcul": "npm run test --workspace=packages/calcul",
+    "test:api": "node scripts/run-api.mjs composer test",
+    "api:serve": "node scripts/run-api.mjs php artisan serve",
+    "postinstall": "npm run postinstall --workspace=apps/desktop --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "10.0.7",
+    "cross-env": "10.1.0",
+    "eslint": "10.15.0",
+    "prettier": "3.10.1",
+    "typescript": "5.8.2",
+    "typescript-eslint": "8.73.0",
+    "vitest": "5.1.1"
+  }
+}
