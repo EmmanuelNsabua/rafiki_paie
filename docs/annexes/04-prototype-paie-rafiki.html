@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paie Rafiki</title>
+<style>
+:root{--bg:#f5f5f7;--card:#fff;--tx:#1d1d1f;--tx2:#6e6e73;--ln:rgba(0,0,0,.1);--ac:#0a7a5a;--onac:#fff;--bad:#c4372c;--bar:rgba(245,245,247,.78)}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--tx:#f5f5f7;--tx2:#98989d;--ln:rgba(255,255,255,.14);--ac:#34c58f;--onac:#00281b;--bad:#ff6961;--bar:rgba(0,0,0,.72)}}
+@media(prefers-reduced-transparency:reduce){:root{--bar:var(--bg)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;letter-spacing:.005em;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+header{position:sticky;top:0;z-index:10;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);padding-top:env(safe-area-inset-top);border-bottom:1px solid var(--ln)}
+.bar{max-width:1100px;margin:auto;display:flex;align-items:center;gap:12px;min-height:48px;padding:0 max(16px,env(safe-area-inset-left))}
+.bar .sp{flex:1}
+#sv{font-size:13px;color:var(--tx2);opacity:0;transition:opacity .3s}
+.lk{background:none;border:0;color:var(--ac);font-weight:500;min-height:44px;padding:0 4px}
+.lk:active{opacity:.5}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;min-height:52px;font-size:12px;color:var(--tx2);letter-spacing:.02em}
+nav button.on{color:var(--ac);font-weight:600}
+nav button:active{opacity:.5}
+main{max-width:1100px;margin:auto;padding:0 max(16px,env(safe-area-inset-left)) 24px}
+h1{font-size:clamp(30px,6vw,40px);line-height:1.1;font-weight:700;letter-spacing:-.022em;margin:14px 0 4px}
+.lead{color:var(--tx2);margin:0 0 18px;max-width:60ch}
+small{color:var(--tx2);font-size:13px;letter-spacing:.01em}
+.card{background:var(--card);border-radius:14px}
+.btn{appearance:none;border:0;border-radius:12px;padding:12px 18px;font-weight:600;background:var(--ac);color:var(--onac);min-height:44px;transition:transform .12s,opacity .12s;touch-action:manipulation}
+.btn:active{transform:scale(.97);opacity:.85}
+.btn.s{background:var(--card);color:var(--ac);border:1px solid var(--ln)}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.4}
+.li{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--ln);padding:14px 16px;min-height:60px;transition:background .1s}
+.li:first-child{border-top:0}
+.li:active{background:var(--bg)}
+.li>div:first-child{flex:1;min-width:0}
+.li b{display:block}
+.pill{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--bg);color:var(--tx2);white-space:nowrap}
+.pill.g{background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac);font-weight:600}
+.sum{padding:18px 16px;margin:14px 0}
+.big{font-size:clamp(34px,9vw,48px);font-weight:700;letter-spacing:-.025em;line-height:1.1;margin:2px 0 8px}
+.sub{display:flex;flex-wrap:wrap;gap:4px 18px;color:var(--tx2);font-size:14px}
+.sub b{color:var(--tx)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.acts .btn{flex:1 1 140px}
+.jr{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--tx2)}
+.jr input{width:72px}
+input.n,select,input.t{width:100%;border:1px solid var(--ln);border-radius:10px;padding:9px 10px;background:var(--bg);min-height:44px}
+input.n{text-align:right}
+input:disabled{opacity:.6}
+.row{padding:12px 16px;border-top:1px solid var(--ln)}
+.row:first-child{border-top:0}
+.rh{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;transition:opacity .1s}
+.rh:active{opacity:.5}
+.rh>div{flex:1;min-width:0}
+.rh b{display:block}
+.vv{flex:none!important;font-variant-numeric:tabular-nums}
+.f,.rc{display:none}
+.row.open .f{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.row.open .rc{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;color:var(--tx2);font-size:14px}
+.f label span{display:block;font-size:13px;color:var(--tx2);margin-bottom:3px}
+.rc [data-v]{color:var(--tx)}
+.er{display:none;margin:6px 0 0;color:var(--bad);font-size:14px}
+.row.bad .er{display:block}
+.row.bad .vv{color:var(--bad)}
+.hd{display:none}
+.f2{display:grid;gap:12px}
+.f2 label span{display:block;font-size:13px;color:var(--tx2);margin-bottom:3px}
+.sw{display:flex;align-items:center;justify-content:space-between;min-height:44px}
+.sw input{width:22px;height:22px;accent-color:var(--ac)}
+.msg{color:var(--bad);font-size:14px;margin:0}
+.grp{margin:8px 0 18px}
+.grp>small{display:block;margin:0 16px 6px}
+.empty{padding:28px 20px;text-align:center;color:var(--tx2)}
+@media(min-width:900px){
+ body{padding-bottom:24px}
+ nav{position:static;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:0;width:auto;margin-left:12px}
+ nav button{min-height:44px;padding:0 14px;font-size:15px;flex:none}
+ .bar{min-height:52px}
+ .hd,.row{display:grid;grid-template-columns:minmax(180px,2.2fr) repeat(5,minmax(78px,1fr)) minmax(96px,1.1fr) minmax(76px,.9fr) 92px;gap:8px;align-items:center}
+ .hd{padding:10px 16px;font-size:13px;color:var(--tx2);text-align:right}
+ .hd span:first-child{text-align:left}
+ .rh{cursor:default}.rh:active{opacity:1}
+ .rh .vv{display:none}
+ .f,.rc,.row.open .f,.row.open .rc{display:contents}
+ .f label span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+ .rc{text-align:right}
+ .rc>span,.rc>b{text-align:right;font-variant-numeric:tabular-nums}
+ .er{grid-column:1/-1}
+ .abtn{display:none}
+}
+.ov{position:fixed;inset:0;z-index:30;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+.sh{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:0 20px calc(22px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;will-change:transform}
+.sh h2{font-size:22px;letter-spacing:-.02em;margin:4px 0 14px}
+.grab{height:28px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:grab}
+.grab i{width:38px;height:5px;border-radius:3px;background:var(--ln)}
+@media(min-width:700px){.ov{align-items:center}.sh{border-radius:20px}}
+#print{display:none}
+@media print{
+ @page{size:A4 portrait;margin:14mm}
+ body>*:not(#print){display:none!important}
+ #print{display:block;color:#000;font:12pt/1.5 Arial,sans-serif}
+ body{background:#fff;padding:0}
+}
+.bul{page-break-after:always}.bul:last-child{page-break-after:auto}
+.bul h2{font-size:18pt;margin:0}.bul .c{margin:2px 0 14px;font-size:10pt}
+.bul table,.bd table{width:100%;border-collapse:collapse;margin-bottom:12px}
+.bul td,.bd td,.bd th{padding:4px 6px;border-bottom:1px solid #bbb}
+.r{text-align:right}.bul h3{margin:12px 0 2px;font-size:12pt}
+.sg{display:flex;justify-content:space-between;margin-top:50px}.sg div{width:44%;border-top:1px solid #000;padding-top:4px;font-size:10pt}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="bar"><span id="lt"></span><span class="sp"></span><span id="sv"></span><span id="ra"></span>
+<nav id="nav"><button data-a="tab" data-t="paie">Paie</button><button data-a="tab" data-t="emp">Employés</button><button data-a="tab" data-t="reg">Réglages</button></nav></div></header>
+<main id="m"></main>
+<div id="print"></div>
+<script>
+const $=s=>document.querySelector(s),KEY="rafiki.paie.v1",RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const MO=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fm=n=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" $",fm0=n=>n.toLocaleString("fr-FR",{maximumFractionDigits:0})+" $";
+const nm=o=>[o.nom,o.pn,o.pre].filter(Boolean).join(" "),lab=o=>MO[o.mois-1]+" "+o.annee;
+let V={tab:"paie",op:null,open:new Set()},S=load();
+function mkLine(e,j,v={}){return{e:e.id,num:e.num,nom:e.nom,pn:e.pn,pre:e.pre,fn:e.fn,tel:e.tel,sal:e.sal,j,hs:0,ret:0,mal:0,con:0,abs:0,...v}}
+function seed(){const E=[["Kabongo","Ilunga","Gloire","Professeur",500],["Mutombo","Kasongo","Aimé","Préfet",450],["Ngoy","Banza","Rachel","Secrétaire",380],["Tshibangu","Mwamba","Daniel","Professeur",600],["Kalala","Ngandu","Esther","Ouvrière",320],["Mulumba","Kyungu","Patrick","Surveillant",410]].map((r,i)=>({id:"e"+i,num:i+1,nom:r[0],pn:r[1],pre:r[2],fn:r[3],tel:"+243 81 000 00"+(10+i),sal:r[4],actif:true}));
+const V2=[{hs:40,ret:20,mal:2,con:1,abs:1},{},{abs:2},{hs:30},{mal:1},{ret:50}];
+const op={id:"o1",annee:2026,mois:10,jours:22,st:"done",lines:E.map((e,i)=>mkLine(e,22,V2[i]))};
+const s={p:{j:22,fr:3,ar:10},emps:E,ops:[op]};op.lines.forEach(l=>l.res=calc(l,s.p));return s}
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return seed()}
+let tm;function save(){const s=$("#sv");try{localStorage.setItem(KEY,JSON.stringify(S));s.textContent="Enregistré"}catch(e){s.textContent="Non enregistré"}s.style.opacity=1;clearTimeout(tm);tm=setTimeout(()=>s.style.opacity=0,1400)}
+function calc(l,P=S.p){const j=+l.j||0,s=+l.sal||0,hs=+l.hs||0,r=+l.ret||0,m=+l.mal||0,c=+l.con||0,a=+l.abs||0,i=s+hs-r,t=j>0?s/j:0,nm_=t/P.fr*m,nc=t/P.fr*c,na=t*a,g=i-nm_-nc-na;
+return{i,pre:j-m-c-a,nm:nm_,nc,na,g,v:Math.floor(g/P.ar+.5+1e-9)*P.ar,err:j<1?"Renseignez les jours ouvrables.":m+c+a>j?"Les absences dépassent les jours ouvrables.":g<0?"Le net est négatif : vérifiez le retrait.":""}}
+const res=(op,l)=>op.st==="done"&&l.res?l.res:calc(l);
+const tot=op=>op.lines.reduce((t,l)=>{const r=res(op,l);t.v+=r.v;t.g+=r.g;t.e+=r.err?1:0;return t},{v:0,g:0,e:0});
+const getOp=()=>S.ops.find(o=>o.id===V.op);
+function render(){const m=$("#m"),op=V.tab==="paie"&&V.op?getOp():null;
+document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===V.tab));
+$("#lt").innerHTML=op?'<button class="lk" data-a="back">‹ Paie</button>':"<b>Paie Rafiki</b>";
+$("#ra").innerHTML=V.tab==="emp"?'<button class="lk" data-a="emp">Ajouter</button>':"";
+m.innerHTML=V.tab==="emp"?vEmp():V.tab==="reg"?vReg():op?vOp(op):vOps();scrollTo(0,0)}
+function vOps(){const o=[...S.ops].sort((a,b)=>b.annee*12+b.mois-a.annee*12-a.mois);
+return`<h1>Paie</h1><p class="lead">Une opération par mois : vous remplissez la liste des employés, le logiciel calcule le virement et les bulletins.</p><button class="btn" data-a="newop" style="width:100%;max-width:360px">Nouvelle opération</button><div class="card grp" style="margin-top:18px">${o.length?o.map(p=>`<button class="li" data-a="open" data-id="${p.id}"><div><b>${lab(p)}</b><small>${p.lines.length} employés</small></div><div style="text-align:right"><b>${fm0(tot(p).v)}</b></div><span class="pill ${p.st==="done"?"":"g"}">${p.st==="done"?"Terminée":"En cours"}</span></button>`).join(""):'<div class="empty">Aucune opération. Créez celle du mois pour commencer.</div>'}</div>`}
+function vOp(op){const d=op.st==="done",fresh=S.emps.filter(e=>e.actif&&!op.lines.some(l=>l.e===e.id)).length;
+return`<h1>${lab(op)}</h1><div class="card sum"><small>Total à virer</small><div class="big" id="tv"></div><div class="sub"><span>Net avant arrondi <b id="tg"></b></span><span>Écart d’arrondi <b id="te"></b></span><span><b>${op.lines.length}</b> employés</span></div>
+<div class="jr">Jours ouvrables <input class="n" type="number" min="1" data-f="j" value="${op.jours}" ${d?"disabled":""}></div>
+<div class="acts"><button class="btn s" data-a="bul">Bulletins</button><button class="btn s" data-a="bord">Bordereau banque</button>${d?'<button class="btn s" data-a="reopen">Rouvrir la paie</button>':'<button class="btn" id="fin" data-a="done">Terminer la paie</button>'}</div><p class="msg" id="fe" style="margin-top:8px"></p>${fresh&&!d?`<button class="lk" data-a="addnew" style="margin-top:6px">Ajouter ${fresh} nouvel(s) employé(s)</button>`:""}</div>
+<div class="card"><div class="hd"><span>Employé</span><span>HS / primes</span><span>Retrait</span><span>Maladie</span><span>Congé</span><span>Absence</span><span>Net global</span><span>Virement</span><span></span></div>${op.lines.map(l=>row(op,l,d)).join("")}</div>`}
+function row(op,l,d){const r=res(op,l),ds=d?"disabled":"",f=(k,t,st)=>`<label><span>${t}</span><input class="n" type="number" inputmode="decimal" min="0" step="${st||"any"}" data-f="${k}" value="${l[k]||""}" placeholder="0" ${ds}></label>`;
+return`<div class="row${V.open.has(l.e)?" open":""}" data-r="${l.e}"><div class="rh" data-a="tg"><div><b>${esc(nm(l))}</b><small>${esc(l.fn)}</small></div><b class="vv" data-v>${fm0(r.v)}</b></div><div class="f">${f("hs","HS / primes")}${f("ret","Retrait")}${f("mal","Maladie (jours)",.5)}${f("con","Congé (jours)",.5)}${f("abs","Absence (jours)",.5)}</div><div class="rc"><span><span class="abtn">Net global </span><span data-g>${fm(r.g)}</span></span><b data-v>${fm0(r.v)}</b><button class="btn s sm" data-a="bul" data-e="${l.e}">Bulletin</button></div><p class="er" data-er>${r.err}</p></div>`}
+function upd(op){const t=tot(op);op.lines.forEach(l=>{const r=res(op,l),w=document.querySelector(`[data-r="${l.e}"]`);if(!w)return;w.querySelectorAll("[data-v]").forEach(x=>x.textContent=fm0(r.v));w.querySelector("[data-g]").textContent=fm(r.g);w.querySelector("[data-er]").textContent=r.err;w.classList.toggle("bad",!!r.err)});
+$("#tv").textContent=fm0(t.v);$("#tg").textContent=fm(t.g);$("#te").textContent=fm(t.v-t.g);const b=$("#fin");if(b)b.disabled=t.e>0;$("#fe").textContent=t.e&&op.st!=="done"?`${t.e} ligne(s) à corriger avant de terminer la paie.`:""}
+function vEmp(){return`<h1>Employés</h1><p class="lead">Ces informations alimentent chaque nouvelle opération de paie.</p><div class="card grp">${S.emps.map(e=>`<button class="li" data-a="emp" data-id="${e.id}"><div><b>${esc(nm(e))}</b><small>${esc(e.fn)}${e.actif?"":" — inactif"}</small></div><span>${fm0(+e.sal)}</span></button>`).join("")||'<div class="empty">Aucun employé. Ajoutez le premier pour commencer.</div>'}</div>`}
+function vReg(){const P=S.p;return`<h1>Réglages</h1><div class="card grp" style="padding:16px"><div class="f2"><label><span>Jours ouvrables par défaut</span><input class="n" type="number" min="1" data-p="j" value="${P.j}"></label><label><span>Retenue maladie et congé : 1 / … du salaire journalier</span><input class="n" type="number" min="1" data-p="fr" value="${P.fr}"></label><label><span>Virement arrondi au multiple de</span><input class="n" type="number" min="1" data-p="ar" value="${P.ar}"></label></div></div>
+<div class="card grp"><button class="li" data-a="exp"><div><b>Enregistrer une copie des données</b><small>Fichier à conserver ou à copier sur un autre appareil</small></div></button><label class="li" style="cursor:pointer"><div><b>Restaurer une copie</b><small>Remplace les données de cet appareil</small></div><input type="file" accept=".json" id="imp" hidden></label><button class="li" data-a="reset"><div><b style="color:var(--bad)">Revenir aux exemples</b><small>Efface tout et recharge des données de démonstration</small></div></button></div><p class="lead" style="margin:0 16px">Les données restent sur cet appareil, dans ce navigateur, même sans connexion.</p>`}
+/* feuille glissante : suivi 1:1, ressort amorti, vitesse transmise */
+let SH=null;
+function setY(y){const s=SH;s.y=y;s.el.style.transform=`translateY(${y}px)`;s.o.style.background=`rgba(0,0,0,${.35*Math.max(0,1-y/s.h)})`}
+function spring(to,v0,end){const s=SH;cancelAnimationFrame(s.r);if(RM){setY(to);end&&end();return}let v=v0||0,t0=performance.now();const k=280,c=2*Math.sqrt(k);(function f(t){const dt=Math.min((t-t0)/1e3,.032);t0=t;v+=(-k*(s.y-to)-c*v)*dt;setY(s.y+v*dt);if(Math.abs(s.y-to)<.5&&Math.abs(v)<5){setY(to);end&&end()}else s.r=requestAnimationFrame(f)})(t0)}
+function closeSheet(v){if(!SH)return;const s=SH;spring(s.h,v,()=>{s.o.remove();if(SH===s)SH=null})}
+function sheet(html,mount){if(SH)SH.o.remove();const o=document.createElement("div");o.className="ov";o.innerHTML=`<div class="sh"><div class="grab"><i></i></div>${html}</div>`;document.body.append(o);const el=o.firstChild;SH={o,el,h:el.offsetHeight+40,y:0,r:0};setY(SH.h);spring(0);
+const g=el.querySelector(".grab");let d=null;
+g.onpointerdown=e=>{g.setPointerCapture(e.pointerId);cancelAnimationFrame(SH.r);d={y0:e.clientY,s0:SH.y,l:[[e.timeStamp,e.clientY]]}};
+g.onpointermove=e=>{if(!d)return;d.l.push([e.timeStamp,e.clientY]);if(d.l.length>5)d.l.shift();const y=d.s0+e.clientY-d.y0;setY(y<0?y*.2:y)};
+g.onpointerup=()=>{if(!d)return;const a=d.l[0],b=d.l[d.l.length-1],v=b[0]>a[0]?(b[1]-a[1])/(b[0]-a[0])*1e3:0;d=null;const p=SH.y+v*.499;p>SH.h*.45?closeSheet(v):spring(0,v)};
+o.onclick=e=>{if(e.target===o)closeSheet()};mount&&mount(el)}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+function sNewOp(){const L=[...S.ops].sort((a,b)=>b.annee*12+b.mois-a.annee*12-a.mois)[0],n=L?L.annee*12+L.mois:new Date().getFullYear()*12+new Date().getMonth(),y=Math.floor(n/12),m=n%12+1;
+sheet(`<h2>Nouvelle opération</h2><div class="f2"><label><span>Mois</span><select id="nm">${MO.map((x,i)=>`<option value="${i+1}" ${i+1===m?"selected":""}>${x}</option>`).join("")}</select></label><label><span>Année</span><input class="n" type="number" id="ny" value="${y}"></label><label><span>Jours ouvrables</span><input class="n" type="number" id="nj" min="1" value="${S.p.j}"></label><p class="msg" id="ne"></p><button class="btn" id="nc">Créer l’opération</button></div>`,el=>{el.querySelector("#nc").onclick=()=>{const a=+el.querySelector("#ny").value,b=+el.querySelector("#nm").value,j=+el.querySelector("#nj").value,x=S.ops.find(o=>o.annee===a&&o.mois===b);
+if(x){el.querySelector("#ne").textContent="Cette opération existe déjà.";return}if(!(j>=1)||!a){el.querySelector("#ne").textContent="Vérifiez l’année et les jours ouvrables.";return}
+const op={id:uid(),annee:a,mois:b,jours:j,st:"open",lines:S.emps.filter(e=>e.actif).map(e=>mkLine(e,j))};S.ops.push(op);save();closeSheet();V.op=op.id;V.open=new Set();render();upd(op)}})}
+function sEmp(id){const e=S.emps.find(x=>x.id===id)||{actif:true};const t=(k,l,ty)=>`<label><span>${l}</span><input class="${ty?"n":"t"}" ${ty?'type="number" min="0" step="any"':""} data-k="${k}" value="${esc(e[k]??"")}"></label>`;
+sheet(`<h2>${e.id?"Employé":"Nouvel employé"}</h2><div class="f2">${t("nom","Nom")}${t("pn","Postnom")}${t("pre","Prénom")}${t("fn","Fonction")}${t("tel","Téléphone")}${t("sal","Salaire de base ($)",1)}<label class="sw"><span style="margin:0;font-size:16px;color:var(--tx)">Actif</span><input type="checkbox" data-k="actif" ${e.actif?"checked":""}></label><p class="msg" id="ee"></p><button class="btn" id="es">Enregistrer</button></div>`,el=>{el.querySelector("#es").onclick=()=>{const q=k=>el.querySelector(`[data-k="${k}"]`),o=e.id?e:{id:uid(),num:Math.max(0,...S.emps.map(x=>x.num))+1};
+if(!q("nom").value.trim()||!(+q("sal").value>0)){el.querySelector("#ee").textContent="Renseignez le nom et un salaire supérieur à 0.";return}
+["nom","pn","pre","fn","tel"].forEach(k=>o[k]=q(k).value.trim());o.sal=+q("sal").value;o.actif=q("actif").checked;if(!e.id)S.emps.push(o);save();closeSheet();render()}})}
+/* impressions */
+function bul(op,l){const r=res(op,l),R=(a,b,s)=>`<tr><td>${a}</td><td class="r">${s||""}${b}</td></tr>`;
+return`<section class="bul"><h2>École Rafiki — Bulletin de paie</h2><p class="c">République Démocratique du Congo, document de paie mensuelle</p><table>${R("Période",lab(op))}${R("N°",l.num)}${R("Employé",esc(nm(l)))}${R("Fonction",esc(l.fn))}${R("Téléphone",esc(l.tel||"—"))}${R("Jours ouvrables",op.jours)}${R("Jours prestés",r.pre)}${R("Mode de paiement","Virement bancaire")}</table>
+<h3>Gains</h3><table>${R("Salaire de base",fm(+l.sal))}${R("HS / primes",fm(+l.hs||0))}${R("Retrait",fm(+l.ret||0),"− ")}${R("Salaire à payer",fm(r.i))}</table><h3>Retenues</h3><table>${R("Maladie ("+(+l.mal||0)+" j)",fm(r.nm),"− ")}${R("Congé de circonstance ("+(+l.con||0)+" j)",fm(r.nc),"− ")}${R("Absence non justifiée ("+(+l.abs||0)+" j)",fm(r.na),"− ")}</table>
+<table>${R("<b>Net global avant arrondi</b>","<b>"+fm(r.g)+"</b>")}${R("<b>Net à payer par virement</b>","<b>"+fm0(r.v)+"</b>")}</table><div class="sg"><div>Signature de l’employé (pour acquit)</div><div>Direction (cachet et signature)</div></div></section>`}
+function printOp(html){$("#print").innerHTML=html;setTimeout(()=>print(),50)}
+function bord(op){const t=tot(op);return`<div class="bd"><h2>École Rafiki — Bordereau de virement</h2><p>${lab(op)}</p><table><tr><th>N°</th><th>Nom</th><th>Postnom</th><th>Prénom</th><th class="r">Virement</th></tr>${op.lines.map(l=>`<tr><td>${l.num}</td><td>${esc(l.nom)}</td><td>${esc(l.pn)}</td><td>${esc(l.pre)}</td><td class="r">${fm0(res(op,l).v)}</td></tr>`).join("")}<tr><td colspan="4"><b>Total à provisionner</b></td><td class="r"><b>${fm0(t.v)}</b></td></tr></table></div>`}
+/* événements */
+document.addEventListener("touchstart",()=>{},{passive:true});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,op=getOp();
+if(a==="tab"){V.tab=b.dataset.t;V.op=null;render()}
+else if(a==="newop")sNewOp();
+else if(a==="open"){V.op=b.dataset.id;V.open=new Set();render();upd(getOp())}
+else if(a==="back"){V.op=null;render()}
+else if(a==="tg"){const w=b.closest(".row");w.classList.toggle("open");w.classList.contains("open")?V.open.add(w.dataset.r):V.open.delete(w.dataset.r)}
+else if(a==="emp")sEmp(b.dataset.id);
+else if(a==="done"){op.lines.forEach(l=>l.res=calc(l));op.st="done";save();render();upd(op)}
+else if(a==="reopen"){op.st="open";op.lines.forEach(l=>delete l.res);save();render();upd(op)}
+else if(a==="addnew"){S.emps.filter(x=>x.actif&&!op.lines.some(l=>l.e===x.id)).forEach(x=>op.lines.push(mkLine(x,op.jours)));save();render();upd(op)}
+else if(a==="bul")printOp(op.lines.filter(l=>!b.dataset.e||l.e===b.dataset.e).map(l=>bul(op,l)).join(""));
+else if(a==="bord")printOp(bord(op));
+else if(a==="exp"){const u=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"})),x=document.createElement("a");x.href=u;x.download="paie-rafiki-"+new Date().toISOString().slice(0,10)+".json";x.click();setTimeout(()=>URL.revokeObjectURL(u),2e3)}
+else if(a==="reset"&&confirm("Effacer toutes les données de cet appareil et recharger les exemples ?")){S=seed();save();V={tab:"reg",op:null,open:new Set()};render()}});
+document.addEventListener("input",e=>{const t=e.target,w=t.closest("[data-r]"),op=getOp();
+if(t.dataset.p){const v=+t.value;if(v>=1){S.p[t.dataset.p]=v;save()}return}
+if(!op||op.st==="done"||!t.dataset.f)return;
+if(t.dataset.f==="j"){const v=+t.value;if(v>=1){op.jours=v;op.lines.forEach(l=>l.j=v)}else return}
+else if(w){op.lines.find(l=>l.e===w.dataset.r)[t.dataset.f]=t.value===""?0:+t.value}
+save();upd(op)});
+document.addEventListener("change",e=>{if(e.target.id!=="imp")return;const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.emps)||!Array.isArray(d.ops)||!d.p)throw 0;S=d;save();V={tab:"paie",op:null,open:new Set()};render()}catch(x){alert("Ce fichier n’est pas une copie valide des données de paie.")}};r.readAsText(f)});
+render();
+</script>
+</body>
+</html>
