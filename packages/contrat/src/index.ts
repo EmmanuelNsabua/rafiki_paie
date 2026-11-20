@@ -1,0 +1,250 @@
+import { z } from 'zod';
+
+// ============================================================================
+// Primitives & Validateurs
+// ============================================================================
+
+/**
+ * Chaîne représentant un montant décimal exact ou nombre fractionnaire >= 0.
+ * Format strict : "123", "123.45", "0", "0.545455".
+ */
+export const decimalNonNegatifSchema = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, 'Doit être un nombre décimal positif ou nul.');
+
+/**
+ * Chaîne représentant un décimal éventuellement signé (ex: écart d'arrondi négatif).
+ */
+export const decimalSigneSchema = z
+  .string()
+  .regex(/^-?\d+(\.\d+)?$/, 'Doit être un nombre décimal valide.');
+
+/**
+ * Identifiant UUID v4 au format texte.
+ */
+export const uuidSchema = z
+  .string()
+  .regex(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    'Doit être un UUID valide.'
+  );
+
+/**
+ * Date et heure au format ISO 8601 UTC.
+ */
+export const dateIsoSchema = z
+  .string()
+  .datetime({ offset: true })
+  .or(z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/));
+
+// ============================================================================
+// Entités du Modèle de Données (modele-donnees-phase-1.mermaid)
+// ============================================================================
+
+export const parametreSchema = z.object({
+  id: z.string(),
+  devise: z.literal('USD').default('USD'),
+  jours_ouvrables_defaut: z.number().int().min(1).default(22),
+  diviseur_retenue: z.number().int().min(1).default(3),
+  unite_arrondi: z.number().int().min(1).default(10),
+  version: z.number().int().min(1).default(1),
+  mis_a_jour_le: z.string(),
+});
+export type Parametre = z.infer<typeof parametreSchema>;
+
+export const employeSchema = z.object({
+  id: uuidSchema,
+  numero: z.number().int().min(1),
+  nom: z.string().min(1),
+  postnom: z.string().default(''),
+  prenom: z.string().default(''),
+  fonction: z.string().default(''),
+  telephone: z.string().default(''),
+  code_banque: z.string().default('804'),
+  salaire_base: decimalNonNegatifSchema,
+  actif: z.union([z.literal(0), z.literal(1)]).default(1),
+  version: z.number().int().min(1).default(1),
+  mis_a_jour_le: z.string(),
+  supprime_le: z.string().nullable().default(null),
+});
+export type Employe = z.infer<typeof employeSchema>;
+
+export const statutOperationSchema = z.enum(['ouverte', 'terminee']);
+export type StatutOperation = z.infer<typeof statutOperationSchema>;
+
+export const operationPaieSchema = z.object({
+  id: uuidSchema,
+  annee: z.number().int().min(2000).max(2100),
+  mois: z.number().int().min(1).max(12),
+  statut: statutOperationSchema.default('ouverte'),
+  terminee_le: z.string().nullable().default(null),
+  version: z.number().int().min(1).default(1),
+  mis_a_jour_le: z.string(),
+  supprime_le: z.string().nullable().default(null),
+});
+export type OperationPaie = z.infer<typeof operationPaieSchema>;
+
+export const lignePaieSchema = z.object({
+  id: uuidSchema,
+  operation_id: uuidSchema,
+  employe_id: uuidSchema,
+  numero: z.number().int().min(1),
+  nom: z.string().min(1),
+  postnom: z.string().default(''),
+  prenom: z.string().default(''),
+  fonction: z.string().default(''),
+  telephone: z.string().default(''),
+  code_banque: z.string().default('804'),
+  salaire_base: decimalNonNegatifSchema,
+  hs: decimalNonNegatifSchema.default('0'),
+  retrait: decimalNonNegatifSchema.default('0'),
+  jours_ouvrables: z.number().int().min(1),
+  jours_maladie: decimalNonNegatifSchema.default('0'),
+  jours_conge: decimalNonNegatifSchema.default('0'),
+  jours_absence: decimalNonNegatifSchema.default('0'),
+  salaire_a_payer: decimalNonNegatifSchema.nullable().default(null),
+  jours_prestes: decimalNonNegatifSchema.nullable().default(null),
+  retenue_maladie: decimalNonNegatifSchema.nullable().default(null),
+  retenue_conge: decimalNonNegatifSchema.nullable().default(null),
+  retenue_absence: decimalNonNegatifSchema.nullable().default(null),
+  net_global: decimalSigneSchema.nullable().default(null),
+  virement: decimalNonNegatifSchema.nullable().default(null),
+  version: z.number().int().min(1).default(1),
+  mis_a_jour_le: z.string(),
+  supprime_le: z.string().nullable().default(null),
+});
+export type LignePaie = z.infer<typeof lignePaieSchema>;
+
+/**
+ * Ligne de paie enrichie des montants calculés (soit stockés si terminée, soit calculés dynamiquement si ouverte).
+ */
+export const lignePaieCalculeeSchema = lignePaieSchema.extend({
+  salaire_a_payer: decimalNonNegatifSchema,
+  jours_prestes: decimalNonNegatifSchema,
+  retenue_maladie: decimalNonNegatifSchema,
+  retenue_conge: decimalNonNegatifSchema,
+  retenue_absence: decimalNonNegatifSchema,
+  net_global: decimalSigneSchema,
+  virement: decimalNonNegatifSchema,
+  avertissement_net_negatif: z.boolean().default(false),
+  erreur: z.string().nullable().default(null),
+});
+export type LignePaieCalculee = z.infer<typeof lignePaieCalculeeSchema>;
+
+export const journalSchema = z.object({
+  id: uuidSchema,
+  horodatage: z.string(),
+  action: z.string().min(1),
+  entite: z.string().min(1),
+  entite_id: z.string().default(''),
+  detail: z.string().default(''),
+});
+export type Journal = z.infer<typeof journalSchema>;
+
+export const totauxOperationSchema = z.object({
+  total_virement: decimalNonNegatifSchema,
+  total_net_global: decimalSigneSchema,
+  ecart_arrondi: decimalSigneSchema,
+  nombre_employes: z.number().int().min(0),
+  nombre_lignes_erreur: z.number().int().min(0),
+  nombre_sans_telephone: z.number().int().min(0),
+  nombre_sans_code_banque: z.number().int().min(0),
+});
+export type TotauxOperation = z.infer<typeof totauxOperationSchema>;
+
+// ============================================================================
+// Enveloppe de Réponse IPC Unifiée
+// ============================================================================
+
+export const erreurMetierSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+});
+export type ErreurMetierContract = z.infer<typeof erreurMetierSchema>;
+
+export type ReponseIpc<T> = { ok: true; data: T } | { ok: false; erreur: ErreurMetierContract };
+
+// ============================================================================
+// Schémas des Canaux IPC
+// ============================================================================
+
+export const ipcEmployesListerInput = z
+  .object({
+    inclureInactifs: z.boolean().optional().default(false),
+  })
+  .optional()
+  .default({ inclureInactifs: false });
+
+export const ipcEmployesCreerInput = z.object({
+  numero: z.number().int().min(1).optional(),
+  nom: z.string().min(1, 'Le nom est obligatoire.'),
+  postnom: z.string().default(''),
+  prenom: z.string().default(''),
+  fonction: z.string().default(''),
+  telephone: z.string().default(''),
+  code_banque: z.string().default('804'),
+  salaire_base: decimalNonNegatifSchema,
+});
+
+export const ipcEmployesModifierInput = z.object({
+  id: uuidSchema,
+  numero: z.number().int().min(1).optional(),
+  nom: z.string().min(1).optional(),
+  postnom: z.string().optional(),
+  prenom: z.string().optional(),
+  fonction: z.string().optional(),
+  telephone: z.string().optional(),
+  code_banque: z.string().optional(),
+  salaire_base: decimalNonNegatifSchema.optional(),
+  actif: z.union([z.literal(0), z.literal(1)]).optional(),
+});
+
+export const ipcEmployesDesactiverInput = z.object({
+  id: uuidSchema,
+});
+
+export const ipcOperationsOuvrirInput = z.object({
+  annee: z.number().int().min(2000).max(2100),
+  mois: z.number().int().min(1).max(12),
+  jours_ouvrables: z.number().int().min(1).optional(),
+});
+
+export const ipcOperationsObtenirInput = z.object({
+  id: uuidSchema,
+});
+
+export const ipcOperationsTerminerInput = z.object({
+  id: uuidSchema,
+});
+
+export const ipcOperationsRouvrirInput = z.object({
+  id: uuidSchema,
+});
+
+export const ipcOperationsAjouterNouveauxEmployesInput = z.object({
+  id: uuidSchema,
+});
+
+export const ipcLignesModifierInput = z.object({
+  ligne_id: uuidSchema,
+  hs: decimalNonNegatifSchema.optional(),
+  retrait: decimalNonNegatifSchema.optional(),
+  jours_ouvrables: z.number().int().min(1).optional(),
+  jours_maladie: decimalNonNegatifSchema.optional(),
+  jours_conge: decimalNonNegatifSchema.optional(),
+  jours_absence: decimalNonNegatifSchema.optional(),
+});
+
+export const ipcParametresModifierInput = z.object({
+  jours_ouvrables_defaut: z.number().int().min(1).optional(),
+  diviseur_retenue: z.number().int().min(1).optional(),
+  unite_arrondi: z.number().int().min(1).optional(),
+});
+
+export const ipcJournalListerInput = z
+  .object({
+    limite: z.number().int().min(1).max(500).optional().default(100),
+    entite: z.string().optional(),
+  })
+  .optional()
+  .default({ limite: 100 });

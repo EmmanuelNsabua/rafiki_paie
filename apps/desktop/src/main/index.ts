@@ -1,11 +1,10 @@
 import { app, BrowserWindow, ipcMain, protocol } from 'electron';
-import * as electron from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import Database from 'better-sqlite3';
 import log from 'electron-log/main';
+import { ouvrirBaseDeDonnees } from './db/database';
 
-// src/main/index.ts
 log.initialize();
 log.info('[MAIN] Process starting up');
 
@@ -13,17 +12,7 @@ let mainWindow: BrowserWindow | null = null;
 let db: Database.Database | null = null;
 
 function initDatabase(): Database.Database {
-  const userDataPath = app.getPath('userData');
-  if (!fs.existsSync(userDataPath)) {
-    fs.mkdirSync(userDataPath, { recursive: true });
-  }
-  const dbPath = path.join(userDataPath, 'rafiki_paie.sqlite');
-  const database = new Database(dbPath);
-  database.pragma('journal_mode = WAL');
-  const ver = database.prepare('SELECT sqlite_version() as version').get() as { version: string };
-  log.info('[MAIN] Database initialized at:', dbPath);
-  log.info('[MAIN] SQLite connected successfully, version:', ver.version);
-  return database;
+  return ouvrirBaseDeDonnees();
 }
 
 function createWindow(): void {

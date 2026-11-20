@@ -4,7 +4,7 @@
   "private": true,
   "main": "./dist/main/index.js",
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node -e \"require('fs').cpSync('migrations', 'dist/main/migrations', { recursive: true })\"",
     "typecheck": "tsc --noEmit",
     "dev": "concurrently -k \"npm run dev:web --workspace=apps/web\" \"wait-on http://localhost:3000 && electron .\"",
     "build:electron": "electron-builder --dir",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@rafiki/calcul": "*",
+    "@rafiki/contrat": "*",
     "better-sqlite3": "12.11.1",
     "electron-log": "5.4.4",
     "electron-updater": "6.8.11",
