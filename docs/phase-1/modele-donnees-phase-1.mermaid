@@ -1,0 +1,80 @@
+erDiagram
+  PARAMETRE {
+    TEXT id PK
+    TEXT devise "USD"
+    INTEGER jours_ouvrables_defaut "22"
+    INTEGER diviseur_retenue "3"
+    INTEGER unite_arrondi "10"
+    INTEGER version
+    TEXT mis_a_jour_le "ISO 8601 UTC"
+  }
+  EMPLOYE {
+    TEXT id PK "UUID"
+    INTEGER numero UK
+    TEXT nom
+    TEXT postnom
+    TEXT prenom
+    TEXT fonction
+    TEXT telephone
+    TEXT code_banque
+    TEXT salaire_base "décimal exact"
+    INTEGER actif "0 ou 1"
+    INTEGER version
+    TEXT mis_a_jour_le
+    TEXT supprime_le "NULL si actif"
+  }
+  OPERATION_PAIE {
+    TEXT id PK "UUID"
+    INTEGER annee
+    INTEGER mois "1 à 12"
+    TEXT statut "ouverte ou terminee"
+    TEXT terminee_le
+    INTEGER version
+    TEXT mis_a_jour_le
+    TEXT supprime_le
+  }
+  LIGNE_PAIE {
+    TEXT id PK "UUID"
+    TEXT operation_id FK
+    TEXT employe_id FK
+    INTEGER numero "copie figée"
+    TEXT nom "copie figée"
+    TEXT postnom "copie figée"
+    TEXT prenom "copie figée"
+    TEXT fonction "copie figée"
+    TEXT telephone "copie figée à la terminaison"
+    TEXT code_banque "copie figée à la terminaison"
+    TEXT salaire_base
+    TEXT hs
+    TEXT retrait
+    INTEGER jours_ouvrables "supérieur ou égal à 1"
+    TEXT jours_maladie
+    TEXT jours_conge
+    TEXT jours_absence
+    TEXT salaire_a_payer "NULL tant que ouverte"
+    TEXT jours_prestes "NULL tant que ouverte"
+    TEXT retenue_maladie "NULL tant que ouverte"
+    TEXT retenue_conge "NULL tant que ouverte"
+    TEXT retenue_absence "NULL tant que ouverte"
+    TEXT net_global "6 décimales, NULL tant que ouverte"
+    TEXT virement "entier, NULL tant que ouverte"
+    INTEGER version
+    TEXT mis_a_jour_le
+    TEXT supprime_le
+  }
+  JOURNAL {
+    TEXT id PK "UUID"
+    TEXT horodatage "ISO 8601 UTC"
+    TEXT action
+    TEXT entite
+    TEXT entite_id
+    TEXT detail "texte, valeurs avant et après"
+  }
+  SCHEMA_MIGRATIONS {
+    INTEGER numero PK
+    TEXT nom
+    TEXT somme_controle
+    TEXT appliquee_le
+  }
+  EMPLOYE ||--o{ LIGNE_PAIE : "est payé par"
+  OPERATION_PAIE ||--o{ LIGNE_PAIE : "contient"

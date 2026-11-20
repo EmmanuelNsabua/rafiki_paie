@@ -11,6 +11,7 @@ export interface CalculInput {
   jours_maladie?: number;
   jours_conge?: number;
   jours_absence?: number;
+  diviseur_retenue?: number | string | Decimal;
   fraction_maladie?: number | string | Decimal;
   fraction_conge?: number | string | Decimal;
   unite_arrondi?: number;
@@ -72,15 +73,21 @@ export function calculerLignePaie(input: CalculInput): CalculResult {
   const retrait = new Decimal(input.retrait ?? 0);
   const uniteArrondi = input.unite_arrondi ?? 10;
 
-  // Fractions (default 1/3 for maladie and conge)
+  const diviseur =
+    input.diviseur_retenue !== undefined ? new Decimal(input.diviseur_retenue) : new Decimal(3);
+  if (diviseur.isZero()) {
+    throw new CalculError('DIVISEUR_ZERO', 'Le diviseur de retenue ne peut pas être zéro.');
+  }
+
+  // Fractions (par défaut 1 / diviseur pour maladie et congé)
   const fractionMaladie =
     input.fraction_maladie !== undefined
       ? new Decimal(input.fraction_maladie)
-      : new Decimal(1).dividedBy(3);
+      : new Decimal(1).dividedBy(diviseur);
   const fractionConge =
     input.fraction_conge !== undefined
       ? new Decimal(input.fraction_conge)
-      : new Decimal(1).dividedBy(3);
+      : new Decimal(1).dividedBy(diviseur);
 
   // Formulas
   // salaire_a_payer = salaire + hs - retrait

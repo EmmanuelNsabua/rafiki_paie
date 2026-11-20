@@ -25,6 +25,7 @@ release/
 .phpunit.cache/
 .phpunit.result.cache
 *.tsbuildinfo
+apps/web/AGENTS.md
 
 # Logs and runtime files
 npm-debug.log*

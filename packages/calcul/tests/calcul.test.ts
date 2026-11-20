@@ -40,4 +40,24 @@ describe('Moteur de calcul TypeScript - Vecteurs de test', () => {
       }
     }
   });
+
+  it('accepte diviseur_retenue et unite_arrondi personnalisés', () => {
+    const res = calculerLignePaie({
+      salaire: '600',
+      jours_ouvrables: 20,
+      jours_maladie: 2,
+      diviseur_retenue: 2, // Retenue = (600/20) / 2 * 2 = 30
+      unite_arrondi: 5,
+    });
+    expect(res.retenue_maladie_display).toBe('30.00');
+    expect(res.virement % 5).toBe(0);
+
+    expect(() =>
+      calculerLignePaie({
+        salaire: '600',
+        jours_ouvrables: 20,
+        diviseur_retenue: 0,
+      })
+    ).toThrow(CalculError);
+  });
 });

@@ -1,7 +1,13 @@
 import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import * as electron from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import Database from 'better-sqlite3';
+import log from 'electron-log/main';
+
+// src/main/index.ts
+log.initialize();
+log.info('[MAIN] Process starting up');
 
 let mainWindow: BrowserWindow | null = null;
 let db: Database.Database | null = null;
@@ -14,6 +20,9 @@ function initDatabase(): Database.Database {
   const dbPath = path.join(userDataPath, 'rafiki_paie.sqlite');
   const database = new Database(dbPath);
   database.pragma('journal_mode = WAL');
+  const ver = database.prepare('SELECT sqlite_version() as version').get() as { version: string };
+  log.info('[MAIN] Database initialized at:', dbPath);
+  log.info('[MAIN] SQLite connected successfully, version:', ver.version);
   return database;
 }
 
@@ -69,7 +78,10 @@ function createWindow(): void {
   });
 }
 
+log.info('[MAIN] Registering app.whenReady');
+
 app.whenReady().then(() => {
+  log.info('[MAIN] app.whenReady resolved! Initializing database...');
   db = initDatabase();
 
   ipcMain.handle('db:ping', () => {
@@ -77,6 +89,7 @@ app.whenReady().then(() => {
       throw new Error('Database not initialized');
     }
     const row = db.prepare('SELECT sqlite_version() as version').get() as { version: string };
+    log.info('[MAIN] IPC db:ping received. SQLite version:', row.version);
     return {
       success: true,
       sqlite_version: row.version,

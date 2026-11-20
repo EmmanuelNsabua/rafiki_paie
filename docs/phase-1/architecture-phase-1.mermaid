@@ -1,0 +1,60 @@
+flowchart TB
+  subgraph RENDERER["Processus de rendu : Next.js export statique"]
+    UI["Pages et composants"]
+    DEV["Page /dev/controle<br/>développement uniquement"]
+  end
+
+  subgraph PRELOAD["Preload : contextBridge"]
+    API["window.api<br/>méthodes typées uniquement"]
+  end
+
+  subgraph CONTRAT["packages/contrat"]
+    ZOD["Schémas zod<br/>entrées, sorties, erreurs"]
+  end
+
+  subgraph MAIN["Processus principal : Electron"]
+    IPC["Gestionnaires ipcMain.handle<br/>validation zod, contrôle de l'expéditeur"]
+    subgraph DOMAIN["Domaine : TypeScript pur, sans Electron"]
+      SEMP["EmployeService"]
+      SOP["OperationService<br/>ouvrir, terminer, rouvrir"]
+      SLIG["LigneService<br/>modifier les variables"]
+      SPAR["ParametreService"]
+      SJOU["JournalService<br/>ajout seul"]
+      SSAU["SauvegardeService"]
+    end
+    CALC["packages/calcul<br/>decimal.js"]
+    REPO["Dépôts SQL explicites<br/>transactions"]
+    MIG["Exécuteur de migrations<br/>fichiers numérotés et somme de contrôle"]
+  end
+
+  subgraph STOCK["Stockage local : userData"]
+    SQL[("rafiki_paie.sqlite<br/>tables STRICT, CHECK, déclencheurs")]
+    BAKD[("sauvegardes/<br/>copies datées")]
+  end
+
+  UI --> API
+  DEV --> API
+  API -->|"IPC"| IPC
+  IPC --> SEMP
+  IPC --> SOP
+  IPC --> SLIG
+  IPC --> SPAR
+  SOP --> CALC
+  SLIG --> CALC
+  SEMP --> REPO
+  SOP --> REPO
+  SLIG --> REPO
+  SPAR --> REPO
+  SEMP --> SJOU
+  SOP --> SJOU
+  SJOU --> REPO
+  SOP --> SSAU
+  REPO --> SQL
+  SSAU -->|"db.backup"| BAKD
+  MIG --> SQL
+  ZOD -.->|"types et validation"| API
+  ZOD -.-> IPC
+  SYNC["File de synchronisation<br/>phase 5, hors périmètre"]
+  REPO -.-> SYNC
+  classDef futur stroke-dasharray: 5 5
+  class SYNC futur

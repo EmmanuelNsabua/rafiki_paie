@@ -21,6 +21,7 @@
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "test:calcul": "npm run test --workspace=packages/calcul",
+    "test:desktop": "node scripts/run-desktop-tests.mjs run --dir apps/desktop/tests",
     "test:api": "node scripts/run-api.mjs composer test",
     "api:serve": "node scripts/run-api.mjs php artisan serve",
     "postinstall": "npm run postinstall --workspace=apps/desktop --if-present"
