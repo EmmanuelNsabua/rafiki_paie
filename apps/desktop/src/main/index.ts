@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import Database from 'better-sqlite3';
 import log from 'electron-log/main';
 import { ouvrirBaseDeDonnees } from './db/database';
+import { enregistrerGestionnairesIpc } from './ipc';
 
 log.initialize();
 log.info('[MAIN] Process starting up');
@@ -72,6 +73,9 @@ log.info('[MAIN] Registering app.whenReady');
 app.whenReady().then(() => {
   log.info('[MAIN] app.whenReady resolved! Initializing database...');
   db = initDatabase();
+
+  // Enregistrer les gestionnaires IPC du domaine
+  enregistrerGestionnairesIpc(db);
 
   ipcMain.handle('db:ping', () => {
     if (!db) {

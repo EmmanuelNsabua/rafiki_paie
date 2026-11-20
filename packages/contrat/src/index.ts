@@ -248,3 +248,112 @@ export const ipcJournalListerInput = z
   })
   .optional()
   .default({ limite: 100 });
+
+// ============================================================================
+// Constantes des Canaux IPC
+// ============================================================================
+
+export const CANAUX_IPC = {
+  EMPLOYES_LISTER: 'employes.lister',
+  EMPLOYES_CREER: 'employes.creer',
+  EMPLOYES_MODIFIER: 'employes.modifier',
+  EMPLOYES_DESACTIVER: 'employes.desactiver',
+  OPERATIONS_LISTER: 'operations.lister',
+  OPERATIONS_OUVRIR: 'operations.ouvrir',
+  OPERATIONS_OBTENIR: 'operations.obtenir',
+  OPERATIONS_TERMINER: 'operations.terminer',
+  OPERATIONS_ROUVRIR: 'operations.rouvrir',
+  OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES: 'operations.ajouterNouveauxEmployes',
+  LIGNES_MODIFIER: 'lignes.modifier',
+  PARAMETRES_LIRE: 'parametres.lire',
+  PARAMETRES_MODIFIER: 'parametres.modifier',
+  JOURNAL_LISTER: 'journal.lister',
+} as const;
+
+// ============================================================================
+// Schémas de Sortie IPC
+// ============================================================================
+
+export const resumeOperationListerSchema = operationPaieSchema.extend({
+  total_virement: decimalNonNegatifSchema,
+  nombre_employes: z.number().int().min(0),
+});
+export type ResumeOperationLister = z.infer<typeof resumeOperationListerSchema>;
+
+export const detailOperationCompletSchema = z.object({
+  operation: operationPaieSchema,
+  lignes: z.array(lignePaieCalculeeSchema),
+  totaux: totauxOperationSchema,
+  parametres: parametreSchema,
+});
+export type DetailOperationComplet = z.infer<typeof detailOperationCompletSchema>;
+
+export const resultatModificationLigneSchema = z.object({
+  ligne: lignePaieCalculeeSchema,
+  totaux: totauxOperationSchema,
+});
+export type ResultatModificationLigne = z.infer<typeof resultatModificationLigneSchema>;
+
+export const resultatAjoutEmployesSchema = z.object({
+  ajoutes: z.number().int().min(0),
+});
+export type ResultatAjoutEmployes = z.infer<typeof resultatAjoutEmployesSchema>;
+
+export const ipcEmployesListerOutput = z.array(employeSchema);
+export const ipcEmployesCreerOutput = employeSchema;
+export const ipcEmployesModifierOutput = employeSchema;
+export const ipcEmployesDesactiverOutput = employeSchema;
+export const ipcOperationsListerOutput = z.array(resumeOperationListerSchema);
+export const ipcOperationsOuvrirOutput = operationPaieSchema;
+export const ipcOperationsObtenirOutput = detailOperationCompletSchema;
+export const ipcOperationsTerminerOutput = operationPaieSchema;
+export const ipcOperationsRouvrirOutput = operationPaieSchema;
+export const ipcOperationsAjouterNouveauxEmployesOutput = resultatAjoutEmployesSchema;
+export const ipcLignesModifierOutput = resultatModificationLigneSchema;
+export const ipcParametresLireOutput = parametreSchema;
+export const ipcParametresModifierOutput = parametreSchema;
+export const ipcJournalListerOutput = z.array(journalSchema);
+
+// ============================================================================
+// Interface Typée de l'API Preload (window.api)
+// ============================================================================
+
+export interface ElectronApi {
+  env: {
+    estDev: boolean;
+  };
+  employes: {
+    lister: (input?: z.infer<typeof ipcEmployesListerInput>) => Promise<ReponseIpc<Employe[]>>;
+    creer: (input: z.infer<typeof ipcEmployesCreerInput>) => Promise<ReponseIpc<Employe>>;
+    modifier: (input: z.infer<typeof ipcEmployesModifierInput>) => Promise<ReponseIpc<Employe>>;
+    desactiver: (input: z.infer<typeof ipcEmployesDesactiverInput>) => Promise<ReponseIpc<Employe>>;
+  };
+  operations: {
+    lister: () => Promise<ReponseIpc<ResumeOperationLister[]>>;
+    ouvrir: (input: z.infer<typeof ipcOperationsOuvrirInput>) => Promise<ReponseIpc<OperationPaie>>;
+    obtenir: (
+      input: z.infer<typeof ipcOperationsObtenirInput>
+    ) => Promise<ReponseIpc<DetailOperationComplet>>;
+    terminer: (
+      input: z.infer<typeof ipcOperationsTerminerInput>
+    ) => Promise<ReponseIpc<OperationPaie>>;
+    rouvrir: (
+      input: z.infer<typeof ipcOperationsRouvrirInput>
+    ) => Promise<ReponseIpc<OperationPaie>>;
+    ajouterNouveauxEmployes: (
+      input: z.infer<typeof ipcOperationsAjouterNouveauxEmployesInput>
+    ) => Promise<ReponseIpc<ResultatAjoutEmployes>>;
+  };
+  lignes: {
+    modifier: (
+      input: z.infer<typeof ipcLignesModifierInput>
+    ) => Promise<ReponseIpc<ResultatModificationLigne>>;
+  };
+  parametres: {
+    lire: () => Promise<ReponseIpc<Parametre>>;
+    modifier: (input: z.infer<typeof ipcParametresModifierInput>) => Promise<ReponseIpc<Parametre>>;
+  };
+  journal: {
+    lister: (input?: z.infer<typeof ipcJournalListerInput>) => Promise<ReponseIpc<Journal[]>>;
+  };
+}
