@@ -19,6 +19,7 @@ const api: ElectronApi = {
   env: {
     estDev,
   },
+  pingDb: () => ipcRenderer.invoke('db:ping'),
   employes: {
     lister: (input): Promise<ReponseIpc<Employe[]>> => {
       return ipcRenderer.invoke(CANAUX_IPC.EMPLOYES_LISTER, input);

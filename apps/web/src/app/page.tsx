@@ -12,15 +12,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-// Window declaration for Electron IPC API
-declare global {
-  interface Window {
-    api?: {
-      pingDb: () => Promise<{ success: boolean; sqlite_version: string }>;
-    };
-  }
-}
-
 export default function HomePage() {
   const [dbStatus, setDbStatus] = React.useState<string>('Vérification...');
   const [testMontant, setTestMontant] = React.useState<string>('500');

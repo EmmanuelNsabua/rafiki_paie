@@ -322,6 +322,7 @@ export interface ElectronApi {
   env: {
     estDev: boolean;
   };
+  pingDb?: () => Promise<{ success: boolean; sqlite_version: string }>;
   employes: {
     lister: (input?: z.infer<typeof ipcEmployesListerInput>) => Promise<ReponseIpc<Employe[]>>;
     creer: (input: z.infer<typeof ipcEmployesCreerInput>) => Promise<ReponseIpc<Employe>>;
