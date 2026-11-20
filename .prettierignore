@@ -6,3 +6,5 @@ out/
 .next/
 release/
 vendor/
+next-env.d.ts
+*.tsbuildinfo
