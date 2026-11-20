@@ -3,8 +3,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 import Database from 'better-sqlite3';
 import log from 'electron-log/main';
-import { ouvrirBaseDeDonnees } from './db/database';
+import { ouvrirBaseDeDonnees, obtenirCheminBaseParDefaut } from './db/database';
 import { enregistrerGestionnairesIpc } from './ipc';
+import { SauvegardeService } from './domain';
 
 log.initialize();
 log.info('[MAIN] Process starting up');
@@ -74,8 +75,21 @@ app.whenReady().then(() => {
   log.info('[MAIN] app.whenReady resolved! Initializing database...');
   db = initDatabase();
 
+  // Initialisation du service de sauvegarde locale
+  const dbPath = obtenirCheminBaseParDefaut();
+  const dossierSauvegardes = path.join(path.dirname(dbPath), 'sauvegardes');
+  const sauvegardeService = new SauvegardeService({
+    dossierSauvegardes,
+    db,
+    cheminFichierDb: dbPath,
+  });
+
+  sauvegardeService.verifierEtSauvegarderAuDemarrage().catch((err: any) => {
+    log.warn(`[SAUVEGARDE] Erreur lors de la vérification au démarrage : ${err?.message}`);
+  });
+
   // Enregistrer les gestionnaires IPC du domaine
-  enregistrerGestionnairesIpc(db);
+  enregistrerGestionnairesIpc(db, sauvegardeService);
 
   ipcMain.handle('db:ping', () => {
     if (!db) {

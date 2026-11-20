@@ -10,6 +10,7 @@ import type {
 import { ErreurMetier } from './erreurs';
 import { JournalService } from './journal-service';
 import { ParametreService } from './parametre-service';
+import type { SauvegardeService } from './sauvegarde-service';
 import { calculerMontantsLigne, calculerTotauxOperation } from './calcul-totaux';
 
 export interface DetailOperationComplet {
@@ -28,9 +29,14 @@ export class OperationService {
   private journalService: JournalService;
   private parametreService: ParametreService;
 
-  constructor(private db: Database.Database) {
-    this.journalService = new JournalService(db);
-    this.parametreService = new ParametreService(db);
+  constructor(
+    private db: Database.Database,
+    journalService?: JournalService,
+    parametreService?: ParametreService,
+    private sauvegardeService?: SauvegardeService
+  ) {
+    this.journalService = journalService ?? new JournalService(db);
+    this.parametreService = parametreService ?? new ParametreService(db);
   }
 
   /**
@@ -403,6 +409,13 @@ export class OperationService {
     });
 
     tx();
+
+    if (this.sauvegardeService) {
+      this.sauvegardeService.creerSauvegarde().catch(() => {
+        // Enregistré dans le logger de SauvegardeService
+      });
+    }
+
     return this.obtenir(operationId).operation;
   }
 

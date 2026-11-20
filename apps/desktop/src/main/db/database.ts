@@ -12,6 +12,11 @@ export interface OptionsOuvertureBase {
   dossierMigrations?: string;
 }
 
+export function obtenirCheminBaseParDefaut(): string {
+  const userDataPath = app?.getPath ? app.getPath('userData') : process.cwd();
+  return path.join(userDataPath, 'rafiki_paie.sqlite');
+}
+
 /**
  * Ouvre et initialise la base de données SQLite locale avec application automatique des migrations.
  *

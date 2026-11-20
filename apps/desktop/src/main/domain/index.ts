@@ -5,3 +5,4 @@ export * from './parametre-service';
 export * from './employe-service';
 export * from './operation-service';
 export * from './ligne-service';
+export * from './sauvegarde-service';

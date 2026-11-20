@@ -24,6 +24,7 @@ import {
   LigneService,
   ParametreService,
   JournalService,
+  SauvegardeService,
   ErreurMetier,
 } from '../domain';
 
@@ -118,9 +119,12 @@ export function creerGestionnaireSecurise<TIn, TOut>(
 /**
  * Enregistre tous les gestionnaires IPC du contrat dans le processus principal Electron.
  */
-export function enregistrerGestionnairesIpc(db: Database.Database): void {
+export function enregistrerGestionnairesIpc(
+  db: Database.Database,
+  sauvegardeService?: SauvegardeService
+): void {
   const employeService = new EmployeService(db);
-  const operationService = new OperationService(db);
+  const operationService = new OperationService(db, undefined, undefined, sauvegardeService);
   const ligneService = new LigneService(db);
   const parametreService = new ParametreService(db);
   const journalService = new JournalService(db);
