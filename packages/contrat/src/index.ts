@@ -37,6 +37,22 @@ export const dateIsoSchema = z
   .datetime({ offset: true })
   .or(z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/));
 
+/**
+ * Numéro de téléphone validé : après suppression des espaces, points et tirets,
+ * contient de 9 à 15 chiffres avec un '+' facultatif en tête.
+ */
+export const telephoneSchema = z.string().refine(
+  (val) => {
+    if (!val || val.trim() === '') return true;
+    const nettoye = val.replace(/[\s.-]/g, '');
+    return /^\+?\d{9,15}$/.test(nettoye);
+  },
+  {
+    message:
+      "Le numéro de téléphone doit contenir entre 9 et 15 chiffres (après suppression des espaces, points et tirets), avec un '+' facultatif en tête.",
+  }
+);
+
 // ============================================================================
 // Entités du Modèle de Données (modele-donnees-phase-1.mermaid)
 // ============================================================================
@@ -44,9 +60,10 @@ export const dateIsoSchema = z
 export const parametreSchema = z.object({
   id: z.string(),
   devise: z.literal('USD').default('USD'),
-  jours_ouvrables_defaut: z.number().int().min(1).default(22),
+  jours_ouvrables_defaut: z.number().int().min(1),
   diviseur_retenue: z.number().int().min(1).default(3),
   unite_arrondi: z.number().int().min(1).default(10),
+  code_banque_defaut: z.string().min(1),
   version: z.number().int().min(1).default(1),
   mis_a_jour_le: z.string(),
 });
@@ -59,8 +76,8 @@ export const employeSchema = z.object({
   postnom: z.string().default(''),
   prenom: z.string().default(''),
   fonction: z.string().default(''),
-  telephone: z.string().default(''),
-  code_banque: z.string().default('804'),
+  telephone: telephoneSchema.default(''),
+  code_banque: z.string(),
   salaire_base: decimalNonNegatifSchema,
   actif: z.union([z.literal(0), z.literal(1)]).default(1),
   version: z.number().int().min(1).default(1),
@@ -76,6 +93,7 @@ export const operationPaieSchema = z.object({
   id: uuidSchema,
   annee: z.number().int().min(2000).max(2100),
   mois: z.number().int().min(1).max(12),
+  jours_ouvrables: z.number().int().min(1),
   statut: statutOperationSchema.default('ouverte'),
   terminee_le: z.string().nullable().default(null),
   version: z.number().int().min(1).default(1),
@@ -93,8 +111,8 @@ export const lignePaieSchema = z.object({
   postnom: z.string().default(''),
   prenom: z.string().default(''),
   fonction: z.string().default(''),
-  telephone: z.string().default(''),
-  code_banque: z.string().default('804'),
+  telephone: telephoneSchema.default(''),
+  code_banque: z.string(),
   salaire_base: decimalNonNegatifSchema,
   hs: decimalNonNegatifSchema.default('0'),
   retrait: decimalNonNegatifSchema.default('0'),
@@ -102,8 +120,8 @@ export const lignePaieSchema = z.object({
   jours_maladie: decimalNonNegatifSchema.default('0'),
   jours_conge: decimalNonNegatifSchema.default('0'),
   jours_absence: decimalNonNegatifSchema.default('0'),
-  salaire_a_payer: decimalNonNegatifSchema.nullable().default(null),
-  jours_prestes: decimalNonNegatifSchema.nullable().default(null),
+  salaire_a_payer: decimalSigneSchema.nullable().default(null),
+  jours_prestes: decimalSigneSchema.nullable().default(null),
   retenue_maladie: decimalNonNegatifSchema.nullable().default(null),
   retenue_conge: decimalNonNegatifSchema.nullable().default(null),
   retenue_absence: decimalNonNegatifSchema.nullable().default(null),
@@ -119,8 +137,8 @@ export type LignePaie = z.infer<typeof lignePaieSchema>;
  * Ligne de paie enrichie des montants calculés (soit stockés si terminée, soit calculés dynamiquement si ouverte).
  */
 export const lignePaieCalculeeSchema = lignePaieSchema.extend({
-  salaire_a_payer: decimalNonNegatifSchema,
-  jours_prestes: decimalNonNegatifSchema,
+  salaire_a_payer: decimalSigneSchema,
+  jours_prestes: decimalSigneSchema,
   retenue_maladie: decimalNonNegatifSchema,
   retenue_conge: decimalNonNegatifSchema,
   retenue_absence: decimalNonNegatifSchema,
@@ -149,6 +167,7 @@ export const totauxOperationSchema = z.object({
   nombre_lignes_erreur: z.number().int().min(0),
   nombre_sans_telephone: z.number().int().min(0),
   nombre_sans_code_banque: z.number().int().min(0),
+  nombre_telephones_en_double: z.number().int().min(0),
 });
 export type TotauxOperation = z.infer<typeof totauxOperationSchema>;
 
@@ -181,8 +200,8 @@ export const ipcEmployesCreerInput = z.object({
   postnom: z.string().default(''),
   prenom: z.string().default(''),
   fonction: z.string().default(''),
-  telephone: z.string().default(''),
-  code_banque: z.string().default('804'),
+  telephone: telephoneSchema.optional().default(''),
+  code_banque: z.string().optional(),
   salaire_base: decimalNonNegatifSchema,
 });
 
@@ -193,7 +212,7 @@ export const ipcEmployesModifierInput = z.object({
   postnom: z.string().optional(),
   prenom: z.string().optional(),
   fonction: z.string().optional(),
-  telephone: z.string().optional(),
+  telephone: telephoneSchema.optional(),
   code_banque: z.string().optional(),
   salaire_base: decimalNonNegatifSchema.optional(),
   actif: z.union([z.literal(0), z.literal(1)]).optional(),
@@ -239,6 +258,7 @@ export const ipcParametresModifierInput = z.object({
   jours_ouvrables_defaut: z.number().int().min(1).optional(),
   diviseur_retenue: z.number().int().min(1).optional(),
   unite_arrondi: z.number().int().min(1).optional(),
+  code_banque_defaut: z.string().min(1).optional(),
 });
 
 export const ipcJournalListerInput = z

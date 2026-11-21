@@ -48,7 +48,7 @@ describe('Vérification Exhaustive des Critères de la Phase 1', () => {
       postnom: 'Ilunga',
       prenom: 'Gloire',
       telephone: '+243 81 000 0010',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '500',
     });
 
@@ -71,7 +71,7 @@ describe('Vérification Exhaustive des Critères de la Phase 1', () => {
     expect(ligneFinale.net_global).toBe('474.545455');
     expect(ligneFinale.virement).toBe('470');
     expect(ligneFinale.telephone).toBe('+243 81 000 0010');
-    expect(ligneFinale.code_banque).toBe('804');
+    expect(ligneFinale.code_banque).toBe('840');
   });
 
   // 2. Cas d'arrondi
@@ -220,14 +220,14 @@ describe('Vérification Exhaustive des Critères de la Phase 1', () => {
     const emp = employeService.creer({
       nom: 'AgentJournal',
       telephone: '+243 81 111 1111',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '500',
     });
 
     // Modification du téléphone et du code banque
     employeService.modifier(emp.id, {
       telephone: '+243 81 222 2222',
-      code_banque: '804',
+      code_banque: '841',
     });
 
     const logs = journalService.lister({ entite: 'employe' });
@@ -270,7 +270,7 @@ describe('Vérification Exhaustive des Critères de la Phase 1', () => {
     const emp = employeService.creer({
       nom: 'TestContrat',
       salaire_base: '520.50',
-      code_banque: '804',
+      code_banque: '840',
       telephone: '+243 81 333 3333',
     });
 

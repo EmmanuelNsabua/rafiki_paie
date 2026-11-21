@@ -6,6 +6,7 @@ export interface ParametreModifications {
   jours_ouvrables_defaut?: number;
   diviseur_retenue?: number;
   unite_arrondi?: number;
+  code_banque_defaut?: string;
 }
 
 export class ParametreService {
@@ -17,7 +18,7 @@ export class ParametreService {
   lire(): Parametre {
     const row = this.db
       .prepare(
-        `SELECT id, devise, jours_ouvrables_defaut, diviseur_retenue, unite_arrondi, version, mis_a_jour_le
+        `SELECT id, devise, jours_ouvrables_defaut, diviseur_retenue, unite_arrondi, code_banque_defaut, version, mis_a_jour_le
          FROM parametre
          WHERE id = 'default'`
       )
@@ -42,6 +43,7 @@ export class ParametreService {
     const nouveauxJours = modifs.jours_ouvrables_defaut ?? actuel.jours_ouvrables_defaut;
     const nouveauDiviseur = modifs.diviseur_retenue ?? actuel.diviseur_retenue;
     const nouvelleUnite = modifs.unite_arrondi ?? actuel.unite_arrondi;
+    const nouveauCodeBanque = (modifs.code_banque_defaut ?? actuel.code_banque_defaut).trim();
 
     if (nouveauxJours < 1) {
       throw new ErreurMetier(
@@ -61,6 +63,12 @@ export class ParametreService {
         'L unité d arrondi doit être supérieure ou égale à 1.'
       );
     }
+    if (nouveauCodeBanque === '') {
+      throw new ErreurMetier(
+        'CODE_BANQUE_INVALIDE',
+        'Le code banque par défaut ne peut pas être vide.'
+      );
+    }
 
     const maintenant = new Date().toISOString();
     const nouvelleVersion = actuel.version + 1;
@@ -71,11 +79,19 @@ export class ParametreService {
          SET jours_ouvrables_defaut = ?,
              diviseur_retenue = ?,
              unite_arrondi = ?,
+             code_banque_defaut = ?,
              version = ?,
              mis_a_jour_le = ?
          WHERE id = 'default'`
       )
-      .run(nouveauxJours, nouveauDiviseur, nouvelleUnite, nouvelleVersion, maintenant);
+      .run(
+        nouveauxJours,
+        nouveauDiviseur,
+        nouvelleUnite,
+        nouveauCodeBanque,
+        nouvelleVersion,
+        maintenant
+      );
 
     return this.lire();
   }

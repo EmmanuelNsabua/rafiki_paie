@@ -42,14 +42,14 @@ describe('Règles Métier du Domaine (Paie Rafiki)', () => {
       prenom: 'Gloire',
       fonction: 'Professeur',
       telephone: '+243 81 000 0010',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '500',
     });
 
     expect(emp1.numero).toBe(1);
     expect(emp1.nom).toBe('Kabongo');
     expect(emp1.salaire_base).toBe('500');
-    expect(emp1.code_banque).toBe('804');
+    expect(emp1.code_banque).toBe('840');
 
     // 2. Création deuxième employé sans numéro -> attribué à 2
     const emp2 = employeService.creer({
@@ -112,7 +112,7 @@ describe('Règles Métier du Domaine (Paie Rafiki)', () => {
       postnom: 'Ilunga',
       prenom: 'Gloire',
       telephone: '+243 81 000 0010',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '500',
     });
 
@@ -144,7 +144,7 @@ describe('Règles Métier du Domaine (Paie Rafiki)', () => {
     expect(ligneStockee.net_global).toBe('474.545455');
     expect(ligneStockee.virement).toBe('470');
     expect(ligneStockee.telephone).toBe('+243 81 000 0010');
-    expect(ligneStockee.code_banque).toBe('804');
+    expect(ligneStockee.code_banque).toBe('840');
   });
 
   it('interdit la modification et suppression d une ligne dont l opération est terminée', () => {

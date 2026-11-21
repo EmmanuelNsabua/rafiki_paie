@@ -81,6 +81,19 @@ export function calculerMontantsLigne(
 }
 
 /**
+ * Normalise un numéro de téléphone pour la détection de doublons :
+ * supprime les espaces, points et tirets, et traite comme équivalents
+ * les préfixes "+243", "243" et "0" initial.
+ */
+export function normaliserTelephone(tel: string): string {
+  const sansSep = tel.replace(/[\s.-]/g, '');
+  if (sansSep.startsWith('+243')) return sansSep.slice(4);
+  if (sansSep.startsWith('243')) return sansSep.slice(3);
+  if (sansSep.startsWith('0')) return sansSep.slice(1);
+  return sansSep;
+}
+
+/**
  * Calcule les totaux d'une opération de paie à partir de ses lignes calculées.
  * Tout se fait en arithmétique décimale exacte dans le code TypeScript.
  */
@@ -90,6 +103,8 @@ export function calculerTotauxOperation(lignes: LignePaieCalculee[]): TotauxOper
   let nbErreurs = 0;
   let nbSansTel = 0;
   let nbSansBk = 0;
+
+  const freqsTel = new Map<string, number>();
 
   for (const l of lignes) {
     if (l.erreur) {
@@ -101,9 +116,23 @@ export function calculerTotauxOperation(lignes: LignePaieCalculee[]): TotauxOper
 
     if (!l.telephone || l.telephone.trim() === '') {
       nbSansTel++;
+    } else {
+      const canon = normaliserTelephone(l.telephone);
+      freqsTel.set(canon, (freqsTel.get(canon) ?? 0) + 1);
     }
+
     if (!l.code_banque || l.code_banque.trim() === '') {
       nbSansBk++;
+    }
+  }
+
+  let nbTelDoubles = 0;
+  for (const l of lignes) {
+    if (l.telephone && l.telephone.trim() !== '') {
+      const canon = normaliserTelephone(l.telephone);
+      if ((freqsTel.get(canon) ?? 0) > 1) {
+        nbTelDoubles++;
+      }
     }
   }
 
@@ -118,5 +147,6 @@ export function calculerTotauxOperation(lignes: LignePaieCalculee[]): TotauxOper
     nombre_lignes_erreur: nbErreurs,
     nombre_sans_telephone: nbSansTel,
     nombre_sans_code_banque: nbSansBk,
+    nombre_telephones_en_double: nbTelDoubles,
   };
 }

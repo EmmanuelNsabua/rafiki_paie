@@ -45,7 +45,7 @@ export class OperationService {
   lister(): ResumeOperationLister[] {
     const operations = this.db
       .prepare(
-        `SELECT id, annee, mois, statut, terminee_le, version, mis_a_jour_le, supprime_le
+        `SELECT id, annee, mois, jours_ouvrables, statut, terminee_le, version, mis_a_jour_le, supprime_le
          FROM operation_paie
          WHERE supprime_le IS NULL
          ORDER BY annee DESC, mois DESC`
@@ -84,7 +84,7 @@ export class OperationService {
   obtenir(id: string): DetailOperationComplet {
     const operation = this.db
       .prepare(
-        `SELECT id, annee, mois, statut, terminee_le, version, mis_a_jour_le, supprime_le
+        `SELECT id, annee, mois, jours_ouvrables, statut, terminee_le, version, mis_a_jour_le, supprime_le
          FROM operation_paie
          WHERE id = ? AND supprime_le IS NULL`
       )
@@ -186,10 +186,10 @@ export class OperationService {
       // 1. Insérer l'opération
       this.db
         .prepare(
-          `INSERT INTO operation_paie (id, annee, mois, statut, terminee_le, version, mis_a_jour_le, supprime_le)
-           VALUES (?, ?, ?, 'ouverte', NULL, 1, ?, NULL)`
+          `INSERT INTO operation_paie (id, annee, mois, jours_ouvrables, statut, terminee_le, version, mis_a_jour_le, supprime_le)
+           VALUES (?, ?, ?, ?, 'ouverte', NULL, 1, ?, NULL)`
         )
-        .run(opId, annee, mois, maintenant);
+        .run(opId, annee, mois, joursOuvrables, maintenant);
 
       // 2. Insérer une ligne par employé actif
       const stmtLigne = this.db.prepare(`
@@ -214,7 +214,7 @@ export class OperationService {
           e.prenom,
           e.fonction,
           e.telephone,
-          e.code_banque || '804',
+          e.code_banque ?? '',
           e.salaire_base,
           joursOuvrables,
           maintenant
@@ -271,7 +271,7 @@ export class OperationService {
       return { ajoutes: 0 };
     }
 
-    const joursDefaut = detail.parametres.jours_ouvrables_defaut;
+    const joursOperation = detail.operation.jours_ouvrables;
     const maintenant = new Date().toISOString();
 
     const tx = this.db.transaction(() => {
@@ -297,9 +297,9 @@ export class OperationService {
           e.prenom,
           e.fonction,
           e.telephone,
-          e.code_banque || '804',
+          e.code_banque ?? '',
           e.salaire_base,
-          joursDefaut,
+          joursOperation,
           maintenant
         );
       }
@@ -365,8 +365,8 @@ export class OperationService {
           .prepare('SELECT telephone, code_banque FROM employe WHERE id = ?')
           .get(ligne.employe_id) as { telephone: string; code_banque: string } | undefined;
 
-        const telFinal = empActuel?.telephone || ligne.telephone || '';
-        const bkFinal = empActuel?.code_banque || ligne.code_banque || '804';
+        const telFinal = empActuel?.telephone ?? ligne.telephone ?? '';
+        const bkFinal = empActuel?.code_banque ?? ligne.code_banque ?? '';
 
         const calc = calculerMontantsLigne(ligne, {
           diviseurRetenue: params.diviseur_retenue,

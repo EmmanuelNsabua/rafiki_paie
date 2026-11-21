@@ -94,39 +94,71 @@ export function executerMigrations(
 
   const appliquees: string[] = [];
 
-  for (const fichier of fichiers) {
-    const match = fichier.match(/^(\d{4})_(.+)\.sql$/);
-    if (!match) continue;
+  const fkInitial = (db.pragma('foreign_keys', { simple: true }) as number) === 1;
+  if (fkInitial) {
+    db.pragma('foreign_keys = OFF');
+  }
 
-    const numero = parseInt(match[1], 10);
-    const nom = match[2];
-    const cheminComplet = path.join(dossier, fichier);
-    const contenu = fs.readFileSync(cheminComplet, 'utf8');
-    const sommeControle = calculerSommeControle(contenu);
+  try {
+    for (const fichier of fichiers) {
+      const match = fichier.match(/^(\d{4})_(.+)\.sql$/);
+      if (!match) continue;
 
-    if (mapExistantes.has(numero)) {
-      const existante = mapExistantes.get(numero)!;
-      if (existante.somme_controle !== sommeControle) {
-        throw new ErreurMigration(
-          'SOMME_CONTROLE_ALTEREE',
-          `La migration ${fichier} a été modifiée après son application initiale ` +
-            `(enregistrée: ${existante.somme_controle}, actuelle: ${sommeControle}). Démarrage refusé.`
-        );
+      const numero = parseInt(match[1], 10);
+      const nom = match[2];
+      const cheminComplet = path.join(dossier, fichier);
+      const contenu = fs.readFileSync(cheminComplet, 'utf8');
+      const sommeControle = calculerSommeControle(contenu);
+
+      if (mapExistantes.has(numero)) {
+        const existante = mapExistantes.get(numero)!;
+        if (existante.somme_controle !== sommeControle) {
+          throw new ErreurMigration(
+            'SOMME_CONTROLE_ALTEREE',
+            `La migration ${fichier} a été modifiée après son application initiale ` +
+              `(enregistrée: ${existante.somme_controle}, actuelle: ${sommeControle}). Démarrage refusé.`
+          );
+        }
+      } else {
+        // Nouvelle migration à appliquer dans une transaction dédiée
+        const inserer = db.prepare(`
+          INSERT INTO schema_migrations (numero, nom, somme_controle, appliquee_le)
+          VALUES (?, ?, ?, ?)
+        `);
+
+        const tx = db.transaction(() => {
+          db.exec(contenu);
+
+          // 1. Contrôle des clés étrangères DANS la transaction, avant commit
+          const fkViolations = db.pragma('foreign_key_check') as unknown[];
+          if (fkViolations.length > 0) {
+            throw new ErreurMigration(
+              'VIOLATION_CLES_ETRANGERES',
+              `Échec de la migration ${fichier} : violation de clé étrangère détectée.`
+            );
+          }
+
+          // 2. Contrôle d'intégrité SQLite DANS la transaction, avant commit
+          const integrityRows = db.pragma('integrity_check') as Array<{ integrity_check: string }>;
+          const estIntegre =
+            integrityRows.length === 1 && integrityRows[0].integrity_check === 'ok';
+          if (!estIntegre) {
+            throw new ErreurMigration(
+              'ECHEC_INTEGRITE_SQLITE',
+              `Échec de la migration ${fichier} : PRAGMA integrity_check a retourné des erreurs.`
+            );
+          }
+
+          inserer.run(numero, nom, sommeControle, new Date().toISOString());
+        });
+
+        tx();
+        appliquees.push(fichier);
       }
-    } else {
-      // Nouvelle migration à appliquer dans une transaction dédiée
-      const inserer = db.prepare(`
-        INSERT INTO schema_migrations (numero, nom, somme_controle, appliquee_le)
-        VALUES (?, ?, ?, ?)
-      `);
-
-      const tx = db.transaction(() => {
-        db.exec(contenu);
-        inserer.run(numero, nom, sommeControle, new Date().toISOString());
-      });
-
-      tx();
-      appliquees.push(fichier);
+    }
+  } finally {
+    if (fkInitial) {
+      db.pragma('foreign_keys = ON');
     }
   }
 

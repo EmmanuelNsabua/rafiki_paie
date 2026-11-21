@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 import * as crypto from 'crypto';
-import type { Employe } from '@rafiki/contrat';
+import { type Employe, telephoneSchema } from '@rafiki/contrat';
 import { ErreurMetier } from './erreurs';
 import { JournalService } from './journal-service';
 
@@ -112,11 +112,31 @@ export class EmployeService {
 
     const id = crypto.randomUUID();
     const maintenant = new Date().toISOString();
-    const codeBanque = data.code_banque ?? '804';
+
+    const telephone = (data.telephone ?? '').trim();
+    if (telephone !== '') {
+      const telVal = telephoneSchema.safeParse(telephone);
+      if (!telVal.success) {
+        throw new ErreurMetier(
+          'TELEPHONE_INVALIDE',
+          telVal.error.issues[0]?.message || 'Numéro de téléphone invalide.'
+        );
+      }
+    }
+
+    let codeBanque: string;
+    if (data.code_banque !== undefined && data.code_banque !== null) {
+      codeBanque = data.code_banque.trim();
+    } else {
+      const rowParam = this.db
+        .prepare("SELECT code_banque_defaut FROM parametre WHERE id = 'default'")
+        .get() as { code_banque_defaut?: string } | undefined;
+      codeBanque = (rowParam?.code_banque_defaut ?? '').trim();
+    }
+
     const postnom = data.postnom ?? '';
     const prenom = data.prenom ?? '';
     const fonction = data.fonction ?? '';
-    const telephone = data.telephone ?? '';
     const actif = data.actif ?? 1;
 
     this.db
@@ -131,8 +151,8 @@ export class EmployeService {
         postnom.trim(),
         prenom.trim(),
         fonction.trim(),
-        telephone.trim(),
-        codeBanque.trim(),
+        telephone,
+        codeBanque,
         data.salaire_base,
         actif,
         maintenant
@@ -175,6 +195,15 @@ export class EmployeService {
     const nouveauPrenom = (modifs.prenom ?? actuel.prenom).trim();
     const nouvelleFonction = (modifs.fonction ?? actuel.fonction).trim();
     const nouveauTelephone = (modifs.telephone ?? actuel.telephone).trim();
+    if (modifs.telephone !== undefined && nouveauTelephone !== '') {
+      const telVal = telephoneSchema.safeParse(nouveauTelephone);
+      if (!telVal.success) {
+        throw new ErreurMetier(
+          'TELEPHONE_INVALIDE',
+          telVal.error.issues[0]?.message || 'Numéro de téléphone invalide.'
+        );
+      }
+    }
     const nouveauCodeBanque = (modifs.code_banque ?? actuel.code_banque).trim();
     const nouveauSalaire = modifs.salaire_base ?? actuel.salaire_base;
     const nouvelActif = modifs.actif ?? actuel.actif;

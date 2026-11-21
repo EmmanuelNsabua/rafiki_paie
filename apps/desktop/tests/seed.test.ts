@@ -27,12 +27,12 @@ describe('Seeder de Données d Exemple (Étape 5)', () => {
     const employes = employeService.lister();
     expect(employes.length).toBe(6);
     expect(employes[0].nom).toBe('Kabongo');
-    expect(employes[0].code_banque).toBe('804');
+    expect(employes[0].code_banque).toBe('840');
     expect(employes[0].telephone).toBe('+243 81 000 0010');
 
-    // Tous les employés doivent avoir le code banque 804
+    // Tous les employés doivent avoir le code banque 840
     for (const emp of employes) {
-      expect(emp.code_banque).toBe('804');
+      expect(emp.code_banque).toBe('840');
       expect(emp.telephone).toMatch(/^\+243 81/);
     }
 
@@ -53,7 +53,7 @@ describe('Seeder de Données d Exemple (Étape 5)', () => {
     expect(ligneKabongo.net_global).toBe('474.545455');
     expect(ligneKabongo.virement).toBe('470');
     expect(ligneKabongo.telephone).toBe('+243 81 000 0010');
-    expect(ligneKabongo.code_banque).toBe('804');
+    expect(ligneKabongo.code_banque).toBe('840');
   });
 
   it('refuse de s exécuter si la base n est pas vide sans option force', () => {

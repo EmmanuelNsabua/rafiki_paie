@@ -354,7 +354,9 @@ export default function PageControleDev() {
                     <TableCell className="font-sans">
                       {l.telephone || <span className="text-amber-500 font-semibold">—</span>}
                     </TableCell>
-                    <TableCell className="font-sans">{l.code_banque || '804'}</TableCell>
+                    <TableCell className="font-sans">
+                      {l.code_banque || <span className="text-amber-500 font-semibold">—</span>}
+                    </TableCell>
                     <TableCell className="text-right">{l.salaire_base} $</TableCell>
                     <TableCell className="text-right">{l.hs} $</TableCell>
                     <TableCell className="text-right">{l.retrait} $</TableCell>

@@ -60,7 +60,7 @@ describe('SauvegardeService (Étape 6)', () => {
       prenom: 'Joseph',
       fonction: 'Enseignant',
       telephone: '+243999999999',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '600.00',
     });
 
@@ -171,7 +171,7 @@ describe('SauvegardeService (Étape 6)', () => {
       prenom: 'Jean',
       fonction: 'Directeur',
       telephone: '+243888888888',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '1000.00',
     });
 
@@ -192,7 +192,7 @@ describe('SauvegardeService (Étape 6)', () => {
       prenom: 'Paul',
       fonction: 'Comptable',
       telephone: '+243777777777',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '800.00',
     });
 
@@ -219,7 +219,7 @@ describe('SauvegardeService (Étape 6)', () => {
       prenom: 'Marc',
       fonction: 'Gardien',
       telephone: '+243666666666',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '300.00',
     });
 
@@ -260,7 +260,7 @@ describe('SauvegardeService (Étape 6)', () => {
       prenom: 'Jean',
       fonction: 'Professeur',
       telephone: '+243123456789',
-      code_banque: '804',
+      code_banque: '840',
       salaire_base: '500.00',
     });
 
