@@ -18,11 +18,19 @@ export default function HomePage() {
 
   React.useEffect(() => {
     if (typeof window !== 'undefined' && window.api?.pingDb) {
+      console.log('[RENDERER] window.api est défini. Appel de window.api.pingDb()...');
       window.api.pingDb().then(
-        (res) => setDbStatus(`Connecté à SQLite v${res.sqlite_version}`),
-        (err) => setDbStatus(`Erreur SQLite : ${err?.message || err}`)
+        (res) => {
+          console.log('[RENDERER] Réponse reçue de db:ping. SQLite version:', res.sqlite_version);
+          setDbStatus(`Connecté à SQLite v${res.sqlite_version}`);
+        },
+        (err) => {
+          console.error('[RENDERER] Échec appel db:ping :', err?.message || err);
+          setDbStatus(`Erreur SQLite : ${err?.message || err}`);
+        }
       );
     } else {
+      console.warn('[RENDERER] window.api non défini ou pingDb absent');
       setDbStatus('Mode Web / Navigateur (IPC non actif)');
     }
   }, []);

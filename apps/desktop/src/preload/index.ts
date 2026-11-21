@@ -1,19 +1,21 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import {
-  CANAUX_IPC,
-  type ElectronApi,
-  type ReponseIpc,
-  type Employe,
-  type OperationPaie,
-  type ResumeOperationLister,
-  type DetailOperationComplet,
-  type ResultatModificationLigne,
-  type ResultatAjoutEmployes,
-  type Parametre,
-  type Journal,
+import { CANAUX_IPC } from '@rafiki/contrat/canaux';
+import type {
+  ElectronApi,
+  ReponseIpc,
+  Employe,
+  OperationPaie,
+  ResumeOperationLister,
+  DetailOperationComplet,
+  ResultatModificationLigne,
+  ResultatAjoutEmployes,
+  Parametre,
+  Journal,
 } from '@rafiki/contrat';
 
-const estDev = process.env.NODE_ENV === 'development';
+// Calcul de estDev transmis par additionalArguments depuis le processus principal
+const isDevArg = process.argv?.find((arg) => arg.startsWith('--is-dev='));
+const estDev = isDevArg ? isDevArg.split('=')[1] === 'true' : false;
 
 const api: ElectronApi = {
   env: {

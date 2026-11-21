@@ -7,7 +7,7 @@
     "build": "tsup && node -e \"require('fs').cpSync('migrations', 'dist/main/migrations', { recursive: true })\"",
     "typecheck": "tsc --noEmit",
     "db:seed": "node ../../scripts/run-electron-node.mjs src/main/db/seed.ts",
-    "dev": "npm run build && concurrently -k \"npm run dev --workspace=@rafiki/web\" \"wait-on http://localhost:3000 && electron .\"",
+    "dev": "npm run build && concurrently -k \"npm run dev --workspace=@rafiki/web\" \"wait-on http://localhost:3000 && node ../../scripts/run-electron-gui.mjs\"",
     "build:electron": "electron-builder --dir",
     "postinstall": "electron-builder install-app-deps"
   },
@@ -42,8 +42,16 @@
       ]
     },
     "files": [
-      "dist/**/*",
-      "../web/out/**/*"
+      "dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/out",
+        "to": "web/out",
+        "filter": [
+          "**/*"
+        ]
+      }
     ]
   }
 }

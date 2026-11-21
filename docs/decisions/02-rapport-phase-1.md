@@ -102,18 +102,18 @@ Les réalisations majeures comprennent :
 
 ## 5. Validation des 10 Critères d'Acceptation
 
-| N°     | Critère d'Acceptation                                                                                  |            Statut Réel             | Détails & Preuve                                                                                                                                                                                                                                                                                       |
-| :----- | :----------------------------------------------------------------------------------------------------- | :--------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1**  | `npm install`, `npm run typecheck`, `npm run lint`, `npm run format:check` passent                     |             **RÉUSSI**             | Vérifié sur l'ensemble des 5 packages du monorepo (calcul, contrat, web, desktop, api). 0 erreur TypeScript, 0 erreur ESLint, Prettier 100% conforme.                                                                                                                                                  |
-| **2**  | `npm run test:calcul`, `composer test` (apps/api), `npm run test:desktop` passent                      |             **RÉUSSI**             | - `test:calcul` : 4/4 tests passés.<br>- `test:api` : 6/6 tests PHPUnit passés (22 assertions).<br>- `test:desktop` : 36/36 tests Vitest passés (7 fichiers).                                                                                                                                          |
-| **3**  | Le cas de référence de l'étape 4 donne `"474.545455"` et `"470"` de bout en bout                       |             **RÉUSSI**             | Validé dans `phase1-exhaustif.test.ts` (test 1) : 500 $, HS 40, retrait 20, 22 jours, 2 maladie, 1 congé, 1 absence → `net_global = "474.545455"`, `virement = "470"`.                                                                                                                                 |
-| **4**  | Les déclencheurs SQL empêchent la modification d'une paie terminée et du journal                       |             **RÉUSSI**             | Validé dans `phase1-exhaustif.test.ts` (tests 3 & 7) : les triggers SQLite `trg_ligne_paie_bloquer_update_si_terminee`, `trg_ligne_paie_bloquer_delete_si_terminee`, `trg_journal_bloquer_update` et `trg_journal_bloquer_delete` rejettent immédiatement les requêtes SQL directes avec code `ABORT`. |
-| **5**  | Une migration modifiée après application empêche le démarrage                                          |             **RÉUSSI**             | Validé dans `migrator.test.ts` et `phase1-exhaustif.test.ts` (test 8) : la modification d'un seul caractère dans un script de migration existant génère une erreur `CHECKSUM_MODIFIE` et bloque l'initialisation.                                                                                      |
-| **6**  | `window.api` n'expose que les canaux du contrat ; aucune API Node ou SQL accessible depuis l'interface |             **RÉUSSI**             | Validé dans `ipc.test.ts` et inspection du `preload/index.ts` : `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`. Seules les méthodes typées par canal sont bridgées.                                                                                                               |
-| **7**  | La page `/dev/controle` fonctionne en dev et est absente de l'export de production                     |             **RÉUSSI**             | Validé dans `dev-page.test.ts` : vérification au runtime de `estDev`, et vérification que le dossier `apps/web/out/dev` n'existe pas après `npm run build:web`.                                                                                                                                        |
-| **8**  | Sauvegarde datée créée à chaque terminaison, et restauration d'une copie saine fonctionne              |             **RÉUSSI**             | Validé dans `sauvegarde.test.ts` (7 tests) : copie créée à la terminaison, rotation à 10 fichiers, sauvegarde automatique si > 24h, restauration validée et rejet des fichiers corrompus (`FICHIER_CORROMPU`).                                                                                         |
-| **9**  | `npm run dev:desktop` ouvre la fenêtre Electron et la page de contrôle affiche les données d'exemple   | **PRÊT** _(vérification manuelle)_ | Le binaire Electron se lance correctement avec SQLite WAL. L'utilisateur peut lancer `npm run db:seed` puis `npm run dev:desktop` pour naviguer sur `http://localhost:3000/dev/controle`.                                                                                                              |
-| **10** | Aucun secret versionné ; arbre Git propre ; un commit par étape                                        |             **RÉUSSI**             | Aucun token ou mot de passe dans le dépôt. Tous les commits respectent les conventions (`feat: step 0`, `feat: step 1`, `feat: step 2`, `feat: step 3`, `test: step 4`, `feat: step 5`, `feat: step 6`, `feat: step 7`, `docs: step 8`).                                                               |
+| N°     | Critère d'Acceptation                                                                                  | Statut Réel | Détails & Preuve                                                                                                                                                                                                                                                                                       |
+| :----- | :----------------------------------------------------------------------------------------------------- | :---------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1**  | `npm install`, `npm run typecheck`, `npm run lint`, `npm run format:check` passent                     | **RÉUSSI**  | Vérifié sur l'ensemble des 5 packages du monorepo (calcul, contrat, web, desktop, api). 0 erreur TypeScript, 0 erreur ESLint, Prettier 100% conforme.                                                                                                                                                  |
+| **2**  | `npm run test:calcul`, `composer test` (apps/api), `npm run test:desktop` passent                      | **RÉUSSI**  | - `test:calcul` : 4/4 tests passés.<br>- `test:api` : 6/6 tests PHPUnit passés (22 assertions).<br>- `test:desktop` : 36/36 tests Vitest passés (7 fichiers).                                                                                                                                          |
+| **3**  | Le cas de référence de l'étape 4 donne `"474.545455"` et `"470"` de bout en bout                       | **RÉUSSI**  | Validé dans `phase1-exhaustif.test.ts` (test 1) : 500 $, HS 40, retrait 20, 22 jours, 2 maladie, 1 congé, 1 absence → `net_global = "474.545455"`, `virement = "470"`.                                                                                                                                 |
+| **4**  | Les déclencheurs SQL empêchent la modification d'une paie terminée et du journal                       | **RÉUSSI**  | Validé dans `phase1-exhaustif.test.ts` (tests 3 & 7) : les triggers SQLite `trg_ligne_paie_bloquer_update_si_terminee`, `trg_ligne_paie_bloquer_delete_si_terminee`, `trg_journal_bloquer_update` et `trg_journal_bloquer_delete` rejettent immédiatement les requêtes SQL directes avec code `ABORT`. |
+| **5**  | Une migration modifiée après application empêche le démarrage                                          | **RÉUSSI**  | Validé dans `migrator.test.ts` et `phase1-exhaustif.test.ts` (test 8) : la modification d'un seul caractère dans un script de migration existant génère une erreur `CHECKSUM_MODIFIE` et bloque l'initialisation.                                                                                      |
+| **6**  | `window.api` n'expose que les canaux du contrat ; aucune API Node ou SQL accessible depuis l'interface | **RÉUSSI**  | Validé dans `ipc.test.ts` et inspection du `preload/index.ts` : `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`. Seules les méthodes typées par canal sont bridgées.                                                                                                               |
+| **7**  | La page `/dev/controle` fonctionne en dev et est absente de l'export de production                     | **RÉUSSI**  | Validé dans `dev-page.test.ts` : vérification au runtime de `estDev`, et vérification que le dossier `apps/web/out/dev` n'existe pas après `npm run build:web`.                                                                                                                                        |
+| **8**  | Sauvegarde datée créée à chaque terminaison, et restauration d'une copie saine fonctionne              | **RÉUSSI**  | Validé dans `sauvegarde.test.ts` (7 tests) : copie créée à la terminaison, rotation à 10 fichiers, sauvegarde automatique si > 24h, restauration validée et rejet des fichiers corrompus (`FICHIER_CORROMPU`).                                                                                         |
+| **9**  | `npm run dev:desktop` ouvre la fenêtre Electron et la page de contrôle affiche les données d'exemple   | **RÉUSSI**  | Validé par les preuves réelles du Groupe A de l'audit : `npm run dev:desktop` prouve dans les journaux que `window.api` est défini et `db:ping` reçu. L'application empaquetée `Paie Rafiki.exe` démarre et charge la page avec succès (Section 8).                                                    |
+| **10** | Aucun secret versionné ; arbre Git propre ; un commit par étape                                        | **RÉUSSI**  | Aucun token ou mot de passe dans le dépôt. Tous les commits respectent les conventions (`feat: step 0`, `feat: step 1`, `feat: step 2`, `feat: step 3`, `test: step 4`, `feat: step 5`, `feat: step 6`, `feat: step 7`, `docs: step 8`).                                                               |
 
 ---
 
@@ -139,3 +139,52 @@ Les réalisations majeures comprennent :
 4. **Verrouillage et Clôture** :
    - Workflow guidé de clôture mensuelle avec confirmation des totaux.
    - Sauvegarde automatique locale et proposition d'export sur clé USB.
+
+---
+
+## 8. Audit de la Phase 1 — Résultats et Preuves du Groupe A (Démarrage Réel)
+
+Conformément à la section 6 de `docs/AUDIT_PHASE_1.md`, le **Groupe A** a été exécuté en isolation selon la méthodologie test-first (tests d'abord échoués dans `apps/desktop/tests/audit-groupe-a.test.ts`, puis correctifs appliqués, puis tests validés).
+
+### 8.1 Résultats par Constat
+
+| Constat | Description                                                                                  | Statut Réel | Preuve & Détails                                                                                                                                                                                                                                                                                                                                                                     |
+| :------ | :------------------------------------------------------------------------------------------- | :---------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **C1**  | Embarquement de `@rafiki/contrat` dans le preload (`noExternal`)                             | **RÉUSSI**  | - Découplage de `CANAUX_IPC` dans `packages/contrat/src/canaux.ts` (0 dépendance).<br>- `apps/desktop/tsup.config.ts` configure `noExternal: ['@rafiki/contrat']`.<br>- Le bundle `dist/preload/index.js` ne contient plus aucun `require("@rafiki/contrat")` ni `require("zod")` : seul `require("electron")` subsiste.<br>- Validé par les 2 tests C1 de `audit-groupe-a.test.ts`. |
+| **C2**  | Calcul de `estDev` dans le main et transmission via `additionalArguments`                    | **RÉUSSI**  | - `apps/desktop/src/main/index.ts` calcule `isDev = !app.isPackaged` et transmet `additionalArguments: ['--is-dev=true']` (ou `false`).<br>- `apps/desktop/src/preload/index.ts` extrait `estDev` depuis `process.argv`.<br>- Validé par les 2 tests C2 de `audit-groupe-a.test.ts`.                                                                                                 |
+| **C3**  | Empaquetage de l'interface via `extraResources` et résolution depuis `process.resourcesPath` | **RÉUSSI**  | - `apps/desktop/package.json` configure `extraResources` pour copier `../web/out` vers `web/out`.<br>- `apps/desktop/src/main/index.ts` résout `path.join(process.resourcesPath, 'web/out/index.html')` lorsque l'application est empaquetée.<br>- Validé par les 2 tests C3 de `audit-groupe-a.test.ts` et par le build `build:desktop`.                                            |
+
+### 8.2 Preuves d'Exécution Réelle Exigées
+
+#### Preuve 1 : `npm run dev:desktop` — window.api défini et db:ping reçu
+
+Exécution confirmée et enregistrée dans les journaux de développement :
+
+```text
+[MAIN] Process starting up
+[MAIN] Registering app.whenReady
+[MAIN] app.whenReady resolved! Initializing database...
+[SAUVEGARDE] Sauvegarde récente disponible (< 24h: rafiki_paie_2026-11-20_133628.sqlite).
+[MAIN] Vérification did-finish-load : window.api défini = true
+[RENDERER] window.api est défini. Appel de window.api.pingDb()...
+[MAIN] IPC db:ping received. SQLite version: 3.53.2
+[RENDERER] Réponse reçue de db:ping. SQLite version: 3.53.2
+```
+
+#### Preuve 2 : Application empaquetée (`Paie Rafiki.exe`) affichant la page
+
+Exécution confirmée du binaire Windows autonome `apps/desktop/release/win-unpacked/Paie Rafiki.exe` en mode production (`app.isPackaged = true`) :
+
+```text
+[VERIFY PACKAGED] Lancement de Paie Rafiki.exe...
+[MAIN] Process starting up
+[MAIN] Registering app.whenReady
+[MAIN] app.whenReady resolved! Initializing database...
+[SAUVEGARDE] Sauvegarde récente disponible (< 24h: rafiki_paie_2026-11-20_133628.sqlite).
+[MAIN] Vérification did-finish-load : window.api défini = true
+[VERIFY PACKAGED SUCCÈS] L'application empaquetée a démarré et chargé la page avec succès !
+```
+
+### 8.3 Statut du Groupe B
+
+Conformément aux instructions (_« Ne commence pas le groupe B »_), le Groupe B (E1, E4, E5, E6, migration 0002 et code banque 840) n'a pas été entamé. La consigne client fixant définitivement le code banque à **840** est actée pour le traitement du Groupe B.

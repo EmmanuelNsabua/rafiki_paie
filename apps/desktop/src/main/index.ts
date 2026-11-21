@@ -8,6 +8,19 @@ import { enregistrerGestionnairesIpc } from './ipc';
 import { SauvegardeService } from './domain';
 
 log.initialize();
+log.transports.console.level = 'info';
+
+// Configuration du fichier de log pour audit et vérification
+try {
+  const dossierLogs = path.resolve(process.cwd(), 'logs');
+  if (!fs.existsSync(dossierLogs)) {
+    fs.mkdirSync(dossierLogs, { recursive: true });
+  }
+  log.transports.file.resolvePathFn = () => path.join(dossierLogs, 'main.log');
+} catch {
+  // Ignorer si échec
+}
+
 log.info('[MAIN] Process starting up');
 
 let mainWindow: BrowserWindow | null = null;
@@ -17,7 +30,18 @@ function initDatabase(): Database.Database {
   return ouvrirBaseDeDonnees();
 }
 
+function obtenirCheminIndexHtml(isDev: boolean): string {
+  if (isDev) {
+    // En développement, chemin vers l'export statique local du workspace web
+    return path.join(__dirname, '../../../../apps/web/out/index.html');
+  }
+  // En production empaquetée, les fichiers statiques sont dans extraResources (process.resourcesPath)
+  return path.join(process.resourcesPath, 'web/out/index.html');
+}
+
 function createWindow(): void {
+  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -30,7 +54,25 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      additionalArguments: [`--is-dev=${isDev ? 'true' : 'false'}`],
     },
+  });
+
+  // Transmission des messages de console du renderer dans les logs principaux
+  mainWindow.webContents.on('console-message', (_event, _level, message) => {
+    log.info(`[RENDERER] ${message}`);
+  });
+
+  // Vérification explicite de la présence de window.api dès la fin du chargement de la page
+  mainWindow.webContents.on('did-finish-load', async () => {
+    try {
+      const apiDefini = await mainWindow?.webContents.executeJavaScript(
+        'typeof window.api !== "undefined" && typeof window.api.pingDb === "function"'
+      );
+      log.info(`[MAIN] Vérification did-finish-load : window.api défini = ${apiDefini}`);
+    } catch (err: any) {
+      log.warn('[MAIN] Impossible de vérifier window.api au did-finish-load :', err.message);
+    }
   });
 
   // Strict Content Security Policy
@@ -45,22 +87,21 @@ function createWindow(): void {
     });
   });
 
-  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
   if (isDev) {
     const devUrl = process.env.ELECTRON_START_URL || 'http://localhost:3000';
-    mainWindow.loadURL(devUrl).catch(() => {
-      // Fallback to local out folder if dev server not running
-      const outPath = path.join(__dirname, '../../../web/out/index.html');
+    mainWindow.loadURL(devUrl).catch((err) => {
+      log.warn('[MAIN] Impossible de charger devUrl, bascule vers index.html local :', err.message);
+      const outPath = obtenirCheminIndexHtml(true);
       if (fs.existsSync(outPath)) {
         mainWindow?.loadFile(outPath);
       }
     });
   } else {
-    const outPath = path.join(__dirname, '../../../web/out/index.html');
+    const outPath = obtenirCheminIndexHtml(false);
     if (fs.existsSync(outPath)) {
       mainWindow.loadFile(outPath);
     } else {
-      mainWindow.loadURL('app://./index.html');
+      log.error('[MAIN] Fichier index.html introuvable en production :', outPath);
     }
   }
 

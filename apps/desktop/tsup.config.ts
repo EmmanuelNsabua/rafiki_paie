@@ -8,6 +8,7 @@ export default defineConfig({
   format: ['cjs'],
   target: 'node20',
   external: ['electron', 'better-sqlite3'],
+  noExternal: ['@rafiki/contrat'],
   clean: true,
   sourcemap: true,
 });

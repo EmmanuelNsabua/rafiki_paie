@@ -253,22 +253,7 @@ export const ipcJournalListerInput = z
 // Constantes des Canaux IPC
 // ============================================================================
 
-export const CANAUX_IPC = {
-  EMPLOYES_LISTER: 'employes.lister',
-  EMPLOYES_CREER: 'employes.creer',
-  EMPLOYES_MODIFIER: 'employes.modifier',
-  EMPLOYES_DESACTIVER: 'employes.desactiver',
-  OPERATIONS_LISTER: 'operations.lister',
-  OPERATIONS_OUVRIR: 'operations.ouvrir',
-  OPERATIONS_OBTENIR: 'operations.obtenir',
-  OPERATIONS_TERMINER: 'operations.terminer',
-  OPERATIONS_ROUVRIR: 'operations.rouvrir',
-  OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES: 'operations.ajouterNouveauxEmployes',
-  LIGNES_MODIFIER: 'lignes.modifier',
-  PARAMETRES_LIRE: 'parametres.lire',
-  PARAMETRES_MODIFIER: 'parametres.modifier',
-  JOURNAL_LISTER: 'journal.lister',
-} as const;
+export * from './canaux';
 
 // ============================================================================
 // Schémas de Sortie IPC
