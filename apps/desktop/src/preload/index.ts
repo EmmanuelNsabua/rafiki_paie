@@ -9,6 +9,7 @@ import type {
   DetailOperationComplet,
   ResultatModificationLigne,
   ResultatAjoutEmployes,
+  ResultatExportBordereau,
   Parametre,
   Journal,
 } from '@rafiki/contrat';
@@ -54,6 +55,9 @@ const api: ElectronApi = {
     },
     ajouterNouveauxEmployes: (input): Promise<ReponseIpc<ResultatAjoutEmployes>> => {
       return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES, input);
+    },
+    exporterBordereau: (input): Promise<ReponseIpc<ResultatExportBordereau>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_EXPORTER_BORDEREAU, input);
     },
   },
   lignes: {

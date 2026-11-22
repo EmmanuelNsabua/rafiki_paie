@@ -6,3 +6,4 @@ export * from './employe-service';
 export * from './operation-service';
 export * from './ligne-service';
 export * from './sauvegarde-service';
+export * from './bordereau-service';

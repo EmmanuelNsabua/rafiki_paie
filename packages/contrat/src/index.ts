@@ -53,6 +53,46 @@ export const telephoneSchema = z.string().refine(
   }
 );
 
+/**
+ * Valide un numéro de téléphone pour un employé destiné au bordereau bancaire.
+ * Le numéro ne peut être ni vide ni composé uniquement d'espaces.
+ */
+export function validerTelephoneBeneficiaire(tel: string | null | undefined): {
+  valide: boolean;
+  erreur?: string;
+} {
+  if (!tel || tel.trim() === '') {
+    return {
+      valide: false,
+      erreur:
+        'Le numéro de téléphone est obligatoire pour figurer comme bénéficiaire au bordereau.',
+    };
+  }
+  const nettoye = tel.replace(/[\s.-]/g, '');
+  if (!/^\+?\d{9,15}$/.test(nettoye)) {
+    return {
+      valide: false,
+      erreur:
+        "Le numéro de téléphone doit contenir entre 9 et 15 chiffres (après suppression des espaces, points et tirets), avec un '+' facultatif en tête.",
+    };
+  }
+  return { valide: true };
+}
+
+/**
+ * Schéma Zod strict pour le numéro de téléphone d'un bénéficiaire au bordereau bancaire.
+ * Rejette les chaînes vides, les espaces et les formats non conformes.
+ */
+export const telephoneBeneficiaireSchema = z.string().superRefine((val, ctx) => {
+  const res = validerTelephoneBeneficiaire(val);
+  if (!res.valide) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: res.erreur ?? 'Numéro de téléphone invalide.',
+    });
+  }
+});
+
 // ============================================================================
 // Entités du Modèle de Données (modele-donnees-phase-1.mermaid)
 // ============================================================================
@@ -244,6 +284,15 @@ export const ipcOperationsAjouterNouveauxEmployesInput = z.object({
   id: uuidSchema,
 });
 
+export const ipcOperationsExporterBordereauInput = z.object({
+  operation_id: uuidSchema,
+  format: z.enum(['pdf', 'csv']),
+  chemin_destination: z.string().optional(),
+});
+export type IpcOperationsExporterBordereauInput = z.infer<
+  typeof ipcOperationsExporterBordereauInput
+>;
+
 export const ipcLignesModifierInput = z.object({
   ligne_id: uuidSchema,
   hs: decimalNonNegatifSchema.optional(),
@@ -304,6 +353,16 @@ export const resultatAjoutEmployesSchema = z.object({
 });
 export type ResultatAjoutEmployes = z.infer<typeof resultatAjoutEmployesSchema>;
 
+export const resultatExportBordereauSchema = z.object({
+  chemin_fichier: z.string(),
+  nom_fichier: z.string(),
+  format: z.enum(['pdf', 'csv']),
+  nombre_lignes: z.number().int().min(0),
+  total_virement: decimalNonNegatifSchema,
+  annule: z.boolean().default(false),
+});
+export type ResultatExportBordereau = z.infer<typeof resultatExportBordereauSchema>;
+
 export const ipcEmployesListerOutput = z.array(employeSchema);
 export const ipcEmployesCreerOutput = employeSchema;
 export const ipcEmployesModifierOutput = employeSchema;
@@ -314,6 +373,7 @@ export const ipcOperationsObtenirOutput = detailOperationCompletSchema;
 export const ipcOperationsTerminerOutput = operationPaieSchema;
 export const ipcOperationsRouvrirOutput = operationPaieSchema;
 export const ipcOperationsAjouterNouveauxEmployesOutput = resultatAjoutEmployesSchema;
+export const ipcOperationsExporterBordereauOutput = resultatExportBordereauSchema;
 export const ipcLignesModifierOutput = resultatModificationLigneSchema;
 export const ipcParametresLireOutput = parametreSchema;
 export const ipcParametresModifierOutput = parametreSchema;
@@ -349,6 +409,9 @@ export interface ElectronApi {
     ajouterNouveauxEmployes: (
       input: z.infer<typeof ipcOperationsAjouterNouveauxEmployesInput>
     ) => Promise<ReponseIpc<ResultatAjoutEmployes>>;
+    exporterBordereau: (
+      input: z.infer<typeof ipcOperationsExporterBordereauInput>
+    ) => Promise<ReponseIpc<ResultatExportBordereau>>;
   };
   lignes: {
     modifier: (

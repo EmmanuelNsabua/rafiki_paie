@@ -16,7 +16,6 @@ export const DONNEES_PROTOTYPE_EMPLOYES = [
     prenom: 'Gloire',
     fonction: 'Professeur',
     telephone: '+243 81 000 0010',
-    code_banque: '840',
     salaire_base: '500',
     variables: {
       hs: '40',
@@ -32,7 +31,6 @@ export const DONNEES_PROTOTYPE_EMPLOYES = [
     prenom: 'Aimé',
     fonction: 'Préfet',
     telephone: '+243 81 000 0011',
-    code_banque: '840',
     salaire_base: '450',
     variables: {},
   },
@@ -42,7 +40,6 @@ export const DONNEES_PROTOTYPE_EMPLOYES = [
     prenom: 'Rachel',
     fonction: 'Secrétaire',
     telephone: '+243 81 000 0012',
-    code_banque: '840',
     salaire_base: '380',
     variables: {
       jours_absence: '2',
@@ -54,7 +51,6 @@ export const DONNEES_PROTOTYPE_EMPLOYES = [
     prenom: 'Daniel',
     fonction: 'Professeur',
     telephone: '+243 81 000 0013',
-    code_banque: '840',
     salaire_base: '600',
     variables: {
       hs: '30',
@@ -66,7 +62,6 @@ export const DONNEES_PROTOTYPE_EMPLOYES = [
     prenom: 'Esther',
     fonction: 'Ouvrière',
     telephone: '+243 81 000 0014',
-    code_banque: '840',
     salaire_base: '320',
     variables: {
       jours_maladie: '1',
@@ -78,7 +73,6 @@ export const DONNEES_PROTOTYPE_EMPLOYES = [
     prenom: 'Patrick',
     fonction: 'Surveillant',
     telephone: '+243 81 000 0015',
-    code_banque: '840',
     salaire_base: '410',
     variables: {
       retrait: '50',
@@ -137,7 +131,6 @@ export function executerSeed(db: Database.Database, options: OptionsSeed = {}): 
       prenom: item.prenom,
       fonction: item.fonction,
       telephone: item.telephone,
-      code_banque: item.code_banque,
       salaire_base: item.salaire_base,
     });
     employesCrees.push({ emp, variables: item.variables });

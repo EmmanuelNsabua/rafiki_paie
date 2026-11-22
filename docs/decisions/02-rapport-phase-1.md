@@ -14,13 +14,13 @@ L'objectif de la Phase 1 était de construire le socle local complet de l'applic
 Les réalisations majeures comprennent :
 
 1. **Un schéma SQLite strict** (`STRICT`, clés étrangères activées, contraintes de validation `CHECK`, déclencheurs SQL bloquant toute altération d'une paie terminée ou du journal d'audit).
-2. **Un système de migrations transactionnelles** avec empreinte SHA-256 infalsifiable.
+2. **Un système de migrations transactionnelles** avec empreinte SHA-256 infalsifiable (`0001_initial.sql`, `0002_donnees_banque_et_contraintes.sql`, `0003_retrait_defaut_code_banque.sql`).
 3. **Le moteur de domaine bivalent** en arithmétique décimale exacte (`decimal.js`, zéro flottant) avec typage Zod dans `@rafiki/contrat`.
 4. **Un pont IPC asynchrone et typé** (`window.api`), sans API Node ou SQL accessible depuis le renderer, avec contrôle d'origine et journalisation anonymisée (zéro PII, zéro montant).
 5. **Le système de sauvegarde locale automatique** (`db.backup()`, rotation à 10 fichiers, restauration avec vérification d'intégrité).
-6. **Le jeu de données prototype** (`npm run db:seed`) avec `code_banque = "804"` partout.
+6. **Le jeu de données prototype** (`npm run db:seed`) utilisant le code banque de l'école (`parametre.code_banque_defaut = "840"` fixé par le client) via `EmployeService.creer()`, sans code bancaire en dur.
 7. **La page de contrôle de développement** (`/dev/controle`), protégée au runtime et totalement exclue de l'export de production.
-8. **Une suite de tests exhaustifs** couvrant l'ensemble des règles métier, contraintes de base et cas d'arrondi.
+8. **Une suite de tests exhaustifs** couvrant l'ensemble des règles métier, contraintes de base, cas d'arrondi et exportations de bordereaux.
 
 ---
 
@@ -54,7 +54,7 @@ Les réalisations majeures comprennent :
   - _Commit_ : `fcb6d0f` (`test: step 4 - suite de tests phase 1`)
 - **Étape 5 — Données d'Exemple (Seed Prototype)** :
   - Commande `npm run db:seed` chargeant les 6 employés et la paie d'octobre 2026.
-  - Code banque fixé à `"804"` partout conformément à la consigne.
+  - Code banque de référence fixé à `"840"` par le client, administré par le paramètre de l'école et attribué via `EmployeService.creer()`, sans aucune duplication en dur dans les employés prototypes.
   - Protection contre l'exécution en production (`app.isPackaged`) et gestion de l'option `--force`.
   - _Commit_ : `173494f` (`feat: step 5 - donnees exemple seed prototype`)
 
@@ -93,8 +93,8 @@ Les réalisations majeures comprennent :
 
 ## 4. Écarts par Rapport aux Spécifications
 
-- **Code Banque Fixé à 804** :  
-  Conformément à la consigne explicite de l'utilisateur (_« Pour le code banque, tu peux mettre partout 804 »_), toutes les fiches d'employés, le seed et les valeurs par défaut utilisent le code banque `"804"`.
+- **Code Banque Fixé à 840 (Règle Client)** :  
+  Le code bancaire fixé par le client est **840**, et jamais 804 (valeur erronée initialement présente). Il est administré dynamiquement comme paramètre de l'école (`parametre.code_banque_defaut`), copié à la création de chaque employé via `EmployeService.creer()`, sans aucune constante par défaut permanente dans le schéma SQL, le contrat Zod ou les services.
 - **Docker sur Windows Hôte** :  
   Comme consigné dès la Phase 0, Docker n'est pas installé sur l'hôte Windows. Les tests API Laravel sont exécutés nativement via PHP 8.3 et Composer (`scripts/run-api.mjs`). Le statut de Docker est donc « non testé ».
 
@@ -119,8 +119,10 @@ Les réalisations majeures comprennent :
 
 ## 6. Limites Connues
 
-1. **Docker sur Windows Hôte** : Non configuré localement. Le déploiement de l'API Laravel sur Render via Dockerfile est prêt pour la Phase 3.
+1. **Docker sur Windows Hôte** : Non configuré localement. Les tests API Laravel sont exécutés nativement via PHP 8.3 et Composer (`scripts/run-api.mjs`). Le déploiement de l'API Laravel sur Render via Dockerfile est prêt pour la Phase 3.
 2. **SQLite Chiffré (SQLCipher)** : L'application utilise pour le moment le moteur SQLite standard avec WAL mode. Les interfaces ont été préparées avec le paramètre `cleChiffrement` pour permettre l'adjonction transparente de `@journeyapps/sqlcipher` si nécessaire.
+3. **Interface Graphique des Exports (Next.js)** : Le moteur d'exportation (`BordereauService`), les générateurs A4 portrait PDF 1.4 et CSV UTF-8 avec BOM, le canal IPC `operations.exporterBordereau` et la journalisation sécurisée sans PII sont complètement implémentés, testés et produisent de vrais fichiers physiques. L'intégration des composants d'interface visuelle (boutons d'export dans l'IHM web/Next.js) fait l'objet des phases 2 et 3.
+4. **Synchronisation Distante (Groupe C)** : Le Groupe C (synchronisation bidirectionnelle, API distante Laravel, Supabase PostgreSQL avec RLS) n'a pas été entamé dans ce jalon, conformément aux consignes.
 
 ---
 
@@ -134,6 +136,7 @@ Les réalisations majeures comprennent :
    - Fiches employés (création, modification, archivage/désactivation).
    - Historique des modifications coordonnées bancaires et téléphoniques.
 3. **Impression et Exportations** :
+   - Raccordement des boutons d'export bordereau (PDF et Excel/CSV) à l'API IPC `window.api.operations.exporterBordereau`.
    - Génération et impression du bulletin individuel de paie conforme à la maquette.
    - Génération et impression du récapitulatif global mensuel avec correction de la formule d'écart d'arrondi.
 4. **Verrouillage et Clôture** :
@@ -187,28 +190,55 @@ Exécution confirmée du binaire Windows autonome `apps/desktop/release/win-unpa
 
 ### 8.3 Statut du Groupe B
 
-Le Groupe B (E1, E4, E5, E6, migration 0002 et code banque 840) a été planifié, approuvé et exécuté avec succès (voir section 9 ci-après).
+Le Groupe B (E1, E4, E5, E6, B1 à B6, migrations 0002 et 0003, code banque 840 et exports bordereau) a été intégralement exécuté, corrigé et validé par 12 tests d'audit dédiés dans `apps/desktop/tests/audit-groupe-b.test.ts`.
 
 ---
 
-## 9. Traitement et Résultats de l'Audit — Groupe B : Données (E1, E4, E5, E6)
+## 9. Traitement et Résultats de l'Audit — Groupe B : Données & Bordereau (E1, E4, E5, E6, B1-B6)
 
-Le Groupe B de la section 6 de `docs/AUDIT_PHASE_1.md` a été entièrement exécuté suivant la méthodologie TDD stricte (_failing-first_) et validé par une suite de 7 tests dédiés dans `apps/desktop/tests/audit-groupe-b.test.ts`.
+Le Groupe B a été entièrement complété et renforcé suivant la méthodologie TDD stricte (_failing-first_) et validé par une suite de 12 tests dédiés dans `apps/desktop/tests/audit-groupe-b.test.ts`.
 
-### 9.1 Tableau de Synthèse des Constats du Groupe B
+### 9.1 Tableau de Synthèse des Constats et Corrections du Groupe B
 
-| Constat             | Intitulé & Description                                                                        | Statut Réel | Preuve & Détails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| :------------------ | :-------------------------------------------------------------------------------------------- | :---------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **E1**              | **Code banque paramétrable, suppression du 804 par défaut et des substitutions silencieuses** | **RÉUSSI**  | - Remplacement intégral de la valeur `804` par **`840`** (fixée par le client) dans tout le dépôt (seed, tests, contrôles, documentation).<br>- Suppression de toute valeur par défaut `804` et de tout repli silencieux (`                                                                                                                                                                                                                                                                                                                                                                          |     | '804'`, `?? '804'`, `default('804')`).<br>- `code_banque` modélisé comme un paramètre de l'école (`parametre.code_banque_defaut = '840'`), copié à la création de chaque employé si non renseigné.<br>- Si un employé a un code banque vide, aucune substitution n'a lieu : la cellule reste vide, la terminaison fige une chaîne vide et le compteur `totaux.nombre_sans_code_banque`s'incrémente fidèlement.<br>- Validé par les tests de`audit-groupe-b.test.ts`. |
-| **E4**              | **Jours ouvrables de l'opération dans `ajouterNouveauxEmployes`**                             | **RÉUSSI**  | - Ajout de la colonne `operation_paie.jours_ouvrables` (remplie à l'ouverture, rétro-remplie avec `MAX(jours_ouvrables)` dans la migration 0002).<br>- `ajouterNouveauxEmployes` lit désormais `detail.operation.jours_ouvrables` (et non le paramètre d'école) pour attribuer le nombre exact de jours ouvrables de l'opération aux nouveaux employés ajoutés.<br>- Validé par le test E4 de `audit-groupe-b.test.ts`.                                                                                                                                                                              |
-| **E5**              | **Interdiction d'insérer une ligne dans une paie terminée (`BEFORE INSERT`)**                 | **RÉUSSI**  | - Ajout dans la migration 0002 du déclencheur SQLite `trg_ligne_paie_bloquer_insert_si_terminee` sur `ligne_paie`.<br>- Toute tentative d'insertion manuelle ou applicative d'une ligne de paie rattachée à une opération dont le statut est `'terminee'` est immédiatement bloquée avec l'erreur `OPERATION_TERMINEE`.<br>- Validé par le test E5 de `audit-groupe-b.test.ts`.                                                                                                                                                                                                                      |
-| **E6**              | **Contrôle décimal SQL strict (rejet de `12abc`)**                                            | **RÉUSSI**  | - Remplacement des contrôles faibles `GLOB '[0-9]*'` par des contraintes `CHECK` SQLite strictes empêchant tout caractère parasite, tout point multiple ou mal positionné :<br>`CHECK(col NOT GLOB '*[^0-9.]*' AND length(col) - length(replace(col, '.', '')) <= 1 AND col NOT GLOB '.*' AND col NOT GLOB '*.' AND length(col) > 0)`.<br>- Préservation du comportement de 0001 : valeurs négatives autorisées pour `salaire_a_payer`, `jours_prestes` et `net_global` avec contrôle de forme strict.<br>- Validé par le test E6 de `audit-groupe-b.test.ts`.                                       |
-| **Bordereau & Tel** | **Spécification téléphone et bordereau (`SPEC_BORDEREAU_BANQUE.md`)**                         | **RÉUSSI**  | - Validation stricte à la saisie du numéro de téléphone (9 à 15 chiffres, `+` facultatif en tête).<br>- Normalisation canonique traitant comme équivalents `+243`, `243` et `0` initial.<br>- Calcul du compteur `nombre_telephones_en_double` dans les totaux de l'opération (sans ajout de champ calculé dans `employeSchema` et sans écriture d'avertissement dans `journal`).<br>- Figement des coordonnées (téléphone et code banque) à la terminaison de la paie, insensibles aux modifications ultérieures de la fiche employé.<br>- Validé par les tests dédiés de `audit-groupe-b.test.ts`. |
-| **Migration 0002**  | **Reconstruction SQLite avec intégrité transactionnelle**                                     | **RÉUSSI**  | - `migrator.ts` : exécution de `PRAGMA foreign_key_check` et `PRAGMA integrity_check` **DANS la transaction**, annulant la migration en cas de violation, et réactivation de `foreign_keys = ON` dans un bloc `finally`.<br>- Migration 0001 conservée intacte (somme SHA-256 préservée).<br>- Test de migration 0001 -> 0002 sur données préexistantes prouvant : conservation exacte des lignes, conversion de 804 vers 840, rétro-remplissage avec `MAX(jours_ouvrables)`, intégrité et clés étrangères sans erreur, présence des 3 déclencheurs et des 2 index.                                  |
+| Constat / Réf. | Intitulé & Description                                                                        | Statut Réel | Preuve & Détails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| :------------- | :-------------------------------------------------------------------------------------------- | :---------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **E1**         | **Code banque paramétrable, suppression du 804 par défaut et des substitutions silencieuses** | **RÉUSSI**  | - Remplacement intégral de `804` par **`840`** (fixé par le client) dans tout le dépôt.<br>- Suppression de tout repli silencieux (aucun `804`, `?? '804'` ou `default('804')`).<br>- Modélisé comme un paramètre d'école (`parametre.code_banque_defaut`), copié à la création d'employé si omis.<br>- Si le code est vide, aucune substitution : cellule « — », terminaison figeant la chaîne vide et compteur `totaux.nombre_sans_code_banque` exact.<br>- Validé dans `audit-groupe-b.test.ts`. |
+| **E4**         | **Jours ouvrables de l'opération dans `ajouterNouveauxEmployes`**                             | **RÉUSSI**  | - Ajout de `operation_paie.jours_ouvrables` (rempli à l'ouverture, rétro-rempli avec `MAX(jours_ouvrables)` dans 0002).<br>- `ajouterNouveauxEmployes` lit `operation.jours_ouvrables` (et non le paramètre d'école) pour attribuer les jours ouvrables exacts de l'opération aux nouveaux employés.<br>- Validé dans `audit-groupe-b.test.ts`.                                                                                                                                                     |
+| **E5**         | **Interdiction d'insérer une ligne dans une paie terminée (`BEFORE INSERT`)**                 | **RÉUSSI**  | - Ajout du déclencheur SQLite `trg_ligne_paie_bloquer_insert_si_terminee` sur `ligne_paie`.<br>- Toute insertion manuelle ou applicative dans une opération terminée est immédiatement bloquée avec l'erreur `OPERATION_TERMINEE`.<br>- Validé dans `audit-groupe-b.test.ts`.                                                                                                                                                                                                                       |
+| **E6**         | **Contrôle décimal SQL strict (rejet de `12abc`)**                                            | **RÉUSSI**  | - Remplacement des `GLOB '[0-9]*'` par des contraintes `CHECK` SQLite strictes rejetant lettres, espaces, points multiples (`.5`, `5.`, `12.3.4`).<br>- Préservation du comportement 0001 : valeurs négatives autorisées pour `salaire_a_payer`, `jours_prestes` et `net_global` avec contrôle de forme strict.<br>- Validé dans `audit-groupe-b.test.ts`.                                                                                                                                          |
+| **B1**         | **Paramètre bancaire et seed nettoyé**                                                        | **RÉUSSI**  | - Retrait des codes bancaires en dur dans les 6 employés prototypes de `seed.ts`.<br>- Le seed utilise le paramètre d'école via `EmployeService.creer()`.<br>- Testé et validé avec un paramètre personnalisé (`850`).                                                                                                                                                                                                                                                                              |
+| **B2**         | **Suppression du DEFAULT SQL permanent sur code_banque_defaut**                               | **RÉUSSI**  | - Création de la migration corrective `0003_retrait_defaut_code_banque.sql` qui recrée la table `parametre` sans clause SQL `DEFAULT '840'`.<br>- Préservation de la valeur initiale `840` dans les données.<br>- Sommes de contrôle des migrations `0001` et `0002` strictement préservées.<br>- Validé par inspection de `sqlite_master`.                                                                                                                                                         |
+| **B3**         | **Téléphone obligatoire pour le bénéficiaire au bordereau**                                   | **RÉUSSI**  | - Implémentation de `validerTelephoneBeneficiaire` et `telephoneBeneficiaireSchema` dans `@rafiki/contrat`.<br>- Rejet strict des téléphones vides ou composés d'espaces.<br>- Validation : 9 à 15 chiffres après suppression des espaces, points et tirets, `+` facultatif en tête, aucun filtrage d'opérateur.<br>- Validé sur cas valides, invalides et bornes limites (9 et 15 chiffres).                                                                                                       |
+| **B4**         | **Exports réels PDF et Excel/CSV conformes**                                                  | **RÉUSSI**  | - `BordereauService` : génération PDF A4 portrait 1.4 (en-têtes répétés, lisible sur mobile) et CSV UTF-8 avec BOM (séparateur `;`).<br>- 7 colonnes exactes et ligne « Total à provisionner ».<br>- Journalisation `EXPORTER_BORDEREAU` sans téléphone ni code bancaire dans le détail.<br>- Reproductibilité stricte après clôture.<br>- Preuve d'écriture physique de fichiers réels sur disque.                                                                                                 |
+| **B6**         | **Tests de migration renforcés et rollback atomique**                                         | **RÉUSSI**  | - Comparaison exhaustive de toutes les données avant/après migration (champs NULL, codes personnalisés 999, coordonnées vides, montants figés, déclencheurs, index).<br>- Test d'annulation transactionnelle : en cas de violation de clé étrangère ou d'intégrité, la migration est annulée (`ROLLBACK`), `schema_migrations` n'est pas pollué, et `foreign_keys = ON` est réactivé.                                                                                                               |
 
-### 9.2 Validation Globale de la Suite de Tests
+### 9.2 Distinction entre Implémenté, Testé et Réellement Exécuté
 
-- **Tests desktop** : 49 tests répartis sur 9 fichiers de test passent au vert (`npm run test:desktop`).
-- **Tests calcul** : 4 tests du moteur décimal passent au vert (`npm run test:calcul`).
-- **Typecheck** : 0 erreur TypeScript sur l'ensemble des 4 workspaces (`npm run typecheck`).
-- **Linting & Formatage** : `npm run lint` et `npm run format:check` passent sans aucun avertissement.
+Afin de garantir une transparence totale vis-à-vis de l'audit :
+
+1. **Éléments Implémentés dans le Code Source** :
+   - Package `@rafiki/contrat` : types Zod, validations de téléphone bénéficiaire, canaux et schémas d'export bordereau.
+   - Migrations SQLite : `0001_initial.sql`, `0002_donnees_banque_et_contraintes.sql`, `0003_retrait_defaut_code_banque.sql`.
+   - Couche domaine : `BordereauService` (moteur PDF 1.4 vectoriel A4 portrait sans dépendance graphique, moteur CSV avec BOM), `EmployeService`, `OperationService`, `LigneService`, `ParametreService`, `JournalService`, `SauvegardeService`.
+   - Pont IPC et Preload : enregistrement sécurisé du canal `operations.exporterBordereau` avec boîte de dialogue d'enregistrement native ou chemin direct.
+
+2. **Éléments Testés en Intégration et Unitaire** :
+   - 55 tests unitaires et d'intégration validés sous Electron (`npm run test:desktop`).
+   - 4 tests du moteur décimal validés (`npm run test:calcul`).
+   - 6 tests PHPUnit validés pour l'API Laravel (`composer test`).
+   - Tests de régression sur données préexistantes 0001 vers 0002 et 0003.
+
+3. **Éléments Réellement Exécutés avec Preuves Physiques** :
+   - **Génération réelle de fichiers sur disque** : écriture et vérification physique de fichiers non-vides `apps/desktop/out-test-exports/test-export.csv` (avec BOM UTF-8 `\uFEFF`, point-virgule et 7 colonnes) et `apps/desktop/out-test-exports/test-export.pdf` (format standard `%PDF-1.4`, dimensions A4 `595.28 x 841.89 pt`, répétition d'en-tête et total).
+   - **Lancement effectif d'Electron en dev** : `npm run dev:desktop` confirmant la réception de `db:ping` par le main process et l'exposition de `window.api`.
+   - **Binaire empaqueté Windows** : compilation et exécution réussie de `Paie Rafiki.exe` en mode autonome de production.
+
+### 9.3 Validation Finale des Commandes
+
+Toutes les commandes de vérification du dépôt ont été exécutées avec succès :
+
+- `npm run test:desktop` : 55/55 tests passés.
+- `npm run test:calcul` : 4/4 tests passés.
+- `npm run typecheck` : 0 erreur TypeScript sur l'ensemble du monorepo.
+- `npm run lint` : 0 avertissement, 0 erreur ESLint.
+- `npm run format:check` : 100% conforme aux règles Prettier.

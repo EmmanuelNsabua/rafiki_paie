@@ -14,6 +14,7 @@ import {
   ipcOperationsTerminerInput,
   ipcOperationsRouvrirInput,
   ipcOperationsAjouterNouveauxEmployesInput,
+  ipcOperationsExporterBordereauInput,
   ipcLignesModifierInput,
   ipcParametresModifierInput,
   ipcJournalListerInput,
@@ -25,6 +26,7 @@ import {
   ParametreService,
   JournalService,
   SauvegardeService,
+  BordereauService,
   ErreurMetier,
 } from '../domain';
 
@@ -128,6 +130,7 @@ export function enregistrerGestionnairesIpc(
   const ligneService = new LigneService(db);
   const parametreService = new ParametreService(db);
   const journalService = new JournalService(db);
+  const bordereauService = new BordereauService(db, operationService, journalService);
 
   // --- Employés ---
   ipcMain.handle(
@@ -200,6 +203,16 @@ export function enregistrerGestionnairesIpc(
       CANAUX_IPC.OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES,
       ipcOperationsAjouterNouveauxEmployesInput,
       (input) => operationService.ajouterNouveauxEmployes(input.id)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.OPERATIONS_EXPORTER_BORDEREAU,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.OPERATIONS_EXPORTER_BORDEREAU,
+      ipcOperationsExporterBordereauInput,
+      (input) =>
+        bordereauService.exporter(input.operation_id, input.format, input.chemin_destination)
     )
   );
 
