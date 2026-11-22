@@ -105,7 +105,7 @@ Les réalisations majeures comprennent :
 | N°     | Critère d'Acceptation                                                                                  | Statut Réel | Détails & Preuve                                                                                                                                                                                                                                                                                       |
 | :----- | :----------------------------------------------------------------------------------------------------- | :---------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **1**  | `npm install`, `npm run typecheck`, `npm run lint`, `npm run format:check` passent                     | **RÉUSSI**  | Vérifié sur l'ensemble des 5 packages du monorepo (calcul, contrat, web, desktop, api). 0 erreur TypeScript, 0 erreur ESLint, Prettier 100% conforme.                                                                                                                                                  |
-| **2**  | `npm run test:calcul`, `composer test` (apps/api), `npm run test:desktop` passent                      | **RÉUSSI**  | - `test:calcul` : 4/4 tests passés.<br>- `test:api` : 6/6 tests PHPUnit passés (22 assertions).<br>- `test:desktop` : 36/36 tests Vitest passés (7 fichiers).                                                                                                                                          |
+| **2**  | `npm run test:calcul`, `composer test` (apps/api), `npm run test:desktop` passent                      | **RÉUSSI**  | - `test:calcul` : 4/4 tests passés.<br>- `test:api` : 6/6 tests PHPUnit passés (22 assertions).<br>- `test:desktop` : 61/61 tests Vitest passés (10 fichiers).                                                                                                                                         |
 | **3**  | Le cas de référence de l'étape 4 donne `"474.545455"` et `"470"` de bout en bout                       | **RÉUSSI**  | Validé dans `phase1-exhaustif.test.ts` (test 1) : 500 $, HS 40, retrait 20, 22 jours, 2 maladie, 1 congé, 1 absence → `net_global = "474.545455"`, `virement = "470"`.                                                                                                                                 |
 | **4**  | Les déclencheurs SQL empêchent la modification d'une paie terminée et du journal                       | **RÉUSSI**  | Validé dans `phase1-exhaustif.test.ts` (tests 3 & 7) : les triggers SQLite `trg_ligne_paie_bloquer_update_si_terminee`, `trg_ligne_paie_bloquer_delete_si_terminee`, `trg_journal_bloquer_update` et `trg_journal_bloquer_delete` rejettent immédiatement les requêtes SQL directes avec code `ABORT`. |
 | **5**  | Une migration modifiée après application empêche le démarrage                                          | **RÉUSSI**  | Validé dans `migrator.test.ts` et `phase1-exhaustif.test.ts` (test 8) : la modification d'un seul caractère dans un script de migration existant génère une erreur `CHECKSUM_MODIFIE` et bloque l'initialisation.                                                                                      |
@@ -188,6 +188,38 @@ Exécution confirmée du binaire Windows autonome `apps/desktop/release/win-unpa
 [VERIFY PACKAGED SUCCÈS] L'application empaquetée a démarré et chargé la page avec succès !
 ```
 
+### 8.4 Résultats et Preuves du Groupe A2 (Protocole app:// & Chargement de l'Interface Empaquetée)
+
+Afin de résoudre l'absence de CSS et le blocage de SQLite sur « Vérification… » dans `Paie Rafiki.exe` sans modifier la CSP, l'accès par `file://` a été remplacé par un protocole applicatif personnalisé privilégié `app://`.
+
+#### Tableau de Validation des Conditions du Groupe A2
+
+| Point | Condition Imposée                                                      | Statut Réel | Preuve & Détails d'Exécution                                                                                                                                                                                          |
+| :---- | :--------------------------------------------------------------------- | :---------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1** | Enregistrement de schéma privilégié `app` avant `app.whenReady`        | **RÉUSSI**  | `protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }])` appelé au top-level dans `src/main/protocol.ts` et `src/main/index.ts`.              |
+| **2** | Gestionnaire `protocol.handle('app', ...)` servant `resources/web/out` | **RÉUSSI**  | Sert `/` vers `index.html`, les dossiers vers leur `index.html`, applique les types MIME stricts (`text/html`, `text/css`, `application/javascript`, `image/svg+xml`, etc.) et renvoie une réponse 404 propre.        |
+| **3** | Refus strict de sortie de dossier (path traversal `../`)               | **RÉUSSI**  | Détection et rejet immédiat avec statut HTTP 403 Forbidden pour toute tentative (`../`, `%2e%2e`, variantes encodées). Validé par `apps/desktop/tests/protocol.test.ts`.                                              |
+| **4** | Messages du renderer relayés dans les journaux du main                 | **RÉUSSI**  | Événement `console-message` de `webContents` capturé et écrit dans `logs/main.log` : lignes exactes « window.api est défini » et « Réponse reçue de db:ping ».                                                        |
+| **5** | Page empaquetée stylée et statut SQLite affichant la version           | **RÉUSSI**  | Fond de page non par défaut (`fond = "rgb(0, 0, 0)"`), statut dynamique `Connecté à SQLite v3.53.2` (pas « Vérification… »). Prouvé par assertion et capture physique `screenshots/packaged-app.png` (85 171 octets). |
+| **6** | `npm run dev:desktop` fonctionne toujours                              | **RÉUSSI**  | En développement, conservation de `http://localhost:3000` avec bascule transparente vers `app://rafiki/` si le serveur web est arrêté.                                                                                |
+| **7** | Suite de tests et contrôles qualité                                    | **RÉUSSI**  | 6 tests unitaires de protocole (`protocol.test.ts`), 61/61 tests desktop passés, `typecheck` (0 erreur), `lint` (0 erreur), `format:check` (100% conforme).                                                           |
+
+#### Extrait des Journaux en Mode Production Empaqueté (`Paie Rafiki.exe`)
+
+```text
+[MAIN] Process starting up
+[MAIN] Registering app.whenReady
+[MAIN] app.whenReady resolved! Initializing database...
+[PROTOCOLE APP] Protocole app:// enregistré pour le dossier : .../release/win-unpacked/resources/web/out
+[SAUVEGARDE] Sauvegarde récente disponible (< 24h: rafiki_paie_2026-11-22_054149.sqlite).
+[MAIN] Vérification did-finish-load : window.api défini = true
+[RENDERER] window.api est défini. Appel de window.api.pingDb()...
+[MAIN] IPC db:ping received. SQLite version: 3.53.2
+[RENDERER] Réponse reçue de db:ping. SQLite version: 3.53.2
+[MAIN] État visuel page empaquetée : fond = "rgb(0, 0, 0)", statut = "Connecté à SQLite v3.53.2"
+[MAIN] Capture d'écran enregistrée : screenshots/packaged-app.png
+```
+
 ### 8.3 Statut du Groupe B
 
 Le Groupe B (E1, E4, E5, E6, B1 à B6, migrations 0002 et 0003, code banque 840 et exports bordereau) a été intégralement exécuté, corrigé et validé par 12 tests d'audit dédiés dans `apps/desktop/tests/audit-groupe-b.test.ts`.
@@ -237,7 +269,7 @@ Afin de garantir une transparence totale vis-à-vis de l'audit :
 
 Toutes les commandes de vérification du dépôt ont été exécutées avec succès :
 
-- `npm run test:desktop` : 55/55 tests passés.
+- `npm run test:desktop` : 61/61 tests passés.
 - `npm run test:calcul` : 4/4 tests passés.
 - `npm run typecheck` : 0 erreur TypeScript sur l'ensemble du monorepo.
 - `npm run lint` : 0 avertissement, 0 erreur ESLint.

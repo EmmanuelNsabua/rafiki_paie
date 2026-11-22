@@ -27,6 +27,7 @@ release/
 *.tsbuildinfo
 apps/web/AGENTS.md
 out-test-exports/
+screenshots/
 
 # Logs and runtime files
 npm-debug.log*

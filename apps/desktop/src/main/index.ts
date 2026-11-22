@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import Database from 'better-sqlite3';
@@ -6,9 +6,13 @@ import log from 'electron-log/main';
 import { ouvrirBaseDeDonnees, obtenirCheminBaseParDefaut } from './db/database';
 import { enregistrerGestionnairesIpc } from './ipc';
 import { SauvegardeService } from './domain';
+import { enregistrerSchemaApp, enregistrerGestionnaireApp, obtenirDossierWebOut } from './protocol';
 
 log.initialize();
 log.transports.console.level = 'info';
+
+// Configuration du schéma de protocole privilégié AVANT app.whenReady()
+enregistrerSchemaApp();
 
 // Configuration du fichier de log pour audit et vérification
 try {
@@ -28,15 +32,6 @@ let db: Database.Database | null = null;
 
 function initDatabase(): Database.Database {
   return ouvrirBaseDeDonnees();
-}
-
-function obtenirCheminIndexHtml(isDev: boolean): string {
-  if (isDev) {
-    // En développement, chemin vers l'export statique local du workspace web
-    return path.join(__dirname, '../../../../apps/web/out/index.html');
-  }
-  // En production empaquetée, les fichiers statiques sont dans extraResources (process.resourcesPath)
-  return path.join(process.resourcesPath, 'web/out/index.html');
 }
 
 function createWindow(): void {
@@ -60,7 +55,8 @@ function createWindow(): void {
 
   // Transmission des messages de console du renderer dans les logs principaux
   mainWindow.webContents.on('console-message', (_event, _level, message) => {
-    log.info(`[RENDERER] ${message}`);
+    const msgNettoye = message.startsWith('[RENDERER]') ? message.slice(10).trim() : message;
+    log.info(`[RENDERER] ${msgNettoye}`);
   });
 
   // Vérification explicite de la présence de window.api dès la fin du chargement de la page
@@ -70,6 +66,35 @@ function createWindow(): void {
         'typeof window.api !== "undefined" && typeof window.api.pingDb === "function"'
       );
       log.info(`[MAIN] Vérification did-finish-load : window.api défini = ${apiDefini}`);
+
+      // Attente brève pour permettre le rendu React initial et la réponse db:ping
+      setTimeout(async () => {
+        try {
+          const infoVisuelle = await mainWindow?.webContents.executeJavaScript(`
+            (() => {
+              const bg = window.getComputedStyle(document.body).backgroundColor;
+              const statut = document.querySelector('header span')?.textContent || '';
+              return { bg, statut };
+            })()
+          `);
+          log.info(
+            `[MAIN] État visuel page empaquetée : fond = "${infoVisuelle?.bg}", statut = "${infoVisuelle?.statut}"`
+          );
+
+          // Capture d'écran pour preuve formelle
+          const dossierCaptures = path.resolve(process.cwd(), 'screenshots');
+          if (!fs.existsSync(dossierCaptures)) {
+            fs.mkdirSync(dossierCaptures, { recursive: true });
+          }
+          const img = await mainWindow?.webContents.capturePage();
+          if (img) {
+            fs.writeFileSync(path.join(dossierCaptures, 'packaged-app.png'), img.toPNG());
+            log.info("[MAIN] Capture d'écran enregistrée : screenshots/packaged-app.png");
+          }
+        } catch (e: any) {
+          log.warn('[MAIN] Erreur vérification visuelle :', e.message);
+        }
+      }, 1200);
     } catch (err: any) {
       log.warn('[MAIN] Impossible de vérifier window.api au did-finish-load :', err.message);
     }
@@ -90,19 +115,13 @@ function createWindow(): void {
   if (isDev) {
     const devUrl = process.env.ELECTRON_START_URL || 'http://localhost:3000';
     mainWindow.loadURL(devUrl).catch((err) => {
-      log.warn('[MAIN] Impossible de charger devUrl, bascule vers index.html local :', err.message);
-      const outPath = obtenirCheminIndexHtml(true);
-      if (fs.existsSync(outPath)) {
-        mainWindow?.loadFile(outPath);
-      }
+      log.warn('[MAIN] Impossible de charger devUrl, bascule vers app://rafiki/ :', err.message);
+      mainWindow?.loadURL('app://rafiki/');
     });
   } else {
-    const outPath = obtenirCheminIndexHtml(false);
-    if (fs.existsSync(outPath)) {
-      mainWindow.loadFile(outPath);
-    } else {
-      log.error('[MAIN] Fichier index.html introuvable en production :', outPath);
-    }
+    mainWindow.loadURL('app://rafiki/').catch((err) => {
+      log.error('[MAIN] Impossible de charger app://rafiki/ :', err.message);
+    });
   }
 
   mainWindow.on('closed', () => {
@@ -115,6 +134,10 @@ log.info('[MAIN] Registering app.whenReady');
 app.whenReady().then(() => {
   log.info('[MAIN] app.whenReady resolved! Initializing database...');
   db = initDatabase();
+
+  // Enregistrer le gestionnaire du protocole app:// servant resources/web/out
+  const dossierWebOut = obtenirDossierWebOut();
+  enregistrerGestionnaireApp(dossierWebOut);
 
   // Initialisation du service de sauvegarde locale
   const dbPath = obtenirCheminBaseParDefaut();

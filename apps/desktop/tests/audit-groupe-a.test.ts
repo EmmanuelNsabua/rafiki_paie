@@ -53,10 +53,17 @@ describe('Audit Phase 1 — Groupe A : Démarrage réel', () => {
       expect(hasWebOut).toBe(true);
     });
 
-    it('src/main/index.ts utilise process.resourcesPath pour charger web/out/index.html en production', () => {
+    it('utilise process.resourcesPath pour localiser web/out en production et charge via app://rafiki/', () => {
       const mainCode = fs.readFileSync(mainIndexPath, 'utf-8');
-      expect(mainCode).toContain('process.resourcesPath');
-      expect(mainCode).toContain('web/out/index.html');
+      const protocolPath = path.resolve(__dirname, '../src/main/protocol.ts');
+      const protocolCode = fs.existsSync(protocolPath)
+        ? fs.readFileSync(protocolPath, 'utf-8')
+        : '';
+
+      const combinedCode = mainCode + '\n' + protocolCode;
+      expect(combinedCode).toContain('process.resourcesPath');
+      expect(combinedCode).toContain('web/out');
+      expect(mainCode).toContain('app://rafiki/');
       expect(mainCode).not.toContain('../../../web/out/index.html');
     });
   });
