@@ -139,6 +139,12 @@ export async function traiterRequeteApp(
   // 4. Si c'est un dossier, chercher son index.html
   if (fs.existsSync(fichierCible) && fs.statSync(fichierCible).isDirectory()) {
     fichierCible = path.join(fichierCible, 'index.html');
+  } else if (!fs.existsSync(fichierCible)) {
+    if (fs.existsSync(fichierCible + '.html')) {
+      fichierCible = fichierCible + '.html';
+    } else if (fs.existsSync(path.join(fichierCible, 'index.html'))) {
+      fichierCible = path.join(fichierCible, 'index.html');
+    }
   }
 
   // 5. 404 propre si fichier inexistant ou non régulier

@@ -56,6 +56,9 @@ const api: ElectronApi = {
     ajouterNouveauxEmployes: (input): Promise<ReponseIpc<ResultatAjoutEmployes>> => {
       return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES, input);
     },
+    modifierJours: (input): Promise<ReponseIpc<DetailOperationComplet>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_MODIFIER_JOURS, input);
+    },
     exporterBordereau: (input): Promise<ReponseIpc<ResultatExportBordereau>> => {
       return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_EXPORTER_BORDEREAU, input);
     },

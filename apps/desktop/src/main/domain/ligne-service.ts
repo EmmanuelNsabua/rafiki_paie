@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 import Decimal from 'decimal.js';
-import type { LignePaie, LignePaieCalculee, TotauxOperation } from '@rafiki/contrat';
+import type { LignePaie, LignePaieCalculee, TotauxOperation, SyntheseOperation } from '@rafiki/contrat';
 import { ErreurMetier } from './erreurs';
 import { ParametreService } from './parametre-service';
 import { OperationService } from './operation-service';
@@ -18,6 +18,7 @@ export interface LigneVariablesModification {
 export interface ResultatModificationLigne {
   ligne: LignePaieCalculee;
   totaux: TotauxOperation;
+  synthese: SyntheseOperation;
 }
 
 export class LigneService {
@@ -150,6 +151,7 @@ export class LigneService {
     return {
       ligne: ligneCalculee,
       totaux: opDetail.totaux,
+      synthese: opDetail.synthese,
     };
   }
 }

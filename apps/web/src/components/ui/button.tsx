@@ -3,24 +3,27 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-[6px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.97] cursor-pointer',
   {
     variants: {
       variant: {
-        default: 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow hover:opacity-90',
+        default:
+          'bg-[var(--primary)] text-white hover:bg-[var(--primary-strong)] font-semibold shadow-sm',
         destructive:
-          'bg-[var(--destructive)] text-[var(--destructive-foreground)] shadow-sm hover:opacity-90',
-        outline: 'border border-[var(--border)] bg-transparent shadow-sm hover:bg-[var(--muted)]',
+          'bg-[var(--danger)] text-white hover:opacity-90 font-semibold shadow-sm',
+        outline:
+          'border-2 border-[var(--primary)] text-[var(--primary-strong)] bg-transparent hover:bg-[var(--hover)] font-medium',
         secondary:
-          'bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] shadow-sm hover:bg-[var(--muted)]',
-        ghost: 'hover:bg-[var(--muted)] text-[var(--foreground)]',
-        link: 'text-[var(--primary)] underline-offset-4 hover:underline',
+          'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--hover)] font-medium shadow-xs',
+        ghost:
+          'text-[var(--text-2)] hover:bg-[var(--hover)] hover:text-[var(--text)]',
+        link: 'text-[var(--primary-strong)] underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-11 px-4 py-2',
-        sm: 'h-9 rounded-lg px-3 text-xs',
-        lg: 'h-12 rounded-xl px-8 text-base',
-        icon: 'h-10 w-10',
+        default: 'h-[3.375rem] px-6 text-[1.25rem]',
+        sm: 'h-[2.5rem] px-4 text-[1rem] rounded-[6px]',
+        lg: 'h-[3.75rem] px-8 text-[1.375rem]',
+        icon: 'h-[2.5rem] w-[2.5rem] p-0 rounded-[6px]',
       },
     },
     defaultVariants: {
@@ -31,7 +34,8 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {}
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {}
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => {

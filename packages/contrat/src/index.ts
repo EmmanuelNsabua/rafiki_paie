@@ -182,6 +182,7 @@ export const lignePaieCalculeeSchema = lignePaieSchema.extend({
   retenue_maladie: decimalNonNegatifSchema,
   retenue_conge: decimalNonNegatifSchema,
   retenue_absence: decimalNonNegatifSchema,
+  total_retenues: decimalNonNegatifSchema.default('0'),
   net_global: decimalSigneSchema,
   virement: decimalNonNegatifSchema,
   avertissement_net_negatif: z.boolean().default(false),
@@ -284,6 +285,11 @@ export const ipcOperationsAjouterNouveauxEmployesInput = z.object({
   id: uuidSchema,
 });
 
+export const ipcOperationsModifierJoursInput = z.object({
+  operation_id: uuidSchema,
+  jours_ouvrables: z.number().int().min(1),
+});
+
 export const ipcOperationsExporterBordereauInput = z.object({
   operation_id: uuidSchema,
   format: z.enum(['pdf', 'csv']),
@@ -325,12 +331,36 @@ export const ipcJournalListerInput = z
 export * from './canaux';
 
 // ============================================================================
-// Schémas de Sortie IPC
+// Schémas de Sortie IPC & Synthèse (Section 5)
 // ============================================================================
+
+export const variationSchema = z.object({
+  pourcentage: z.string().nullable(),
+  sens: z.enum(['hausse', 'baisse', 'stable']).nullable(),
+});
+export type Variation = z.infer<typeof variationSchema>;
+
+export const syntheseOperationSchema = z.object({
+  masse_salariale: decimalNonNegatifSchema,
+  total_paye: decimalNonNegatifSchema,
+  total_net_exact: decimalSigneSchema,
+  ecart_arrondi: decimalSigneSchema,
+  salaire_moyen: decimalNonNegatifSchema,
+  nombre_employes: z.number().int().min(0),
+  variations: z.object({
+    masse_salariale: variationSchema,
+    total_paye: variationSchema,
+    salaire_moyen: variationSchema,
+    nombre_employes: variationSchema,
+  }),
+});
+export type SyntheseOperation = z.infer<typeof syntheseOperationSchema>;
 
 export const resumeOperationListerSchema = operationPaieSchema.extend({
   total_virement: decimalNonNegatifSchema,
+  total_paye: decimalNonNegatifSchema,
   nombre_employes: z.number().int().min(0),
+  variation: variationSchema,
 });
 export type ResumeOperationLister = z.infer<typeof resumeOperationListerSchema>;
 
@@ -338,6 +368,7 @@ export const detailOperationCompletSchema = z.object({
   operation: operationPaieSchema,
   lignes: z.array(lignePaieCalculeeSchema),
   totaux: totauxOperationSchema,
+  synthese: syntheseOperationSchema,
   parametres: parametreSchema,
 });
 export type DetailOperationComplet = z.infer<typeof detailOperationCompletSchema>;
@@ -345,6 +376,7 @@ export type DetailOperationComplet = z.infer<typeof detailOperationCompletSchema
 export const resultatModificationLigneSchema = z.object({
   ligne: lignePaieCalculeeSchema,
   totaux: totauxOperationSchema,
+  synthese: syntheseOperationSchema,
 });
 export type ResultatModificationLigne = z.infer<typeof resultatModificationLigneSchema>;
 
@@ -373,6 +405,7 @@ export const ipcOperationsObtenirOutput = detailOperationCompletSchema;
 export const ipcOperationsTerminerOutput = operationPaieSchema;
 export const ipcOperationsRouvrirOutput = operationPaieSchema;
 export const ipcOperationsAjouterNouveauxEmployesOutput = resultatAjoutEmployesSchema;
+export const ipcOperationsModifierJoursOutput = detailOperationCompletSchema;
 export const ipcOperationsExporterBordereauOutput = resultatExportBordereauSchema;
 export const ipcLignesModifierOutput = resultatModificationLigneSchema;
 export const ipcParametresLireOutput = parametreSchema;
@@ -409,6 +442,9 @@ export interface ElectronApi {
     ajouterNouveauxEmployes: (
       input: z.infer<typeof ipcOperationsAjouterNouveauxEmployesInput>
     ) => Promise<ReponseIpc<ResultatAjoutEmployes>>;
+    modifierJours: (
+      input: z.infer<typeof ipcOperationsModifierJoursInput>
+    ) => Promise<ReponseIpc<DetailOperationComplet>>;
     exporterBordereau: (
       input: z.infer<typeof ipcOperationsExporterBordereauInput>
     ) => Promise<ReponseIpc<ResultatExportBordereau>>;

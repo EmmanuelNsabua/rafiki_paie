@@ -1,42 +1,56 @@
 @import 'tailwindcss';
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+
+html {
+  font-size: clamp(13px, 0.8333vw, 16px);
+}
 
 :root {
-  --background: #f5f5f7;
-  --card: #ffffff;
-  --foreground: #1d1d1f;
-  --muted: #e5e5ea;
-  --muted-foreground: #6e6e73;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: rgba(0, 0, 0, 0.1);
-  --primary: #0a7a5a;
-  --primary-foreground: #ffffff;
-  --destructive: #c4372c;
-  --destructive-foreground: #ffffff;
-  --bar: rgba(245, 245, 247, 0.78);
-  --radius: 0.75rem;
+  --page: #EFEFEF;
+  --surface: #FFFFFF;
+  --text: #111111;
+  --text-2: #6B6B6B;
+  --border: #E4E4E7;
+  --table-head: #F5F6FA;
+  --primary: #16A34A;
+  --primary-strong: #15803D;
+  --primary-tint: #DCFCE7;
+  --danger: #DC2626;
+  --danger-tint: #FEE2E2;
+  --warning-tint: #FEF3C7;
+  --warning-border: #FCD34D;
+  --warning-text: #92400E;
+  --hover: #F4F4F5;
+  --radius: 0.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --card: #1c1c1e;
-    --foreground: #f5f5f7;
-    --muted: #2c2c2e;
-    --muted-foreground: #98989d;
-    --border: rgba(255, 255, 255, 0.14);
-    --input: rgba(255, 255, 255, 0.14);
-    --primary: #34c58f;
-    --primary-foreground: #00281b;
-    --destructive: #ff6961;
-    --destructive-foreground: #ffffff;
-    --bar: rgba(0, 0, 0, 0.72);
-  }
+body {
+  font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--page);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  :root {
-    --bar: var(--background);
-  }
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button:active, a:active {
+  transform: scale(0.97);
+}
+
+.tabular-nums {
+  font-family: 'IBM Plex Sans', 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -46,13 +60,6 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transform: none !important;
   }
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--background);
-  color: var(--foreground);
-  margin: 0;
-  padding: 0;
 }

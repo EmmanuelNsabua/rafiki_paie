@@ -14,6 +14,7 @@ import {
   ipcOperationsTerminerInput,
   ipcOperationsRouvrirInput,
   ipcOperationsAjouterNouveauxEmployesInput,
+  ipcOperationsModifierJoursInput,
   ipcOperationsExporterBordereauInput,
   ipcLignesModifierInput,
   ipcParametresModifierInput,
@@ -203,6 +204,15 @@ export function enregistrerGestionnairesIpc(
       CANAUX_IPC.OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES,
       ipcOperationsAjouterNouveauxEmployesInput,
       (input) => operationService.ajouterNouveauxEmployes(input.id)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.OPERATIONS_MODIFIER_JOURS,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.OPERATIONS_MODIFIER_JOURS,
+      ipcOperationsModifierJoursInput,
+      (input) => operationService.modifierJours(input.operation_id, input.jours_ouvrables)
     )
   );
 

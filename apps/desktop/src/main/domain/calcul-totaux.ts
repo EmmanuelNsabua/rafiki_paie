@@ -1,6 +1,13 @@
 import Decimal from 'decimal.js';
 import { calculerLignePaie, CalculError } from '@rafiki/calcul';
-import type { LignePaie, LignePaieCalculee, TotauxOperation, Parametre } from '@rafiki/contrat';
+import type {
+  LignePaie,
+  LignePaieCalculee,
+  TotauxOperation,
+  SyntheseOperation,
+  Variation,
+  Parametre,
+} from '@rafiki/contrat';
 
 export interface OptionsCalculLigne {
   diviseurRetenue?: number;
@@ -20,6 +27,10 @@ export function calculerMontantsLigne(
   // Si la ligne a déjà des résultats figés (opération terminée)
   if (ligne.salaire_a_payer !== null && ligne.net_global !== null && ligne.virement !== null) {
     const netDecimal = new Decimal(ligne.net_global);
+    const dMal = new Decimal(ligne.retenue_maladie ?? '0');
+    const dCong = new Decimal(ligne.retenue_conge ?? '0');
+    const dAbs = new Decimal(ligne.retenue_absence ?? '0');
+    const totalRetenues = dMal.plus(dCong).plus(dAbs).toFixed(2);
     return {
       ...ligne,
       salaire_a_payer: ligne.salaire_a_payer,
@@ -27,6 +38,7 @@ export function calculerMontantsLigne(
       retenue_maladie: ligne.retenue_maladie ?? '0',
       retenue_conge: ligne.retenue_conge ?? '0',
       retenue_absence: ligne.retenue_absence ?? '0',
+      total_retenues: totalRetenues,
       net_global: ligne.net_global,
       virement: ligne.virement,
       avertissement_net_negatif: netDecimal.isNegative(),
@@ -50,6 +62,7 @@ export function calculerMontantsLigne(
 
     const netGlobalStr = res.global.toFixed(6);
     const virementStr = res.virement.toString();
+    const totalRetenues = res.retenue_maladie.plus(res.retenue_conge).plus(res.retenue_absence).toFixed(2);
 
     return {
       ...ligne,
@@ -58,6 +71,7 @@ export function calculerMontantsLigne(
       retenue_maladie: res.retenue_maladie.toFixed(2),
       retenue_conge: res.retenue_conge.toFixed(2),
       retenue_absence: res.retenue_absence.toFixed(2),
+      total_retenues: totalRetenues,
       net_global: netGlobalStr,
       virement: virementStr,
       avertissement_net_negatif: res.global.isNegative(),
@@ -72,6 +86,7 @@ export function calculerMontantsLigne(
       retenue_maladie: '0',
       retenue_conge: '0',
       retenue_absence: '0',
+      total_retenues: '0',
       net_global: '0',
       virement: '0',
       avertissement_net_negatif: false,
@@ -148,5 +163,85 @@ export function calculerTotauxOperation(lignes: LignePaieCalculee[]): TotauxOper
     nombre_sans_telephone: nbSansTel,
     nombre_sans_code_banque: nbSansBk,
     nombre_telephones_en_double: nbTelDoubles,
+  };
+}
+
+export interface ValeursSynthesePrecedente {
+  masse_salariale: string;
+  total_paye: string;
+  salaire_moyen: string;
+  nombre_employes: number;
+}
+
+/**
+ * Calcule la variation en pourcentage par rapport à une valeur de référence antérieure.
+ * pourcentage = (courant − précédent) ÷ précédent × 100, 1 décimale, moitié vers le haut.
+ */
+export function calculerVariation(
+  valeurCourante: string | number | Decimal,
+  valeurPrecedente?: string | number | Decimal | null
+): Variation {
+  if (valeurPrecedente === undefined || valeurPrecedente === null) {
+    return { pourcentage: null, sens: null };
+  }
+
+  const prec = new Decimal(valeurPrecedente);
+  if (prec.isZero()) {
+    return { pourcentage: null, sens: null };
+  }
+
+  const cour = new Decimal(valeurCourante);
+  const diff = cour.minus(prec);
+  const pct = diff.dividedBy(prec).times(100).toDecimalPlaces(1, Decimal.ROUND_HALF_UP);
+
+  let sens: 'hausse' | 'baisse' | 'stable' = 'stable';
+  if (pct.greaterThan(0)) {
+    sens = 'hausse';
+  } else if (pct.lessThan(0)) {
+    sens = 'baisse';
+  }
+
+  return {
+    pourcentage: pct.toFixed(1),
+    sens,
+  };
+}
+
+/**
+ * Calcule la synthèse de l'opération selon la section 5.2 du contrat.
+ */
+export function calculerSyntheseOperation(
+  lignes: LignePaieCalculee[],
+  totaux: TotauxOperation,
+  precedente?: ValeursSynthesePrecedente | null
+): SyntheseOperation {
+  let masseSalarialeDec = new Decimal(0);
+  for (const l of lignes) {
+    masseSalarialeDec = masseSalarialeDec.plus(new Decimal(l.salaire_base || '0'));
+  }
+
+  const nbEmployes = lignes.length;
+  const salaireMoyenDec =
+    nbEmployes > 0
+      ? masseSalarialeDec.dividedBy(nbEmployes).toDecimalPlaces(2, Decimal.ROUND_HALF_UP)
+      : new Decimal(0);
+
+  const masseSalarialeStr = masseSalarialeDec.toFixed(2);
+  const totalPayeStr = totaux.total_virement;
+  const salaireMoyenStr = salaireMoyenDec.toFixed(2);
+
+  return {
+    masse_salariale: masseSalarialeStr,
+    total_paye: totalPayeStr,
+    total_net_exact: totaux.total_net_global,
+    ecart_arrondi: totaux.ecart_arrondi,
+    salaire_moyen: salaireMoyenStr,
+    nombre_employes: nbEmployes,
+    variations: {
+      masse_salariale: calculerVariation(masseSalarialeDec, precedente?.masse_salariale),
+      total_paye: calculerVariation(new Decimal(totalPayeStr), precedente?.total_paye),
+      salaire_moyen: calculerVariation(salaireMoyenDec, precedente?.salaire_moyen),
+      nombre_employes: calculerVariation(nbEmployes, precedente?.nombre_employes),
+    },
   };
 }

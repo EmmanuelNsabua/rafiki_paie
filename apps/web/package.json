@@ -7,15 +7,20 @@
     "build": "next build --webpack && node scripts/exclude-dev-routes.mjs",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@rafiki/contrat": "*",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/poppins": "^5.3.0",
     "@hookform/resolvers": "7.0.7",
     "@rafiki/calcul": "*",
+    "@rafiki/contrat": "*",
+    "@tanstack/react-query": "^5.108.3",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "date-fns": "4.4.0",
+    "decimal.js": "10.6.0",
     "lucide-react": "1.76.0",
     "next": "16.4.6",
     "react": "19.3.1",

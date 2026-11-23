@@ -1,29 +1,29 @@
 import type Database from 'better-sqlite3';
 import * as crypto from 'crypto';
+import Decimal from 'decimal.js';
 import type {
   OperationPaie,
   LignePaie,
   LignePaieCalculee,
   TotauxOperation,
+  SyntheseOperation,
+  ResumeOperationLister,
+  DetailOperationComplet,
   Parametre,
 } from '@rafiki/contrat';
 import { ErreurMetier } from './erreurs';
 import { JournalService } from './journal-service';
 import { ParametreService } from './parametre-service';
 import type { SauvegardeService } from './sauvegarde-service';
-import { calculerMontantsLigne, calculerTotauxOperation } from './calcul-totaux';
+import {
+  calculerMontantsLigne,
+  calculerTotauxOperation,
+  calculerSyntheseOperation,
+  calculerVariation,
+  ValeursSynthesePrecedente,
+} from './calcul-totaux';
 
-export interface DetailOperationComplet {
-  operation: OperationPaie;
-  lignes: LignePaieCalculee[];
-  totaux: TotauxOperation;
-  parametres: Parametre;
-}
-
-export interface ResumeOperationLister extends OperationPaie {
-  total_virement: string;
-  nombre_employes: number;
-}
+export { DetailOperationComplet, ResumeOperationLister };
 
 export class OperationService {
   private journalService: JournalService;
@@ -40,7 +40,50 @@ export class OperationService {
   }
 
   /**
-   * Retourne la liste de toutes les opérations de paie triées par période décroissante.
+   * Trouve l'opération terminée la plus récente strictement antérieure à la période donnée
+   * et retourne ses métriques de synthèse.
+   */
+  public obtenirPrecedenteTerminee(annee: number, mois: number): ValeursSynthesePrecedente | null {
+    const opPrec = this.db
+      .prepare(
+        `SELECT id, annee, mois
+         FROM operation_paie
+         WHERE statut = 'terminee' AND supprime_le IS NULL
+           AND (annee < ? OR (annee = ? AND mois < ?))
+         ORDER BY annee DESC, mois DESC
+         LIMIT 1`
+      )
+      .get(annee, annee, mois) as { id: string } | undefined;
+
+    if (!opPrec) return null;
+
+    const lignesPrec = this.db
+      .prepare(
+        'SELECT salaire_base, virement FROM ligne_paie WHERE operation_id = ? AND supprime_le IS NULL'
+      )
+      .all(opPrec.id) as Array<{ salaire_base: string; virement: string | null }>;
+
+    let masseDec = new Decimal(0);
+    let totalPayeDec = new Decimal(0);
+    for (const l of lignesPrec) {
+      masseDec = masseDec.plus(new Decimal(l.salaire_base || '0'));
+      totalPayeDec = totalPayeDec.plus(new Decimal(l.virement || '0'));
+    }
+
+    const nb = lignesPrec.length;
+    const moyenDec = nb > 0 ? masseDec.dividedBy(nb).toDecimalPlaces(2, Decimal.ROUND_HALF_UP) : new Decimal(0);
+
+    return {
+      masse_salariale: masseDec.toFixed(2),
+      total_paye: totalPayeDec.toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toString(),
+      salaire_moyen: moyenDec.toFixed(2),
+      nombre_employes: nb,
+    };
+  }
+
+  /**
+   * Retourne la liste de toutes les opérations de paie triées par période décroissante,
+   * enrichies des totaux, du total payé et de sa variation (Section 5.3).
    */
   lister(): ResumeOperationLister[] {
     const operations = this.db
@@ -69,17 +112,21 @@ export class OperationService {
       );
 
       const totaux = calculerTotauxOperation(lignesCalculees);
+      const prec = this.obtenirPrecedenteTerminee(op.annee, op.mois);
+      const variationTotalPaye = calculerVariation(new Decimal(totaux.total_virement), prec?.total_paye);
 
       return {
         ...op,
         total_virement: totaux.total_virement,
+        total_paye: totaux.total_virement,
         nombre_employes: totaux.nombre_employes,
+        variation: variationTotalPaye,
       };
     });
   }
 
   /**
-   * Obtient les détails d'une opération avec toutes ses lignes calculées et ses totaux.
+   * Obtient les détails d'une opération avec toutes ses lignes calculées, ses totaux et sa synthèse (Section 5.2).
    */
   obtenir(id: string): DetailOperationComplet {
     const operation = this.db
@@ -116,13 +163,89 @@ export class OperationService {
     );
 
     const totaux = calculerTotauxOperation(lignes);
+    const prec = this.obtenirPrecedenteTerminee(operation.annee, operation.mois);
+    const synthese = calculerSyntheseOperation(lignes, totaux, prec);
 
     return {
       operation,
       lignes,
       totaux,
+      synthese,
       parametres,
     };
+  }
+
+  /**
+   * Modifie les jours ouvrables d'une opération ouverte et de toutes ses lignes (Section 5.1).
+   */
+  modifierJours(operationId: string, joursOuvrables: number): DetailOperationComplet {
+    if (joursOuvrables < 1) {
+      throw new ErreurMetier(
+        'JOURS_INVALIDES',
+        'Le nombre de jours ouvrables doit être supérieur ou égal à 1.'
+      );
+    }
+
+    const op = this.db
+      .prepare('SELECT * FROM operation_paie WHERE id = ? AND supprime_le IS NULL')
+      .get(operationId) as OperationPaie | undefined;
+
+    if (!op) {
+      throw new ErreurMetier('OPERATION_INTROUVABLE', `Opération introuvable (${operationId}).`);
+    }
+
+    if (op.statut === 'terminee') {
+      throw new ErreurMetier(
+        'OPERATION_TERMINEE',
+        'Impossible de modifier les jours ouvrables d une opération terminée.'
+      );
+    }
+
+    // Cohérence avec les absences saisies : maladie + conge + absence <= joursOuvrables
+    const lignes = this.db
+      .prepare(
+        'SELECT id, numero, nom, jours_maladie, jours_conge, jours_absence FROM ligne_paie WHERE operation_id = ? AND supprime_le IS NULL'
+      )
+      .all(operationId) as Array<{
+      id: string;
+      numero: number;
+      nom: string;
+      jours_maladie: string;
+      jours_conge: string;
+      jours_absence: string;
+    }>;
+
+    for (const l of lignes) {
+      const totAbs = new Decimal(l.jours_maladie || '0')
+        .plus(new Decimal(l.jours_conge || '0'))
+        .plus(new Decimal(l.jours_absence || '0'));
+      if (totAbs.greaterThan(joursOuvrables)) {
+        throw new ErreurMetier(
+          'ABSENCES_EXCESSIVES',
+          `L employé ${l.nom} (#${l.numero}) a ${totAbs.toString()} jours d absence, ce qui dépasse les ${joursOuvrables} jours ouvrables.`
+        );
+      }
+    }
+
+    const maintenant = new Date().toISOString();
+    this.db.transaction(() => {
+      this.db
+        .prepare('UPDATE operation_paie SET jours_ouvrables = ?, mis_a_jour_le = ? WHERE id = ?')
+        .run(joursOuvrables, maintenant, operationId);
+      this.db
+        .prepare(
+          'UPDATE ligne_paie SET jours_ouvrables = ?, mis_a_jour_le = ? WHERE operation_id = ? AND supprime_le IS NULL'
+        )
+        .run(joursOuvrables, maintenant, operationId);
+      this.journalService.ajouter({
+        action: 'MODIFICATION_JOURS_OUVRABLES',
+        entite: 'OPERATION_PAIE',
+        entite_id: operationId,
+        detail: `Modification des jours ouvrables à ${joursOuvrables} pour l opération ${op.mois}/${op.annee}.`,
+      });
+    })();
+
+    return this.obtenir(operationId);
   }
 
   /**

@@ -38,12 +38,12 @@ function createWindow(): void {
   const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 900,
-    minHeight: 600,
+    width: 1440,
+    height: 900,
+    minWidth: 1200,
+    minHeight: 680,
     title: 'Paie Rafiki',
-    backgroundColor: '#f5f5f7',
+    backgroundColor: '#EFEFEF',
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
