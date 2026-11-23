@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
     <div className="relative w-full overflow-x-auto">
-      <table ref={ref} className={cn('w-full caption-bottom text-[1.3125rem]', className)} {...props} />
+      <table ref={ref} className={cn('w-full caption-bottom text-[1rem]', className)} {...props} />
     </div>
   )
 );
@@ -14,7 +14,11 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn('bg-[var(--table-head)] border-b border-[var(--border)]', className)} {...props} />
+  <thead
+    ref={ref}
+    className={cn('bg-[var(--table-head)] border-b border-[var(--border)]', className)}
+    {...props}
+  />
 ));
 TableHeader.displayName = 'TableHeader';
 
@@ -46,7 +50,7 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
     <tr
       ref={ref}
       className={cn(
-        'h-[3.75rem] border-b border-[var(--border)] transition-colors hover:bg-[var(--hover)]',
+        'h-[3.143rem] border-b border-[var(--border)] transition-colors hover:bg-[var(--hover)]',
         className
       )}
       {...props}
@@ -62,7 +66,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      'h-[3.4375rem] px-5 text-left align-middle font-medium text-[1.25rem] text-[var(--text-2)]',
+      'h-[2.571rem] px-[0.857rem] text-left align-middle font-medium text-[0.857rem] text-[var(--text-2)]',
       className
     )}
     {...props}
@@ -76,7 +80,7 @@ const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn('px-5 align-middle text-[1.3125rem] text-[var(--text)]', className)}
+    className={cn('px-[0.857rem] align-middle text-[1rem] text-[var(--text)]', className)}
     {...props}
   />
 ));

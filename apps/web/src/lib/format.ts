@@ -53,10 +53,7 @@ const MOIS_ABREGES = [
  * formaterMontant("474.55") -> "474,55 $"
  * formaterMontant("0") -> "0 $"
  */
-export function formaterMontant(
-  chaine: string | null | undefined,
-  decimales?: number
-): string {
+export function formaterMontant(chaine: string | null | undefined, decimales?: number): string {
   if (chaine === null || chaine === undefined || chaine.trim() === '') {
     chaine = '0';
   }
@@ -189,11 +186,7 @@ export function normaliserSaisieDecimale(texte: string): string {
 /**
  * Calcule le total des jours d'absences (maladie, congé, absence).
  */
-export function totalJoursAbsences(
-  maladie = '0',
-  conge = '0',
-  absence = '0'
-): string {
+export function totalJoursAbsences(maladie = '0', conge = '0', absence = '0'): string {
   try {
     const dMal = new Decimal(maladie || '0');
     const dCong = new Decimal(conge || '0');
@@ -205,4 +198,3 @@ export function totalJoursAbsences(
     return '0';
   }
 }
-

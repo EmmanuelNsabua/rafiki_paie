@@ -82,8 +82,7 @@ export const api = {
   },
 
   operations: {
-    lister: (): Promise<ResumeOperationLister[]> =>
-      executerIpc((a) => a.operations.lister()),
+    lister: (): Promise<ResumeOperationLister[]> => executerIpc((a) => a.operations.lister()),
 
     ouvrir: (input: z.infer<typeof ipcOperationsOuvrirInput>): Promise<OperationPaie> =>
       executerIpc((a) => a.operations.ouvrir(input)),
@@ -104,8 +103,7 @@ export const api = {
 
     modifierJours: (
       input: z.infer<typeof ipcOperationsModifierJoursInput>
-    ): Promise<DetailOperationComplet> =>
-      executerIpc((a) => a.operations.modifierJours(input)),
+    ): Promise<DetailOperationComplet> => executerIpc((a) => a.operations.modifierJours(input)),
 
     exporterBordereau: (
       input: z.infer<typeof ipcOperationsExporterBordereauInput>
@@ -114,15 +112,12 @@ export const api = {
   },
 
   lignes: {
-    modifier: (
-      input: z.infer<typeof ipcLignesModifierInput>
-    ): Promise<ResultatModificationLigne> =>
+    modifier: (input: z.infer<typeof ipcLignesModifierInput>): Promise<ResultatModificationLigne> =>
       executerIpc((a) => a.lignes.modifier(input)),
   },
 
   parametres: {
-    lire: (): Promise<Parametre> =>
-      executerIpc((a) => a.parametres.lire()),
+    lire: (): Promise<Parametre> => executerIpc((a) => a.parametres.lire()),
 
     modifier: (input: z.infer<typeof ipcParametresModifierInput>): Promise<Parametre> =>
       executerIpc((a) => a.parametres.modifier(input)),

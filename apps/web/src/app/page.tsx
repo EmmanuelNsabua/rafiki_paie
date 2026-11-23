@@ -27,8 +27,8 @@ export default function RootPage() {
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="flex items-center gap-3 text-[1.25rem] text-[var(--text-2)]">
-        <div className="w-6 h-6 rounded-full border-3 border-[var(--primary)] border-t-transparent animate-spin" />
+      <div className="flex items-center gap-[0.714rem] text-[1rem] text-[var(--text-2)]">
+        <div className="w-[1.429rem] h-[1.429rem] rounded-full border-2 border-[var(--primary)] border-t-transparent animate-spin" />
         <span>Chargement de l’application…</span>
       </div>
     </div>

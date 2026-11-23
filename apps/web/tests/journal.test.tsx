@@ -213,7 +213,9 @@ describe('Écran Journal de paie (Section 6.5)', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Ajoutez d’abord vos employés')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Aller à la liste des employés' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('link', { name: 'Aller à la liste des employés' })
+      ).toBeInTheDocument();
     });
   });
 });

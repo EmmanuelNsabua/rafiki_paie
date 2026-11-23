@@ -10,12 +10,7 @@ export interface TooltipProps {
   className?: string;
 }
 
-export function Tooltip({
-  content,
-  children,
-  delayMs = 350,
-  className,
-}: TooltipProps) {
+export function Tooltip({ content, children, delayMs = 350, className }: TooltipProps) {
   const [visible, setVisible] = React.useState(false);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -56,7 +51,7 @@ export function Tooltip({
         <div
           role="tooltip"
           className={cn(
-            'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 px-3 py-1.5 text-[0.875rem] font-normal text-white bg-[#111111] rounded-[6px] shadow-lg pointer-events-none whitespace-normal max-w-xs text-center animate-in fade-in zoom-in-95 duration-150',
+            'absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-50 px-2 py-1 text-[0.857rem] leading-[1.143rem] font-normal text-white bg-[#111111] rounded-[0.429rem] shadow-lg pointer-events-none whitespace-normal max-w-xs text-center animate-in fade-in zoom-in-95 duration-150',
             className
           )}
         >

@@ -18,60 +18,53 @@ interface CarteSyntheseProps {
   variation?: Variation;
 }
 
-function CarteSynthese({
-  titre,
-  valeur,
-  tooltipText,
-  variation,
-}: CarteSyntheseProps) {
+function CarteSynthese({ titre, valeur, tooltipText, variation }: CarteSyntheseProps) {
   let pastilleVariation = null;
 
   if (variation?.sens === 'hausse') {
     pastilleVariation = (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[0.9375rem] font-semibold">
-        <TrendingUp className="w-4 h-4" />
+      <span className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[0.857rem] font-semibold">
+        <TrendingUp className="w-[1rem] h-[1rem]" />
         {formaterPourcentage(variation.pourcentage)}
       </span>
     );
   } else if (variation?.sens === 'baisse') {
     pastilleVariation = (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--danger-tint)] text-[var(--danger)] text-[0.9375rem] font-semibold">
-        <TrendingDown className="w-4 h-4" />
+      <span className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-[var(--danger-tint)] text-[var(--danger)] text-[0.857rem] font-semibold">
+        <TrendingDown className="w-[1rem] h-[1rem]" />
         {formaterPourcentage(variation.pourcentage)}
       </span>
     );
   } else if (variation?.sens === 'stable') {
     pastilleVariation = (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--hover)] text-[var(--text-2)] text-[0.9375rem] font-medium">
-        <ArrowRight className="w-4 h-4" />
+      <span className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-[var(--hover)] text-[var(--text-2)] text-[0.857rem] font-medium">
+        <ArrowRight className="w-[1rem] h-[1rem]" />
         0,0&nbsp;%
       </span>
     );
   } else {
     pastilleVariation = (
-      <span className="text-[0.9375rem] text-[var(--text-2)]">
-        Aucun mois de comparaison
-      </span>
+      <span className="text-[0.857rem] text-[var(--text-2)]">Aucun mois de comparaison</span>
     );
   }
 
   const carteContenu = (
-    <div className="flex flex-col justify-between h-[11.875rem] rounded-[10px] bg-[var(--surface)] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[var(--border)] transition-shadow hover:shadow-md">
+    <div className="flex flex-col justify-between h-[8rem] rounded-[0.429rem] bg-[var(--surface)] p-[0.857rem] shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-[var(--border)] transition-shadow hover:shadow-sm">
       {/* En-tête de carte */}
-      <div className="flex items-center gap-3 pb-2.5 border-b border-[var(--border)]">
-        <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)] shrink-0" />
-        <span className="text-[1.375rem] font-medium text-[var(--text)] truncate">
+      <div className="flex items-center gap-[0.571rem] pb-[0.429rem] border-b border-[var(--border)]">
+        <span className="w-[0.571rem] h-[0.571rem] rounded-full bg-[var(--primary)] shrink-0" />
+        <span className="text-[0.929rem] leading-[1.286rem] font-medium text-[var(--text)] truncate">
           {titre}
         </span>
       </div>
 
       {/* Valeur */}
-      <div className="text-[2.5rem] font-bold text-[var(--text)] tracking-tight font-mono tabular-nums my-auto">
+      <div className="text-[1.714rem] leading-[2.286rem] font-bold text-[var(--text)] tracking-tight font-mono tabular-nums my-auto">
         {valeur}
       </div>
 
       {/* Pied */}
-      <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)] text-[0.9375rem] text-[var(--text-2)]">
+      <div className="flex items-center gap-[0.429rem] pt-[0.429rem] border-t border-[var(--border)] text-[0.857rem] text-[var(--text-2)]">
         {pastilleVariation}
         {variation?.pourcentage !== null && (
           <span className="truncate">Par rapport au mois dernier</span>
@@ -89,15 +82,16 @@ function CarteSynthese({
 
 export function CartesSynthese({ synthese }: CartesSyntheseProps) {
   const ecartNum = synthese.ecart_arrondi || '0';
-  const prefixSigne = !ecartNum.startsWith('-') && ecartNum !== '0' && ecartNum !== '0.00' ? '+' : '';
+  const prefixSigne =
+    !ecartNum.startsWith('-') && ecartNum !== '0' && ecartNum !== '0.00' ? '+' : '';
   const tooltipTotalPaye = `Somme des virements arrondis. Salaire net exact : ${formaterMontant(
     synthese.total_net_exact,
     2
   )} · Écart d'arrondi : ${prefixSigne}${formaterMontant(synthese.ecart_arrondi, 2)}.`;
 
   return (
-    <div className="rounded-[12px] bg-[var(--surface)] p-5 border border-[var(--border)]">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[1.1875rem]">
+    <div className="rounded-[0.571rem] bg-[var(--surface)] p-[1.143rem] border border-[var(--border)]">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[1.143rem]">
         {/* 1. Masse salariale */}
         <CarteSynthese
           titre="Masse salariale"

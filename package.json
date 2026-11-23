@@ -30,6 +30,7 @@
     "postinstall": "npm run postinstall --workspace=apps/desktop --if-present"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.1",
     "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/react": "^16.3.3",
     "concurrently": "10.0.7",

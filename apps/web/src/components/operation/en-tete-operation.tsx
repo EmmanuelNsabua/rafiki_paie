@@ -2,7 +2,12 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import type { OperationPaie, ResumeOperationLister, TotauxOperation, SyntheseOperation } from '@rafiki/contrat';
+import type {
+  OperationPaie,
+  ResumeOperationLister,
+  TotauxOperation,
+  SyntheseOperation,
+} from '@rafiki/contrat';
 import { libelleOperation } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Popover } from '@/components/ui/popover';
@@ -96,14 +101,14 @@ export function EnTeteOperation({
     : undefined;
 
   return (
-    <div className="flex flex-col min-[1500px]:flex-row min-[1500px]:items-center justify-between gap-4 p-6 rounded-[12px] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
+    <div className="flex flex-col min-[1500px]:flex-row min-[1500px]:items-center justify-between gap-[0.857rem] min-h-[4.571rem] p-[1.143rem] rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
       {/* Gauche : Titre et sélecteurs */}
-      <div className="flex flex-wrap items-center gap-4">
-        <h1 className="text-[2.75rem] font-semibold text-[var(--text)] leading-[3.25rem] tracking-tight">
+      <div className="flex flex-wrap items-center gap-[0.857rem]">
+        <h1 className="text-[1.714rem] font-semibold text-[var(--text)] leading-[2.286rem] tracking-tight">
           Opération mensuelle
         </h1>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-[0.714rem]">
           {/* Sélecteur de mois */}
           <Popover
             open={menuMoisOuvert}
@@ -112,15 +117,15 @@ export function EnTeteOperation({
             trigger={
               <button
                 type="button"
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-[var(--page)] hover:bg-[var(--hover)] text-[1.25rem] font-medium text-[var(--text)] transition-colors cursor-pointer border border-[var(--border)]"
+                className="inline-flex items-center gap-[0.429rem] h-[2.286rem] px-[0.857rem] rounded-full bg-[var(--page)] hover:bg-[var(--hover)] text-[0.929rem] font-medium text-[var(--text)] transition-colors cursor-pointer border border-[var(--border)]"
               >
                 <span>{libelleOperation(operation.annee, operation.mois)}</span>
-                <ChevronDown className="w-4 h-4 text-[var(--text-2)]" />
+                <ChevronDown className="w-[1rem] h-[1rem] text-[var(--text-2)]" />
               </button>
             }
           >
-            <div className="flex flex-col min-w-[16rem] py-1">
-              <div className="max-h-60 overflow-y-auto divide-y divide-[var(--border)]">
+            <div className="flex flex-col min-w-[14rem] py-[0.286rem]">
+              <div className="max-h-[15rem] overflow-y-auto divide-y divide-[var(--border)]">
                 {toutesOperations.map((op) => {
                   const estCourante = op.id === operation.id;
                   return (
@@ -132,14 +137,14 @@ export function EnTeteOperation({
                         router.push(`/operation/?id=${op.id}`);
                       }}
                       className={cn(
-                        'w-full flex items-center justify-between px-3 py-2 text-left text-[1rem] hover:bg-[var(--hover)] transition-colors cursor-pointer',
+                        'w-full flex items-center justify-between px-[0.714rem] py-[0.429rem] text-left text-[0.929rem] hover:bg-[var(--hover)] transition-colors cursor-pointer',
                         estCourante && 'bg-[var(--hover)] font-medium'
                       )}
                     >
                       <span>{libelleOperation(op.annee, op.mois)}</span>
                       <span
                         className={cn(
-                          'text-[0.75rem] px-2 py-0.5 rounded-full font-medium',
+                          'text-[0.786rem] px-[0.5rem] py-[0.143rem] rounded-full font-medium',
                           op.statut === 'terminee'
                             ? 'bg-[var(--hover)] text-[var(--text-2)]'
                             : 'bg-[var(--primary-tint)] text-[var(--primary-strong)]'
@@ -152,16 +157,16 @@ export function EnTeteOperation({
                 })}
               </div>
 
-              <div className="pt-2 mt-2 border-t border-[var(--border)]">
+              <div className="pt-[0.429rem] mt-[0.429rem] border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => {
                     setMenuMoisOuvert(false);
                     setDialogueNouvelleOuvert(true);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-[1rem] text-[var(--primary-strong)] hover:bg-[var(--hover)] font-medium transition-colors cursor-pointer rounded-[6px]"
+                  className="w-full flex items-center gap-[0.429rem] px-[0.714rem] py-[0.429rem] text-left text-[0.929rem] text-[var(--primary-strong)] hover:bg-[var(--hover)] font-medium transition-colors cursor-pointer rounded-[0.429rem]"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-[1rem] h-[1rem]" />
                   <span>Nouvelle opération…</span>
                 </button>
               </div>
@@ -170,20 +175,20 @@ export function EnTeteOperation({
 
           {/* Pastille d'état */}
           {estTerminee ? (
-            <span className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-full bg-[var(--hover)] text-[var(--text)] text-[1rem] font-medium border border-[var(--border)]">
-              <Lock className="w-3.5 h-3.5 text-[var(--text-2)]" />
+            <span className="inline-flex items-center gap-[0.357rem] h-[1.571rem] px-[0.571rem] rounded-full bg-[var(--hover)] text-[var(--text)] text-[0.857rem] font-medium border border-[var(--border)]">
+              <Lock className="w-[0.857rem] h-[0.857rem] text-[var(--text-2)]" />
               <span>Terminée</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-full bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[1rem] font-semibold border border-[var(--primary)]/20">
-              <span className="w-2 h-2 rounded-full bg-[var(--primary)]" />
+            <span className="inline-flex items-center gap-[0.357rem] h-[1.571rem] px-[0.571rem] rounded-full bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[0.857rem] font-semibold border border-[var(--primary)]/20">
+              <span className="w-[0.429rem] h-[0.429rem] rounded-full bg-[var(--primary)]" />
               <span>En cours</span>
             </span>
           )}
 
           {/* Pastille Jours ouvrables */}
           {estTerminee ? (
-            <span className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-full bg-[var(--hover)] text-[var(--text-2)] text-[1rem] font-medium border border-[var(--border)]">
+            <span className="inline-flex items-center gap-[0.357rem] h-[1.571rem] px-[0.571rem] rounded-full bg-[var(--hover)] text-[var(--text-2)] text-[0.857rem] font-medium border border-[var(--border)]">
               <span>{operation.jours_ouvrables} jours ouvrables</span>
             </span>
           ) : (
@@ -194,15 +199,21 @@ export function EnTeteOperation({
               trigger={
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--text)] text-[1rem] font-medium border border-[var(--border)] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-[0.357rem] h-[1.571rem] px-[0.571rem] rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--text)] text-[0.857rem] font-medium border border-[var(--border)] transition-colors cursor-pointer"
                 >
                   <span>{operation.jours_ouvrables} jours ouvrables</span>
-                  <Pencil className="w-3.5 h-3.5 text-[var(--text-2)]" />
+                  <Pencil className="w-[0.857rem] h-[0.857rem] text-[var(--text-2)]" />
                 </button>
               }
             >
-              <form onSubmit={handleEnregistrerJours} className="flex flex-col gap-3 min-w-[14rem]">
-                <label htmlFor="input-jours-ouvrables" className="text-[0.9375rem] font-medium text-[var(--text)]">
+              <form
+                onSubmit={handleEnregistrerJours}
+                className="flex flex-col gap-[0.571rem] min-w-[13rem]"
+              >
+                <label
+                  htmlFor="input-jours-ouvrables"
+                  className="text-[0.857rem] font-medium text-[var(--text)]"
+                >
                   Jours ouvrables du mois
                 </label>
                 <Input
@@ -212,12 +223,12 @@ export function EnTeteOperation({
                   max="31"
                   value={joursSaisis}
                   onChange={(e) => setJoursSaisis(e.target.value)}
-                  className="h-9 text-[1rem]"
+                  className="h-[2.286rem] text-[1rem]"
                 />
                 <Button
                   type="submit"
                   disabled={sauvegardeJours}
-                  className="h-9 bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.9375rem]"
+                  className="h-[2.286rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.929rem]"
                 >
                   {sauvegardeJours ? 'Enregistrement…' : 'Enregistrer'}
                 </Button>
@@ -228,18 +239,18 @@ export function EnTeteOperation({
       </div>
 
       {/* Droite : Boutons Exporter et Terminer/Rouvrir */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-[0.714rem] shrink-0">
         {/* Bouton Exporter (inactif en phase 2) */}
         <Tooltip content="Bientôt disponible">
           <Button
             type="button"
             variant="outline"
             disabled
-            className="h-[3.375rem] px-5 rounded-[6px] border-2 border-[var(--primary)] text-[var(--primary-strong)] text-[1.375rem] font-medium opacity-50 cursor-not-allowed flex items-center gap-2"
+            className="h-[2.429rem] px-[0.857rem] rounded-[0.429rem] border border-[var(--primary)] text-[var(--primary-strong)] text-[0.929rem] font-medium opacity-50 cursor-not-allowed flex items-center gap-[0.429rem]"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-[1.143rem] h-[1.143rem]" />
             <span>Exporter</span>
-            <ChevronDown className="w-4 h-4 ml-1 opacity-70" />
+            <ChevronDown className="w-[0.857rem] h-[0.857rem] ml-[0.143rem] opacity-70" />
           </Button>
         </Tooltip>
 
@@ -248,7 +259,7 @@ export function EnTeteOperation({
           <Button
             type="button"
             onClick={() => setDialogueRouvrirOuvert(true)}
-            className="h-[3.375rem] px-6 rounded-[6px] border-2 border-[var(--primary)] bg-transparent hover:bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[1.375rem] font-semibold cursor-pointer transition-colors"
+            className="h-[2.429rem] px-[1rem] rounded-[0.429rem] border border-[var(--primary)] bg-transparent hover:bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[0.929rem] font-semibold cursor-pointer transition-colors"
           >
             Rouvrir la paie
           </Button>
@@ -259,7 +270,7 @@ export function EnTeteOperation({
               disabled={terminerBloque}
               onClick={() => setDialogueTerminerOuvert(true)}
               className={cn(
-                'h-[3.375rem] px-6 rounded-[6px] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[1.375rem] font-semibold transition-all cursor-pointer',
+                'h-[2.429rem] px-[1rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.929rem] font-semibold transition-all cursor-pointer',
                 terminerBloque && 'opacity-50 cursor-not-allowed'
               )}
             >

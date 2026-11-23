@@ -7,26 +7,62 @@
 @import '@fontsource/ibm-plex-sans/600.css';
 
 html {
-  font-size: clamp(13px, 0.8333vw, 16px);
+  font-size: calc(14px * var(--echelle-texte, 1));
 }
 
 :root {
-  --page: #EFEFEF;
-  --surface: #FFFFFF;
-  --text: #111111;
-  --text-2: #6B6B6B;
-  --border: #E4E4E7;
-  --table-head: #F5F6FA;
-  --primary: #16A34A;
-  --primary-strong: #15803D;
-  --primary-tint: #DCFCE7;
-  --danger: #DC2626;
-  --danger-tint: #FEE2E2;
-  --warning-tint: #FEF3C7;
-  --warning-border: #FCD34D;
-  --warning-text: #92400E;
-  --hover: #F4F4F5;
-  --radius: 0.5rem;
+  --echelle-texte: 1;
+
+  /* Thème clair (défaut Windows 11) */
+  --fenetre: #f3f3f3;
+  --carte: #ffffff;
+  --entete-tableau: #f9f9f9;
+  --trait: #e5e5e5;
+  --texte: #1a1a1a;
+  --texte-2: #5f5f5f;
+  --survol: rgba(0, 0, 0, 0.05);
+  --primary: #16a34a;
+  --primary-strong: #15803d;
+  --primary-tint: #dcfce7;
+  --primary-tint-texte: #15803d;
+  --danger: #dc2626;
+  --danger-tint: #fee2e2;
+  --warning-tint: #fef3c7;
+  --warning-trait: #fcd34d;
+  --warning-texte: #92400e;
+  --radius: 0.429rem; /* 6px */
+
+  /* Alias de compatibilité */
+  --page: var(--fenetre);
+  --surface: var(--carte);
+  --border: var(--trait);
+  --text: var(--texte);
+  --text-2: var(--texte-2);
+  --table-head: var(--entete-tableau);
+  --hover: var(--survol);
+  --warning-border: var(--warning-trait);
+  --warning-text: var(--warning-texte);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fenetre: #202020;
+    --carte: #2b2b2b;
+    --entete-tableau: #272727;
+    --trait: #3a3a3a;
+    --texte: #ffffff;
+    --texte-2: #c5c5c5;
+    --survol: rgba(255, 255, 255, 0.06);
+    --primary: #15803d;
+    --primary-strong: #4ade80;
+    --primary-tint: #14532d;
+    --primary-tint-texte: #86efac;
+    --danger: #f87171;
+    --danger-tint: #3b1a1d;
+    --warning-tint: #3a2e10;
+    --warning-trait: #7a5a12;
+    --warning-texte: #fcd34d;
+  }
 }
 
 body {
@@ -44,7 +80,8 @@ body {
   outline-offset: 2px;
 }
 
-button:active, a:active {
+button:active,
+a:active {
   transform: scale(0.97);
 }
 

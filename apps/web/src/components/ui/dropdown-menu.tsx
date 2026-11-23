@@ -18,12 +18,7 @@ export interface DropdownMenuProps {
   className?: string;
 }
 
-export function DropdownMenu({
-  trigger,
-  items,
-  align = 'right',
-  className,
-}: DropdownMenuProps) {
+export function DropdownMenu({ trigger, items, align = 'right', className }: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 

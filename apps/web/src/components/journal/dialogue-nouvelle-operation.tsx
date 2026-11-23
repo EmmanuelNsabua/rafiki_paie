@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, ErreurMetierClient } from '@/lib/api';
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -123,41 +129,41 @@ export function DialogueNouvelleOperation({
       </DialogHeader>
 
       {!chargementEmployes && !aEmployesActifs ? (
-        <div className="py-6 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-[var(--warning-tint)] text-[var(--warning-text)] flex items-center justify-center mx-auto">
-            <Users className="w-6 h-6" />
+        <div className="py-[1.143rem] text-center space-y-[0.857rem]">
+          <div className="w-[2.286rem] h-[2.286rem] rounded-full bg-[var(--warning-tint)] text-[var(--warning-text)] flex items-center justify-center mx-auto">
+            <Users className="w-[1.143rem] h-[1.143rem]" />
           </div>
           <div>
-            <h3 className="text-[1.25rem] font-semibold text-[var(--text)]">
+            <h3 className="text-[1.143rem] font-semibold text-[var(--text)]">
               Ajoutez d’abord vos employés
             </h3>
-            <p className="text-[1.0625rem] text-[var(--text-2)] mt-1">
+            <p className="text-[0.857rem] text-[var(--text-2)] mt-[0.286rem]">
               Une opération de paie nécessite au moins un employé actif.
             </p>
           </div>
-          <div className="pt-2">
+          <div className="pt-[0.571rem]">
             <Link
               href="/employes/"
               onClick={() => onOpenChange(false)}
-              className="inline-flex items-center justify-center h-[3rem] px-5 rounded-[6px] bg-[var(--primary)] text-white font-semibold text-[1.125rem] hover:bg-[var(--primary-strong)]"
+              className="inline-flex items-center justify-center h-[2.429rem] px-[1rem] rounded-[0.429rem] bg-[var(--primary)] text-white font-semibold text-[0.929rem] hover:bg-[var(--primary-strong)]"
             >
               Aller à la liste des employés
             </Link>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-[0.857rem]">
           {erreur && (
-            <div className="p-4 rounded-[8px] bg-[var(--danger-tint)] border border-[var(--danger)] text-[var(--danger)] text-[1rem] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 shrink-0" />
+            <div className="p-[0.857rem] rounded-[0.429rem] bg-[var(--danger-tint)] border border-[var(--danger)] text-[var(--danger)] text-[0.857rem] flex items-center justify-between">
+              <div className="flex items-center gap-[0.429rem]">
+                <AlertTriangle className="w-[1.143rem] h-[1.143rem] shrink-0" />
                 <span>{erreur}</span>
               </div>
               {idExistante && (
                 <Link
                   href={`/operation/?id=${idExistante}`}
                   onClick={() => onOpenChange(false)}
-                  className="font-semibold underline ml-3 shrink-0"
+                  className="font-semibold underline ml-[0.714rem] shrink-0"
                 >
                   L’ouvrir
                 </Link>
@@ -165,13 +171,15 @@ export function DialogueNouvelleOperation({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="champ-mois">Mois</Label>
+          <div className="space-y-[0.286rem]">
+            <Label htmlFor="champ-mois" className="text-[0.857rem]">
+              Mois
+            </Label>
             <select
               id="champ-mois"
               value={mois}
               onChange={(e) => setMois(parseInt(e.target.value, 10))}
-              className="flex h-[3rem] w-full rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-[1.125rem] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              className="flex h-[2.286rem] w-full rounded-[0.429rem] border border-[var(--border)] bg-[var(--surface)] px-[0.714rem] py-[0.286rem] text-[1rem] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <option key={m} value={m}>
@@ -181,8 +189,10 @@ export function DialogueNouvelleOperation({
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="champ-annee">Année</Label>
+          <div className="space-y-[0.286rem]">
+            <Label htmlFor="champ-annee" className="text-[0.857rem]">
+              Année
+            </Label>
             <Input
               id="champ-annee"
               type="number"
@@ -190,12 +200,15 @@ export function DialogueNouvelleOperation({
               max={2100}
               value={annee}
               onChange={(e) => setAnnee(parseInt(e.target.value, 10) || annee)}
+              className="h-[2.286rem] text-[1rem]"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="champ-jours">Jours ouvrables</Label>
+          <div className="space-y-[0.286rem]">
+            <Label htmlFor="champ-jours" className="text-[0.857rem]">
+              Jours ouvrables
+            </Label>
             <Input
               id="champ-jours"
               type="number"
@@ -203,10 +216,12 @@ export function DialogueNouvelleOperation({
               max={31}
               value={joursOuvrables}
               onChange={(e) => setJoursOuvrables(e.target.value)}
+              className="h-[2.286rem] text-[1rem]"
               required
             />
-            <p className="text-[0.9375rem] text-[var(--text-2)]">
-              Valeur par défaut définie dans les réglages ({parametres?.jours_ouvrables_defaut ?? 22} jours).
+            <p className="text-[0.857rem] text-[var(--text-2)]">
+              Valeur par défaut définie dans les réglages (
+              {parametres?.jours_ouvrables_defaut ?? 22} jours).
             </p>
           </div>
 
@@ -214,15 +229,15 @@ export function DialogueNouvelleOperation({
             <Button
               type="button"
               variant="secondary"
-              size="sm"
               onClick={() => onOpenChange(false)}
+              className="h-[2.429rem] px-[0.857rem] text-[0.929rem]"
             >
               Annuler
             </Button>
             <Button
               type="submit"
-              size="sm"
               disabled={mutationOuvrir.isPending}
+              className="h-[2.429rem] px-[0.857rem] text-[0.929rem]"
             >
               {mutationOuvrir.isPending ? 'Création…' : 'Créer l’opération'}
             </Button>

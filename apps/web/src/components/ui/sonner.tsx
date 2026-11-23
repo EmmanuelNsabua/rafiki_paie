@@ -79,9 +79,13 @@ export function Toaster() {
           )}
         >
           <div className="flex items-center gap-3">
-            {t.type === 'success' && <CheckCircle2 className="w-5 h-5 text-[var(--primary-strong)] shrink-0" />}
+            {t.type === 'success' && (
+              <CheckCircle2 className="w-5 h-5 text-[var(--primary-strong)] shrink-0" />
+            )}
             {t.type === 'error' && <XCircle className="w-5 h-5 text-[var(--danger)] shrink-0" />}
-            {t.type === 'warning' && <AlertTriangle className="w-5 h-5 text-[var(--warning-text)] shrink-0" />}
+            {t.type === 'warning' && (
+              <AlertTriangle className="w-5 h-5 text-[var(--warning-text)] shrink-0" />
+            )}
             {t.type === 'info' && <Info className="w-5 h-5 text-[var(--text-2)] shrink-0" />}
             <span className="text-[1rem] font-medium leading-snug">{t.message}</span>
           </div>

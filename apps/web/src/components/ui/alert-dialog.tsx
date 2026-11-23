@@ -29,20 +29,15 @@ export function AlertDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-      <div className="relative w-full max-w-[32rem] rounded-[10px] bg-[var(--surface)] p-6 shadow-2xl border border-[var(--border)] animate-in zoom-in-95 duration-150">
-        <h3 className="text-[1.5rem] font-semibold text-[var(--text)] mb-2">
+      <div className="relative w-full max-w-[30rem] rounded-[0.571rem] bg-[var(--surface)] p-[1.429rem] shadow-2xl border border-[var(--border)] animate-in zoom-in-95 duration-150">
+        <h3 className="text-[1.143rem] font-semibold text-[var(--text)] leading-[1.714rem] mb-2">
           {title}
         </h3>
-        <div className="text-[1.0625rem] text-[var(--text-2)] mb-6 leading-relaxed">
+        <div className="text-[0.857rem] leading-[1.143rem] text-[var(--text-2)] mb-5">
           {description}
         </div>
-        <div className="flex items-center justify-end gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-          >
+        <div className="flex items-center justify-end gap-2.5">
+          <Button type="button" variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
             {cancelText}
           </Button>
           <Button

@@ -40,8 +40,8 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
-    minWidth: 1200,
-    minHeight: 680,
+    minWidth: 1100,
+    minHeight: 650,
     title: 'Paie Rafiki',
     backgroundColor: '#EFEFEF',
     webPreferences: {

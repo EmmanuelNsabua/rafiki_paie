@@ -179,21 +179,21 @@ function OperationMensuelleContenu() {
   // État vide (aucune opération dans la base)
   if (listeOperations.length === 0 || !detail) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 rounded-[12px] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
-        <div className="w-20 h-20 rounded-full bg-[var(--primary-tint)] flex items-center justify-center text-[var(--primary)] mb-6">
-          <CalendarPlus className="w-10 h-10" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-[2.286rem] rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
+        <div className="w-[4.571rem] h-[4.571rem] rounded-full bg-[var(--primary-tint)] flex items-center justify-center text-[var(--primary)] mb-[1.143rem]">
+          <CalendarPlus className="w-[2.286rem] h-[2.286rem]" />
         </div>
-        <h2 className="text-[2rem] font-bold text-[var(--text)] mb-2">
+        <h2 className="text-[1.714rem] font-semibold text-[var(--text)] mb-[0.571rem]">
           Aucune opération pour le moment
         </h2>
-        <p className="text-[1.25rem] text-[var(--text-2)] mb-8 max-w-md">
+        <p className="text-[1rem] text-[var(--text-2)] mb-[1.714rem] max-w-md">
           Créez celle du mois pour commencer.
         </p>
         <Button
           onClick={() => setDialogueNouvelleOuvert(true)}
-          className="h-12 px-6 rounded-[8px] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[1.125rem] font-semibold flex items-center gap-2 cursor-pointer"
+          className="h-[2.429rem] px-[1rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.929rem] font-semibold flex items-center gap-[0.429rem] cursor-pointer"
         >
-          <FileSpreadsheet className="w-5 h-5" />
+          <FileSpreadsheet className="w-[1.143rem] h-[1.143rem]" />
           <span>Nouvelle opération</span>
         </Button>
 
@@ -206,8 +206,7 @@ function OperationMensuelleContenu() {
   }
 
   const estTerminee = detail.operation.statut === 'terminee';
-  const ligneSelectionneePourAbsences =
-    detail.lignes.find((l) => l.id === ligneAbsenceId) || null;
+  const ligneSelectionneePourAbsences = detail.lignes.find((l) => l.id === ligneAbsenceId) || null;
 
   return (
     <div className="space-y-6">

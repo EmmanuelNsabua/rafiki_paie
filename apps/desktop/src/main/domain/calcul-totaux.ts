@@ -62,7 +62,10 @@ export function calculerMontantsLigne(
 
     const netGlobalStr = res.global.toFixed(6);
     const virementStr = res.virement.toString();
-    const totalRetenues = res.retenue_maladie.plus(res.retenue_conge).plus(res.retenue_absence).toFixed(2);
+    const totalRetenues = res.retenue_maladie
+      .plus(res.retenue_conge)
+      .plus(res.retenue_absence)
+      .toFixed(2);
 
     return {
       ...ligne,

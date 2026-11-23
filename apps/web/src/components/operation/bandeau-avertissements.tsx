@@ -20,14 +20,10 @@ export function BandeauAvertissements({ totaux }: BandeauAvertissementsProps) {
 
   const morceaux: string[] = [];
   if (sansCodeBanque > 0) {
-    morceaux.push(
-      `${sansCodeBanque} employé${sansCodeBanque > 1 ? 's' : ''} sans code banque`
-    );
+    morceaux.push(`${sansCodeBanque} employé${sansCodeBanque > 1 ? 's' : ''} sans code banque`);
   }
   if (telEnDouble > 0) {
-    morceaux.push(
-      `${telEnDouble} numéro${telEnDouble > 1 ? 's' : ''} de téléphone en double`
-    );
+    morceaux.push(`${telEnDouble} numéro${telEnDouble > 1 ? 's' : ''} de téléphone en double`);
   }
 
   return (

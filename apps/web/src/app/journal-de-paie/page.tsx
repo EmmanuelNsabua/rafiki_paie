@@ -4,12 +4,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import {
-  formaterMontant,
-  formaterPourcentage,
-  formaterDate,
-  libelleOperation,
-} from '@/lib/format';
+import { formaterMontant, formaterPourcentage, formaterDate, libelleOperation } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -69,42 +64,41 @@ export default function JournalDePaiePage() {
   }, [operations, anneeFiltre]);
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-[1.143rem] pb-[2.857rem]">
       {/* Carte d'en-tête */}
-      <div className="h-[6.875rem] bg-[var(--surface)] rounded-[12px] p-6 flex items-center justify-between shadow-xs">
-        <h1 className="text-[2.75rem] font-semibold text-[var(--text)] tracking-tight leading-none">
+      <div className="min-h-[4.571rem] bg-[var(--surface)] rounded-[0.571rem] p-[1.143rem] flex items-center justify-between border border-[var(--border)] shadow-xs">
+        <h1 className="text-[1.714rem] font-semibold text-[var(--text)] tracking-tight leading-[2.286rem]">
           Journal de paie
         </h1>
         <Button
           onClick={() => setDialogueOuvert(true)}
-          className="flex items-center gap-2"
+          className="h-[2.429rem] px-[1rem] rounded-[0.429rem] flex items-center gap-[0.429rem] text-[0.929rem] font-semibold"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-[1.143rem] h-[1.143rem]" />
           <span>Nouvelle opération</span>
         </Button>
       </div>
 
       {/* Carte de tableau */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[8px] overflow-hidden shadow-xs">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[0.571rem] overflow-hidden shadow-xs">
         {/* Bandeau de titre du tableau */}
-        <div className="h-[4.4375rem] px-6 flex items-center justify-between border-b border-[var(--border)]">
-          <h2 className="text-[1.625rem] font-semibold text-[var(--text)]">
-            Opérations de paie
-          </h2>
-          <div className="flex items-center gap-4">
-            <span className="text-[1.125rem] text-[var(--text-2)]">
-              {operationsFiltrees.length} opération{operationsFiltrees.length > 1 ? 's' : ''} · Montants en dollars ($)
+        <div className="h-[3.143rem] px-[1.143rem] flex items-center justify-between border-b border-[var(--border)]">
+          <h2 className="text-[1.143rem] font-semibold text-[var(--text)]">Opérations de paie</h2>
+          <div className="flex items-center gap-[0.857rem]">
+            <span className="text-[0.857rem] text-[var(--text-2)]">
+              {operationsFiltrees.length} opération{operationsFiltrees.length > 1 ? 's' : ''} ·
+              Montants en dollars ($)
             </span>
 
             {/* Sélecteur d'année */}
             {annees.length > 0 && (
-              <div className="flex items-center gap-1.5 bg-[var(--hover)] p-1 rounded-full border border-[var(--border)]">
+              <div className="flex items-center gap-[0.286rem] bg-[var(--hover)] p-[0.143rem] rounded-full border border-[var(--border)]">
                 {annees.map((a) => (
                   <button
                     key={a}
                     type="button"
                     onClick={() => setAnneeFiltre(a)}
-                    className={`px-3 py-1 rounded-full text-[0.9375rem] font-medium transition-colors cursor-pointer ${
+                    className={`px-[0.571rem] py-[0.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer ${
                       anneeFiltre === a
                         ? 'bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold'
                         : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -116,7 +110,7 @@ export default function JournalDePaiePage() {
                 <button
                   type="button"
                   onClick={() => setAnneeFiltre(null)}
-                  className={`px-3 py-1 rounded-full text-[0.9375rem] font-medium transition-colors cursor-pointer ${
+                  className={`px-[0.571rem] py-[0.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer ${
                     anneeFiltre === null
                       ? 'bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold'
                       : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -131,15 +125,15 @@ export default function JournalDePaiePage() {
 
         {/* Grille du tableau */}
         {isLoading ? (
-          <div className="p-12 text-center text-[1.25rem] text-[var(--text-2)]">
+          <div className="p-[2.857rem] text-center text-[1rem] text-[var(--text-2)]">
             Chargement des opérations…
           </div>
         ) : operationsFiltrees.length === 0 ? (
-          <div className="p-12 text-center space-y-3">
-            <p className="text-[1.25rem] font-medium text-[var(--text)]">
+          <div className="p-[2.857rem] text-center space-y-[0.571rem]">
+            <p className="text-[1rem] font-medium text-[var(--text)]">
               Aucune opération enregistrée pour le moment.
             </p>
-            <p className="text-[1.0625rem] text-[var(--text-2)]">
+            <p className="text-[0.857rem] text-[var(--text-2)]">
               Cliquez sur « Nouvelle opération » pour démarrer la paie du mois.
             </p>
           </div>
@@ -147,13 +141,13 @@ export default function JournalDePaiePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[18rem]">Période</TableHead>
-                <TableHead className="w-[8rem] text-center">Employés</TableHead>
-                <TableHead className="text-right w-[14rem]">Total payé ($)</TableHead>
-                <TableHead className="w-[12rem] text-center">Variation</TableHead>
-                <TableHead className="w-[14rem]">Terminée le</TableHead>
-                <TableHead className="w-[10rem]">État</TableHead>
-                <TableHead className="w-[6rem] text-center">Action</TableHead>
+                <TableHead className="w-[14rem]">Période</TableHead>
+                <TableHead className="w-[6rem] text-center">Employés</TableHead>
+                <TableHead className="text-right w-[10rem]">Total payé ($)</TableHead>
+                <TableHead className="w-[8rem] text-center">Variation</TableHead>
+                <TableHead className="w-[10rem]">Terminée le</TableHead>
+                <TableHead className="w-[8rem]">État</TableHead>
+                <TableHead className="w-[5rem] text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -172,15 +166,13 @@ export default function JournalDePaiePage() {
                       <div className="font-medium text-[var(--text)]">
                         {libelleOperation(op.annee, op.mois)}
                       </div>
-                      <div className="text-[0.9375rem] text-[var(--text-2)]">
+                      <div className="text-[0.857rem] text-[var(--text-2)]">
                         {op.jours_ouvrables} jours ouvrables
                       </div>
                     </TableCell>
 
                     {/* Employés */}
-                    <TableCell className="text-center font-medium">
-                      {op.nombre_employes}
-                    </TableCell>
+                    <TableCell className="text-center font-medium">{op.nombre_employes}</TableCell>
 
                     {/* Total payé */}
                     <TableCell className="text-right font-semibold tabular-nums">
@@ -191,7 +183,7 @@ export default function JournalDePaiePage() {
                     <TableCell className="text-center">
                       {varTotal?.pourcentage ? (
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[0.875rem] font-semibold ${
+                          className={`inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full text-[0.786rem] font-semibold ${
                             varTotal.sens === 'hausse'
                               ? 'bg-[var(--primary-tint)] text-[var(--primary-strong)]'
                               : varTotal.sens === 'baisse'
@@ -199,13 +191,19 @@ export default function JournalDePaiePage() {
                                 : 'bg-[var(--hover)] text-[var(--text-2)]'
                           }`}
                         >
-                          {varTotal.sens === 'hausse' && <ArrowUpRight className="w-3.5 h-3.5" />}
-                          {varTotal.sens === 'baisse' && <ArrowDownRight className="w-3.5 h-3.5" />}
-                          {varTotal.sens === 'stable' && <Minus className="w-3.5 h-3.5" />}
+                          {varTotal.sens === 'hausse' && (
+                            <ArrowUpRight className="w-[0.857rem] h-[0.857rem]" />
+                          )}
+                          {varTotal.sens === 'baisse' && (
+                            <ArrowDownRight className="w-[0.857rem] h-[0.857rem]" />
+                          )}
+                          {varTotal.sens === 'stable' && (
+                            <Minus className="w-[0.857rem] h-[0.857rem]" />
+                          )}
                           <span>{formaterPourcentage(varTotal.pourcentage)}</span>
                         </span>
                       ) : (
-                        <span className="text-[var(--text-2)] text-[0.875rem]">—</span>
+                        <span className="text-[var(--text-2)] text-[0.857rem]">—</span>
                       )}
                     </TableCell>
 
@@ -217,13 +215,13 @@ export default function JournalDePaiePage() {
                     {/* État */}
                     <TableCell>
                       {estTerminee ? (
-                        <Badge variant="secondary" className="gap-1.5">
-                          <Lock className="w-3.5 h-3.5" />
+                        <Badge variant="secondary" className="gap-[0.286rem]">
+                          <Lock className="w-[0.857rem] h-[0.857rem]" />
                           <span>Terminée</span>
                         </Badge>
                       ) : (
-                        <Badge variant="default" className="gap-1.5">
-                          <Clock className="w-3.5 h-3.5" />
+                        <Badge variant="default" className="gap-[0.286rem]">
+                          <Clock className="w-[0.857rem] h-[0.857rem]" />
                           <span>En cours</span>
                         </Badge>
                       )}
@@ -235,7 +233,7 @@ export default function JournalDePaiePage() {
                         trigger={
                           <button
                             type="button"
-                            className="w-[2.5rem] h-[2.5rem] rounded-[6px] border border-[var(--border)] bg-transparent hover:bg-[var(--hover)] flex items-center justify-center text-[var(--text)] cursor-pointer"
+                            className="w-[2.286rem] h-[2.286rem] rounded-[0.429rem] border border-[var(--border)] bg-transparent hover:bg-[var(--hover)] flex items-center justify-center text-[var(--text)] cursor-pointer"
                             aria-label="Actions de l’opération"
                           >
                             ⋯
@@ -270,16 +268,14 @@ export default function JournalDePaiePage() {
         )}
 
         {/* Pied de tableau */}
-        <div className="h-[2.8125rem] px-6 border-t border-[var(--border)] flex items-center text-[1.0625rem] text-[var(--text-2)]">
-          Affichage de 1 à {operationsFiltrees.length} opération{operationsFiltrees.length > 1 ? 's' : ''}
+        <div className="h-[2.571rem] px-[1.143rem] border-t border-[var(--border)] flex items-center text-[0.857rem] text-[var(--text-2)]">
+          Affichage de 1 à {operationsFiltrees.length} opération
+          {operationsFiltrees.length > 1 ? 's' : ''}
         </div>
       </div>
 
       {/* Dialogue de création d'opération */}
-      <DialogueNouvelleOperation
-        ouvert={dialogueOuvert}
-        onOpenChange={setDialogueOuvert}
-      />
+      <DialogueNouvelleOperation ouvert={dialogueOuvert} onOpenChange={setDialogueOuvert} />
 
       {/* Dialogue de confirmation de réouverture */}
       <AlertDialog

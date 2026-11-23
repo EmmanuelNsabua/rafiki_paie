@@ -33,6 +33,8 @@ export function ouvrirBaseDeDonnees(options: OptionsOuvertureBase = {}): Databas
     cheminFinal = ':memory:';
   } else if (options.cheminBase) {
     cheminFinal = options.cheminBase;
+  } else if (process.env.RAFIKI_DB_PATH) {
+    cheminFinal = process.env.RAFIKI_DB_PATH;
   } else {
     // Chemin standard dans userData de l'application
     const userDataPath = app?.getPath ? app.getPath('userData') : process.cwd();

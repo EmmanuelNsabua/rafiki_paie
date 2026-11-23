@@ -124,9 +124,14 @@ function CelluleEditable({
 
   return (
     <div
+      id={idCellule}
+      data-cellule={idCellule}
+      data-testid={idCellule}
       className={cn(
-        'relative flex items-center justify-end px-3 py-1.5 rounded-[6px] min-h-[2.5rem] transition-colors',
-        !estTerminee && !actif && 'hover:bg-[var(--hover)] hover:ring-1 hover:ring-[var(--border)] cursor-text',
+        'relative flex items-center justify-end px-[0.571rem] py-[0.286rem] rounded-[0.286rem] min-h-[2.286rem] transition-colors',
+        !estTerminee &&
+          !actif &&
+          'hover:bg-[var(--hover)] hover:ring-1 hover:ring-[var(--border)] cursor-text',
         flash && 'bg-[var(--primary-tint)] transition-none',
         className
       )}
@@ -140,7 +145,8 @@ function CelluleEditable({
       {actif && !estTerminee ? (
         <div className="relative flex items-center w-full">
           <input
-            id={idCellule}
+            id={idCellule ? `input-${idCellule}` : undefined}
+            data-input={idCellule}
             ref={inputRef}
             type="text"
             inputMode="decimal"
@@ -153,19 +159,21 @@ function CelluleEditable({
             onFocus={handleFocus}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="w-full text-right bg-transparent outline-none ring-2 ring-[var(--primary)] rounded-[4px] px-2 py-0.5 text-[1.25rem] font-medium font-mono tabular-nums pr-6"
+            className="w-full text-right bg-transparent outline-none ring-2 ring-[var(--primary)] rounded-[0.286rem] px-[0.571rem] py-[0.143rem] text-[1rem] font-medium font-mono tabular-nums pr-[1.429rem]"
             autoFocus
           />
-          <span className="absolute right-2 text-[var(--text-2)] text-[1rem] pointer-events-none">$</span>
+          <span className="absolute right-[0.429rem] text-[var(--text-2)] text-[0.857rem] pointer-events-none">
+            $
+          </span>
         </div>
       ) : (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-[0.286rem]">
           {sauvegardeEnCours && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-ping mr-1" />
+            <span className="w-[0.429rem] h-[0.429rem] rounded-full bg-[var(--primary)] animate-ping mr-[0.286rem]" />
           )}
           <span
             className={cn(
-              'font-mono tabular-nums text-[1.25rem] font-medium',
+              'font-mono tabular-nums text-[1rem] font-medium',
               estZero ? 'text-[var(--text-2)]' : 'text-[var(--text)]'
             )}
           >
@@ -226,23 +234,23 @@ export function TableauSalaires({
   };
 
   return (
-    <div className="rounded-[8px] bg-[var(--surface)] border border-[var(--border)] shadow-xs overflow-hidden">
+    <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs overflow-hidden">
       {/* Bandeau de titre du tableau */}
-      <div className="flex flex-wrap items-center justify-between gap-4 px-6 h-[4.4375rem] border-b border-[var(--border)]">
-        <h2 className="text-[1.625rem] font-semibold text-[var(--text)] tracking-tight">
+      <div className="flex flex-wrap items-center justify-between gap-[0.857rem] px-[1.143rem] h-[3.143rem] border-b border-[var(--border)]">
+        <h2 className="text-[1.143rem] font-semibold text-[var(--text)] tracking-tight">
           Salaires des employés
         </h2>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-[0.857rem]">
           {nbEmployesNonInclus > 0 && !estTerminee && (
             <Button
               type="button"
               variant="outline"
               onClick={handleAjouterNouveaux}
               disabled={chargementAjout}
-              className="h-10 text-[0.9375rem] font-medium border-[var(--primary)] text-[var(--primary-strong)] hover:bg-[var(--primary-tint)] flex items-center gap-2 cursor-pointer"
+              className="h-[2.286rem] text-[0.857rem] font-medium border-[var(--primary)] text-[var(--primary-strong)] hover:bg-[var(--primary-tint)] flex items-center gap-[0.357rem] cursor-pointer"
             >
-              <UserPlus className="w-4 h-4" />
+              <UserPlus className="w-[1rem] h-[1rem]" />
               <span>
                 {chargementAjout
                   ? 'Ajout en cours…'
@@ -251,8 +259,9 @@ export function TableauSalaires({
             </Button>
           )}
 
-          <span className="text-[1.125rem] text-[var(--text-2)]">
-            {lignes.length} employé{lignes.length > 1 ? 's' : ''} affiché{lignes.length > 1 ? 's' : ''} · Montants en dollars ($)
+          <span className="text-[0.857rem] text-[var(--text-2)]">
+            {lignes.length} employé{lignes.length > 1 ? 's' : ''} affiché
+            {lignes.length > 1 ? 's' : ''} · Montants en dollars ($)
           </span>
         </div>
       </div>
@@ -261,11 +270,11 @@ export function TableauSalaires({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="h-[3.4375rem] bg-[var(--table-head)] border-b border-[var(--border)] text-[1.25rem] font-medium text-[var(--text-2)]">
-              <th className="w-16 px-4 text-center">N°</th>
-              <th className="px-6">Employé</th>
-              <th className="w-56 px-4 text-right">
-                <div className="inline-flex items-center gap-1.5 justify-end">
+            <tr className="h-[2.571rem] bg-[var(--table-head)] border-b border-[var(--border)] text-[0.857rem] font-medium text-[var(--text-2)]">
+              <th className="w-[3.5rem] px-[0.857rem] text-center">N°</th>
+              <th className="px-[1.143rem]">Employé</th>
+              <th className="w-[14rem] px-[0.857rem] text-right">
+                <div className="inline-flex items-center gap-[0.286rem] justify-end">
                   <span>HS / Primes ($)</span>
                   <Tooltip content="Heures supplémentaires et primes : somme qui s'ajoute au salaire.">
                     <button
@@ -273,13 +282,13 @@ export function TableauSalaires({
                       aria-label="Aide sur HS et Primes"
                       className="text-[var(--text-2)] hover:text-[var(--text)] transition-colors cursor-help"
                     >
-                      <HelpCircle className="w-3.5 h-3.5" />
+                      <HelpCircle className="w-[0.857rem] h-[0.857rem]" />
                     </button>
                   </Tooltip>
                 </div>
               </th>
-              <th className="w-56 px-4 text-right">
-                <div className="inline-flex items-center gap-1.5 justify-end">
+              <th className="w-[14rem] px-[0.857rem] text-right">
+                <div className="inline-flex items-center gap-[0.286rem] justify-end">
                   <span>Retrait ($)</span>
                   <Tooltip content="Avance déjà versée ou retenue convenue : somme qui est retirée du salaire.">
                     <button
@@ -287,19 +296,19 @@ export function TableauSalaires({
                       aria-label="Aide sur Retrait"
                       className="text-[var(--text-2)] hover:text-[var(--text)] transition-colors cursor-help"
                     >
-                      <HelpCircle className="w-3.5 h-3.5" />
+                      <HelpCircle className="w-[0.857rem] h-[0.857rem]" />
                     </button>
                   </Tooltip>
                 </div>
               </th>
-              <th className="w-56 px-6 text-right">Salaire net ($)</th>
-              <th className="w-24 px-4 text-center">Action</th>
+              <th className="w-[14rem] px-[1.143rem] text-right">Salaire net ($)</th>
+              <th className="w-[5rem] px-[0.857rem] text-center">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border)] text-[1.3125rem]">
+          <tbody className="divide-y divide-[var(--border)] text-[1rem]">
             {lignes.map((ligne, index) => {
               const aErreur = Boolean(ligne.erreur);
-              const nomComplet = `${ligne.nom} ${ligne.postnom || ''} ${ligne.prenom || ''}`.trim();
+              const nomComplet = [ligne.nom, ligne.postnom, ligne.prenom].filter(Boolean).join(' ');
               const totalAbs = totalJoursAbsences(
                 ligne.jours_maladie,
                 ligne.jours_conge,
@@ -311,28 +320,28 @@ export function TableauSalaires({
                 <React.Fragment key={ligne.id}>
                   <tr
                     className={cn(
-                      'h-[3.75rem] transition-colors',
+                      'h-[3.143rem] transition-colors',
                       aErreur
                         ? 'bg-[var(--danger-tint)] border-l-4 border-l-[var(--danger)]'
                         : 'hover:bg-[var(--hover)]'
                     )}
                   >
                     {/* N° */}
-                    <td className="px-4 text-center text-[var(--text-2)] font-mono">
+                    <td className="px-[0.857rem] text-center text-[var(--text-2)] font-mono">
                       {String(ligne.numero).padStart(2, '0')}
                     </td>
 
                     {/* Employé */}
-                    <td className="px-6 font-medium text-[var(--text)]">
-                      <div className="flex items-center gap-2.5">
+                    <td className="px-[1.143rem] font-medium text-[var(--text)]">
+                      <div className="flex items-center gap-[0.571rem]">
                         <span className="truncate">{nomComplet}</span>
                         {aDesAbsences && (
                           <button
                             type="button"
                             onClick={() => onOuvrirAbsences(ligne)}
-                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--hover)] hover:bg-[var(--border)] text-[0.875rem] text-[var(--text-2)] font-normal transition-colors cursor-pointer border border-[var(--border)]"
+                            className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-[var(--hover)] hover:bg-[var(--border)] text-[0.786rem] text-[var(--text-2)] font-normal transition-colors cursor-pointer border border-[var(--border)]"
                           >
-                            <Clock className="w-3.5 h-3.5" />
+                            <Clock className="w-[0.857rem] h-[0.857rem]" />
                             <span>Absences {totalAbs}&nbsp;j</span>
                           </button>
                         )}
@@ -340,43 +349,47 @@ export function TableauSalaires({
                     </td>
 
                     {/* HS / Primes */}
-                    <td className="px-4 text-right">
+                    <td className="px-[0.857rem] text-right">
                       <CelluleEditable
                         idCellule={`cellule-hs-${index}`}
                         valeurInitiale={ligne.hs || '0'}
                         estTerminee={estTerminee}
-                        onEnregistrer={(val) => executerLigneModif(ligne.id, { hs: val }).then(() => {})}
+                        onEnregistrer={(val) =>
+                          executerLigneModif(ligne.id, { hs: val }).then(() => {})
+                        }
                         onNaviguerSuivant={() => focusCellule(index + 1, 'hs')}
                       />
                     </td>
 
                     {/* Retrait */}
-                    <td className="px-4 text-right">
+                    <td className="px-[0.857rem] text-right">
                       <CelluleEditable
                         idCellule={`cellule-retrait-${index}`}
                         valeurInitiale={ligne.retrait || '0'}
                         estTerminee={estTerminee}
-                        onEnregistrer={(val) => executerLigneModif(ligne.id, { retrait: val }).then(() => {})}
+                        onEnregistrer={(val) =>
+                          executerLigneModif(ligne.id, { retrait: val }).then(() => {})
+                        }
                         onNaviguerSuivant={() => focusCellule(index + 1, 'retrait')}
                       />
                     </td>
 
                     {/* Salaire net */}
-                    <td className="px-6 text-right font-semibold text-[var(--text)] font-mono tabular-nums">
+                    <td className="px-[1.143rem] text-right font-semibold text-[var(--text)] font-mono tabular-nums">
                       {formaterMontant(ligne.net_global, 2)}
                     </td>
 
                     {/* Action */}
-                    <td className="px-4 text-center">
+                    <td className="px-[0.857rem] text-center">
                       <DropdownMenu
                         align="right"
                         trigger={
                           <button
                             type="button"
                             aria-label={`Actions pour ${nomComplet}`}
-                            className="w-10 h-10 inline-flex items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--text-2)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                            className="w-[2.286rem] h-[2.286rem] inline-flex items-center justify-center rounded-[0.429rem] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--text-2)] hover:text-[var(--text)] transition-colors cursor-pointer"
                           >
-                            <MoreHorizontal className="w-5 h-5" />
+                            <MoreHorizontal className="w-[1.143rem] h-[1.143rem]" />
                           </button>
                         }
                         items={[
@@ -401,7 +414,11 @@ export function TableauSalaires({
                   {/* Affichage d'erreur sous la ligne si le domaine signale une anomalie */}
                   {aErreur && (
                     <tr className="bg-[var(--danger-tint)] border-l-4 border-l-[var(--danger)]">
-                      <td colSpan={6} className="px-6 py-2 text-[0.9375rem] text-[var(--danger)] font-medium" aria-live="polite">
+                      <td
+                        colSpan={6}
+                        className="px-[1.143rem] py-[0.429rem] text-[0.857rem] text-[var(--danger)] font-medium"
+                        aria-live="polite"
+                      >
                         {ligne.erreur}
                       </td>
                     </tr>
@@ -414,7 +431,7 @@ export function TableauSalaires({
       </div>
 
       {/* Pied du tableau */}
-      <div className="flex items-center px-6 h-[2.8125rem] border-t border-[var(--border)] text-[1.0625rem] text-[var(--text-2)] bg-[var(--surface)]">
+      <div className="flex items-center px-[1.143rem] h-[2.571rem] border-t border-[var(--border)] text-[0.857rem] text-[var(--text-2)] bg-[var(--surface)]">
         Affichage de 1 à {lignes.length} employé{lignes.length > 1 ? 's' : ''}
       </div>
     </div>

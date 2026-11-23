@@ -44,7 +44,9 @@ describe('Extensions Phase 2 du Domaine et du Contrat (Section 5)', () => {
     expect(maj.lignes[1].jours_ouvrables).toBe(20);
 
     // Refus si jours < 1
-    expect(() => opService.modifierJours(op.id, 0)).toThrow('Le nombre de jours ouvrables doit être supérieur ou égal à 1');
+    expect(() => opService.modifierJours(op.id, 0)).toThrow(
+      'Le nombre de jours ouvrables doit être supérieur ou égal à 1'
+    );
 
     // Refus si absences excessives
     ligneService.modifier(maj.lignes[0].id, { jours_absence: '15' });
@@ -52,7 +54,9 @@ describe('Extensions Phase 2 du Domaine et du Contrat (Section 5)', () => {
 
     // Refus si opération terminée
     opService.terminer(op.id);
-    expect(() => opService.modifierJours(op.id, 21)).toThrow('Impossible de modifier les jours ouvrables d une opération terminée');
+    expect(() => opService.modifierJours(op.id, 21)).toThrow(
+      'Impossible de modifier les jours ouvrables d une opération terminée'
+    );
   });
 
   it('2. Synthèse et variations calculées correctement par rapport à l opération antérieure terminée', () => {

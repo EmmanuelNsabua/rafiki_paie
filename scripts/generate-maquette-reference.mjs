@@ -289,6 +289,8 @@ app.whenReady().then(async () => {
   const image = await win.webContents.capturePage({ x: 0, y: 0, width: 1920, height: 1080 });
   const outPath = path.resolve('docs/phase-2/maquette-reference.png');
   fs.writeFileSync(outPath, image.toPNG());
-  console.log(`[MAQUETTE] Référence visuelle créée avec succès : ${outPath} (${fs.statSync(outPath).size} octets)`);
+  console.log(
+    `[MAQUETTE] Référence visuelle créée avec succès : ${outPath} (${fs.statSync(outPath).size} octets)`
+  );
   app.quit();
 });

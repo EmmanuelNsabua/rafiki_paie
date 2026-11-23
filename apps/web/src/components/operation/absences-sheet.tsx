@@ -2,7 +2,13 @@
 
 import * as React from 'react';
 import type { LignePaieCalculee } from '@rafiki/contrat';
-import { Sheet, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,9 +48,11 @@ export function AbsencesSheet({
     }
   }, [ligne]);
 
-  const planifierModification = (
-    nouvellesValeurs: { jours_maladie: string; jours_conge: string; jours_absence: string }
-  ) => {
+  const planifierModification = (nouvellesValeurs: {
+    jours_maladie: string;
+    jours_conge: string;
+    jours_absence: string;
+  }) => {
     if (!ligne || estTerminee) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -54,23 +62,26 @@ export function AbsencesSheet({
   };
 
   const nomComplet = ligne
-    ? `${ligne.nom} ${ligne.postnom || ''} ${ligne.prenom || ''}`.trim()
+    ? [ligne.nom, ligne.postnom, ligne.prenom].filter(Boolean).join(' ')
     : '';
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} width="w-[27.5rem]">
+    <Sheet open={open} onOpenChange={onOpenChange} width="w-[28.571rem]">
       <SheetHeader>
-        <SheetTitle>Absences — {nomComplet}</SheetTitle>
-        <SheetDescription>
+        <SheetTitle className="text-[1.143rem]">Absences — {nomComplet}</SheetTitle>
+        <SheetDescription className="text-[0.857rem]">
           Saisissez les jours d’absence de l’employé pour ce mois.
         </SheetDescription>
       </SheetHeader>
 
-      <div className="flex flex-col gap-6 py-2">
+      <div className="flex flex-col gap-[1.143rem] py-[0.571rem]">
         {/* Champs de saisie des absences */}
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="absence-maladie" className="text-[1.0625rem] font-medium text-[var(--text)]">
+        <div className="space-y-[0.857rem]">
+          <div className="space-y-[0.286rem]">
+            <Label
+              htmlFor="absence-maladie"
+              className="text-[0.857rem] font-medium text-[var(--text)]"
+            >
               Maladie (jours)
             </Label>
             <Input
@@ -88,13 +99,16 @@ export function AbsencesSheet({
                   jours_absence: absence || '0',
                 });
               }}
-              className="h-11 text-[1.125rem]"
+              className="h-[2.286rem] text-[1rem]"
               placeholder="0"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="absence-conge" className="text-[1.0625rem] font-medium text-[var(--text)]">
+          <div className="space-y-[0.286rem]">
+            <Label
+              htmlFor="absence-conge"
+              className="text-[0.857rem] font-medium text-[var(--text)]"
+            >
               Congé de circonstance (jours)
             </Label>
             <Input
@@ -112,13 +126,16 @@ export function AbsencesSheet({
                   jours_absence: absence || '0',
                 });
               }}
-              className="h-11 text-[1.125rem]"
+              className="h-[2.286rem] text-[1rem]"
               placeholder="0"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="absence-injustifiee" className="text-[1.0625rem] font-medium text-[var(--text)]">
+          <div className="space-y-[0.286rem]">
+            <Label
+              htmlFor="absence-injustifiee"
+              className="text-[0.857rem] font-medium text-[var(--text)]"
+            >
               Absence non justifiée (jours)
             </Label>
             <Input
@@ -136,16 +153,16 @@ export function AbsencesSheet({
                   jours_absence: norm || '0',
                 });
               }}
-              className="h-11 text-[1.125rem]"
+              className="h-[2.286rem] text-[1rem]"
               placeholder="0"
             />
           </div>
         </div>
 
         {/* Section Retenues */}
-        <div className="mt-4 p-4 rounded-[8px] bg-[var(--table-head)] border border-[var(--border)] space-y-3">
-          <h3 className="text-[1.125rem] font-semibold text-[var(--text)]">Retenues</h3>
-          <div className="space-y-2 text-[1rem]">
+        <div className="mt-[0.571rem] p-[0.857rem] rounded-[0.429rem] bg-[var(--table-head)] border border-[var(--border)] space-y-[0.571rem]">
+          <h3 className="text-[0.929rem] font-semibold text-[var(--text)]">Retenues</h3>
+          <div className="space-y-[0.429rem] text-[0.857rem]">
             <div className="flex justify-between items-center text-[var(--text-2)]">
               <span>Maladie :</span>
               <span className="font-medium text-[var(--text)] font-mono">
@@ -164,7 +181,7 @@ export function AbsencesSheet({
                 {formaterMontant(ligne?.retenue_absence ?? '0', 2)}
               </span>
             </div>
-            <div className="pt-2 border-t border-[var(--border)] flex justify-between items-center font-semibold text-[var(--text)] text-[1.125rem]">
+            <div className="pt-[0.429rem] border-t border-[var(--border)] flex justify-between items-center font-semibold text-[var(--text)] text-[0.929rem]">
               <span>Total des retenues :</span>
               <span className="text-[var(--danger)] font-mono">
                 {formaterMontant(ligne?.total_retenues ?? '0', 2)}
@@ -174,8 +191,9 @@ export function AbsencesSheet({
         </div>
 
         {/* Texte d'aide dynamique lisant diviseurRetenue */}
-        <p className="text-[0.9375rem] text-[var(--text-2)] leading-relaxed">
-          Maladie et congé : 1/{diviseurRetenue} du salaire journalier par jour. Absence non justifiée : le salaire journalier complet.
+        <p className="text-[0.857rem] text-[var(--text-2)] leading-relaxed">
+          Maladie et congé : 1/{diviseurRetenue} du salaire journalier par jour. Absence non
+          justifiée : le salaire journalier complet.
         </p>
       </div>
 
@@ -183,7 +201,7 @@ export function AbsencesSheet({
         <Button
           variant="outline"
           onClick={() => onOpenChange(false)}
-          className="cursor-pointer"
+          className="h-[2.429rem] px-[0.857rem] text-[0.929rem] cursor-pointer"
         >
           Fermer
         </Button>

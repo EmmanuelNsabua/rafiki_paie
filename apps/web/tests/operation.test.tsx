@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { DetailOperationComplet, LignePaieCalculee, ResumeOperationLister } from '@rafiki/contrat';
+import type {
+  DetailOperationComplet,
+  LignePaieCalculee,
+  ResumeOperationLister,
+} from '@rafiki/contrat';
 
 // Mock Next.js navigation
 const pushMock = vi.fn();

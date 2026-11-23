@@ -71,7 +71,8 @@ export class OperationService {
     }
 
     const nb = lignesPrec.length;
-    const moyenDec = nb > 0 ? masseDec.dividedBy(nb).toDecimalPlaces(2, Decimal.ROUND_HALF_UP) : new Decimal(0);
+    const moyenDec =
+      nb > 0 ? masseDec.dividedBy(nb).toDecimalPlaces(2, Decimal.ROUND_HALF_UP) : new Decimal(0);
 
     return {
       masse_salariale: masseDec.toFixed(2),
@@ -113,7 +114,10 @@ export class OperationService {
 
       const totaux = calculerTotauxOperation(lignesCalculees);
       const prec = this.obtenirPrecedenteTerminee(op.annee, op.mois);
-      const variationTotalPaye = calculerVariation(new Decimal(totaux.total_virement), prec?.total_paye);
+      const variationTotalPaye = calculerVariation(
+        new Decimal(totaux.total_virement),
+        prec?.total_paye
+      );
 
       return {
         ...op,

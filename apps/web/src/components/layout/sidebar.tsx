@@ -39,29 +39,29 @@ export function Sidebar() {
   return (
     <aside
       aria-label="Navigation principale"
-      className="fixed left-0 top-0 bottom-0 w-[20.875rem] bg-[var(--surface)] border-r border-[var(--border)] z-30 flex flex-col justify-between select-none"
+      className="fixed left-0 top-0 bottom-0 w-[16.571rem] bg-[var(--surface)] border-r border-[var(--border)] z-30 flex flex-col justify-between select-none"
     >
       <div>
-        {/* Marque : Tuile verte 72x72 + École Rafiki */}
-        <div className="pt-[1.875rem] px-[1rem] flex items-center gap-[1rem]">
+        {/* Marque : Tuile verte compacte + École Rafiki */}
+        <div className="pt-[1.143rem] px-[1rem] flex items-center gap-[0.714rem]">
           <div
-            className="w-[4.5rem] h-[4.5rem] rounded-[0.75rem] bg-[var(--primary)] text-white flex items-center justify-center text-[2.375rem] font-bold shrink-0 shadow-sm"
+            className="w-[2.286rem] h-[2.286rem] rounded-[0.429rem] bg-[var(--primary)] text-white flex items-center justify-center text-[1.143rem] font-bold shrink-0 shadow-xs"
             aria-hidden="true"
           >
             R
           </div>
           <div className="min-w-0">
-            <h1 className="text-[2.125rem] font-bold text-[var(--text)] leading-[1.15] truncate">
+            <h1 className="text-[1.143rem] font-bold text-[var(--text)] leading-[1.429rem] truncate">
               École Rafiki
             </h1>
-            <p className="text-[1.25rem] font-normal text-[var(--text-2)] truncate mt-0.5">
+            <p className="text-[0.857rem] font-normal text-[var(--text-2)] leading-[1.143rem] truncate">
               Gestionnaire de paie
             </p>
           </div>
         </div>
 
         {/* Entrées de menu */}
-        <nav className="mt-[3.875rem] px-[1rem] flex flex-col gap-[0.625rem]">
+        <nav className="mt-[1.429rem] px-[0.714rem] flex flex-col gap-[0.286rem]">
           {MENU_ITEMS.map((item) => {
             const active = isItemActive(item.href);
             const Icon = item.icon;
@@ -70,13 +70,18 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'h-[3.625rem] px-[1.25rem] rounded-[0.5rem] flex items-center gap-[1rem] text-[1.375rem] transition-colors',
+                  'h-[2.571rem] px-[0.857rem] rounded-[0.429rem] flex items-center gap-[0.714rem] text-[1rem] leading-[1.429rem] transition-colors',
                   active
                     ? 'bg-[var(--primary)] text-white font-semibold shadow-xs'
                     : 'text-[var(--text-2)] font-medium hover:bg-[var(--hover)] hover:text-[var(--text)]'
                 )}
               >
-                <Icon className={cn('w-[1.5rem] h-[1.5rem] shrink-0', active ? 'text-white' : 'text-[var(--text-2)]')} />
+                <Icon
+                  className={cn(
+                    'w-[1.286rem] h-[1.286rem] shrink-0',
+                    active ? 'text-white' : 'text-[var(--text-2)]'
+                  )}
+                />
                 <span className="truncate">{item.label}</span>
               </Link>
             );
@@ -85,17 +90,22 @@ export function Sidebar() {
       </div>
 
       {/* Réglages en bas */}
-      <div className="p-[1rem] pb-[1.5rem]">
+      <div className="p-[0.714rem] pb-[1rem]">
         <Link
           href="/reglages/"
           className={cn(
-            'h-[3.625rem] px-[1.25rem] rounded-[0.5rem] flex items-center gap-[1rem] text-[1.375rem] transition-colors',
+            'h-[2.571rem] px-[0.857rem] rounded-[0.429rem] flex items-center gap-[0.714rem] text-[1rem] leading-[1.429rem] transition-colors',
             isReglagesActive
               ? 'bg-[var(--primary)] text-white font-semibold shadow-xs'
               : 'text-[var(--text-2)] font-medium hover:bg-[var(--hover)] hover:text-[var(--text)]'
           )}
         >
-          <Settings className={cn('w-[1.5rem] h-[1.5rem] shrink-0', isReglagesActive ? 'text-white' : 'text-[var(--text-2)]')} />
+          <Settings
+            className={cn(
+              'w-[1.286rem] h-[1.286rem] shrink-0',
+              isReglagesActive ? 'text-white' : 'text-[var(--text-2)]'
+            )}
+          />
           <span className="truncate">Réglages</span>
         </Link>
       </div>
