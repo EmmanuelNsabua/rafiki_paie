@@ -63,11 +63,12 @@ test.describe.serial('Groupe G — Fenêtre sans cadre, barre de titre et thème
     expect(titreFenetre).toBe('Gestionnaire de paie');
 
     // Page d'accueil par défaut est Journal de paie
+    await page.waitForURL(/\/journal-de-paie/, { timeout: 5000 });
     const url = page.url();
     expect(url).toContain('journal-de-paie');
   });
 
-  test("2. La barre de titre contient le bouton du logo et le titre, et rien d'autre", async () => {
+  test('2. La barre de titre contient le logo et le titre à gauche, et les contrôles de fenêtre à droite', async () => {
     await page.waitForSelector('[data-testid="barre-titre"]', { timeout: 5000 });
     expect(await page.isVisible('[data-testid="barre-titre"]')).toBe(true);
 
@@ -78,6 +79,14 @@ test.describe.serial('Groupe G — Fenêtre sans cadre, barre de titre et thème
 
     const titreVisible = await page.isVisible('text="Gestionnaire de paie"');
     expect(titreVisible).toBe(true);
+
+    // Contrôles de fenêtre à droite
+    expect(await page.isVisible('[data-testid="controles-fenetre"]')).toBe(true);
+    expect(await page.isVisible('button[aria-label="Réduire"]')).toBe(true);
+    expect(
+      await page.isVisible('button[aria-label="Agrandir"], button[aria-label="Restaurer"]')
+    ).toBe(true);
+    expect(await page.isVisible('button[aria-label="Fermer"]')).toBe(true);
   });
 
   test('3. Clic sur le logo ouvre le menu complet et fonctionnel', async () => {

@@ -182,11 +182,11 @@ export function BarreTitre() {
   return (
     <div
       data-testid="barre-titre"
-      className="fixed top-0 left-0 right-0 h-[2.286rem] bg-[var(--fenetre)] z-40 select-none flex items-center px-[0.571rem]"
+      className="fixed top-0 left-0 right-0 h-[2.286rem] bg-[var(--fenetre)] z-40 select-none flex items-center justify-between pl-[0.571rem] pr-0"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
       onDoubleClick={basculerAgrandissement}
     >
-      {/* Zone gauche : Logo + Titre (et rien d'autre) */}
+      {/* Zone gauche : Logo + Titre */}
       <div className="flex items-center gap-[0.571rem]">
         {/* Bouton du Logo */}
         <button
@@ -210,6 +210,47 @@ export function BarreTitre() {
         <span className="text-[12px] leading-[16px] font-medium text-[var(--texte)]">
           Gestionnaire de paie
         </span>
+      </div>
+
+      {/* Zone droite : Boutons de contrôle de la fenêtre (Réduire, Agrandir/Restaurer, Fermer) */}
+      <div
+        data-testid="controles-fenetre"
+        className="flex items-center h-full"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+      >
+        <button
+          type="button"
+          aria-label="Réduire"
+          title="Réduire"
+          onClick={reduireFenetre}
+          className="w-[2.857rem] h-full flex items-center justify-center text-[var(--texte)] hover:bg-[var(--survol)] active:bg-[var(--survol)] transition-colors outline-none"
+        >
+          <Minus className="w-[12px] h-[12px]" />
+        </button>
+
+        <button
+          type="button"
+          aria-label={estAgrandi ? 'Restaurer' : 'Agrandir'}
+          title={estAgrandi ? 'Restaurer' : 'Agrandir'}
+          onClick={basculerAgrandissement}
+          className="w-[2.857rem] h-full flex items-center justify-center text-[var(--texte)] hover:bg-[var(--survol)] active:bg-[var(--survol)] transition-colors outline-none"
+        >
+          {estAgrandi ? (
+            <Copy className="w-[11px] h-[11px]" />
+          ) : (
+            <Square className="w-[11px] h-[11px]" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          aria-label="Fermer"
+          title="Fermer (Alt+F4)"
+          onClick={fermerFenetre}
+          className="w-[2.857rem] h-full flex items-center justify-center text-[var(--texte)] hover:bg-[#e81123] hover:text-white active:bg-[#c4101f] active:text-white transition-colors outline-none"
+        >
+          <X className="w-[14px] h-[14px]" />
+        </button>
       </div>
 
       {/* Menu du Logo (Popover flottant) */}

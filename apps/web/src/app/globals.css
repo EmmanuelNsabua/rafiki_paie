@@ -138,3 +138,8 @@ a:active {
     transform: none !important;
   }
 }
+
+/* Masque l'indicateur d'erreur/issue de développement de Next.js */
+nextjs-portal {
+  display: none !important;
+}
