@@ -39,7 +39,7 @@ export function Sidebar() {
   return (
     <aside
       aria-label="Navigation principale"
-      className="fixed left-0 top-0 bottom-0 w-[16.571rem] bg-[var(--surface)] border-r border-[var(--border)] z-30 flex flex-col justify-between select-none"
+      className="fixed left-0 top-[2.286rem] bottom-0 w-[16.571rem] bg-[var(--fenetre)] border-r border-[var(--trait)] z-30 flex flex-col justify-between select-none"
     >
       <div>
         {/* Marque : Tuile verte compacte + École Rafiki */}

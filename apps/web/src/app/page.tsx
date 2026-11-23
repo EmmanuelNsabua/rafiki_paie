@@ -21,8 +21,8 @@ export default function RootPage() {
       );
     }
 
-    // Redirection vers /operation/ selon la spécification de la section 4
-    router.replace('/operation/');
+    // Redirection vers /journal-de-paie/ (Page d'accueil par défaut de l'application)
+    router.replace('/journal-de-paie/');
   }, [router]);
 
   return (

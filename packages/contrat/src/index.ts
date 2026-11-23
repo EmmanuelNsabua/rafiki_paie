@@ -461,4 +461,69 @@ export interface ElectronApi {
   journal: {
     lister: (input?: z.infer<typeof ipcJournalListerInput>) => Promise<ReponseIpc<Journal[]>>;
   };
+  fenetre: ApiFenetre;
 }
+
+// ============================================================================
+// Préférences d'interface et Fenêtre (Section 4.5 & 4.6)
+// ============================================================================
+
+export const themePreferenceSchema = z.enum(['systeme', 'clair', 'sombre']);
+export type ThemePreference = z.infer<typeof themePreferenceSchema>;
+
+export const zoomSchema = z.number().min(0.5).max(2.0);
+export const tailleTexteSchema = z.number().int().min(12).max(20);
+
+export const etatFenetreGeometrieSchema = z.object({
+  x: z.number().optional(),
+  y: z.number().optional(),
+  largeur: z.number().default(1440),
+  hauteur: z.number().default(900),
+  estAgrandi: z.boolean().default(false),
+});
+export type EtatFenetreGeometrie = z.infer<typeof etatFenetreGeometrieSchema>;
+
+export const preferencesInterfaceSchema = z.object({
+  theme: themePreferenceSchema.default('systeme'),
+  zoom: zoomSchema.default(1.0),
+  tailleTexte: tailleTexteSchema.default(14),
+  fenetre: etatFenetreGeometrieSchema.default({
+    largeur: 1440,
+    hauteur: 900,
+    estAgrandi: false,
+  }),
+});
+export type PreferencesInterface = z.infer<typeof preferencesInterfaceSchema>;
+
+export const ipcFenetreDefinirThemeInput = z.object({
+  theme: themePreferenceSchema,
+});
+export const ipcFenetreDefinirZoomInput = z.object({
+  zoom: zoomSchema,
+});
+export const ipcFenetreDefinirTailleTexteInput = z.object({
+  tailleTexte: tailleTexteSchema,
+});
+
+export interface InfosFenetre {
+  preferences: PreferencesInterface;
+  estAgrandi: boolean;
+  version: string;
+}
+
+export interface ApiFenetre {
+  lirePreferences: () => Promise<ReponseIpc<InfosFenetre>>;
+  definirTheme: (theme: ThemePreference) => Promise<ReponseIpc<{ theme: ThemePreference }>>;
+  definirZoom: (zoom: number) => Promise<ReponseIpc<{ zoom: number }>>;
+  definirTailleTexte: (taille: number) => Promise<ReponseIpc<{ tailleTexte: number }>>;
+  reduire: () => Promise<ReponseIpc<void>>;
+  basculerAgrandissement: () => Promise<ReponseIpc<{ estAgrandi: boolean }>>;
+  fermer: () => Promise<ReponseIpc<void>>;
+  redemarrer: () => Promise<ReponseIpc<void>>;
+  surChangementEtatAgrandi: (callback: (estAgrandi: boolean) => void) => () => void;
+  surChangementPreferences: (callback: (prefs: PreferencesInterface) => void) => () => void;
+  surChangementThemeSysteme?: (callback: (theme: 'sombre' | 'clair') => void) => () => void;
+  surAvantFermeture: (callback: () => Promise<void> | void) => () => void;
+}
+
+export * from './canaux';

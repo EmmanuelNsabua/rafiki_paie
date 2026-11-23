@@ -45,7 +45,7 @@ html {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='clair']) {
     --fenetre: #202020;
     --carte: #2b2b2b;
     --entete-tableau: #272727;
@@ -63,6 +63,44 @@ html {
     --warning-trait: #7a5a12;
     --warning-texte: #fcd34d;
   }
+}
+
+:root[data-theme='sombre'] {
+  --fenetre: #202020;
+  --carte: #2b2b2b;
+  --entete-tableau: #272727;
+  --trait: #3a3a3a;
+  --texte: #ffffff;
+  --texte-2: #c5c5c5;
+  --survol: rgba(255, 255, 255, 0.06);
+  --primary: #15803d;
+  --primary-strong: #4ade80;
+  --primary-tint: #14532d;
+  --primary-tint-texte: #86efac;
+  --danger: #f87171;
+  --danger-tint: #3b1a1d;
+  --warning-tint: #3a2e10;
+  --warning-trait: #7a5a12;
+  --warning-texte: #fcd34d;
+}
+
+:root[data-theme='clair'] {
+  --fenetre: #f3f3f3;
+  --carte: #ffffff;
+  --entete-tableau: #f9f9f9;
+  --trait: #e5e5e5;
+  --texte: #1a1a1a;
+  --texte-2: #5f5f5f;
+  --survol: rgba(0, 0, 0, 0.05);
+  --primary: #16a34a;
+  --primary-strong: #15803d;
+  --primary-tint: #dcfce7;
+  --primary-tint-texte: #15803d;
+  --danger: #dc2626;
+  --danger-tint: #fee2e2;
+  --warning-tint: #fef3c7;
+  --warning-trait: #fcd34d;
+  --warning-texte: #92400e;
 }
 
 body {

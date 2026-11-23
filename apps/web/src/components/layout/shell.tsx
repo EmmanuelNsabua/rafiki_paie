@@ -3,8 +3,9 @@
 import * as React from 'react';
 import { Sidebar } from './sidebar';
 import { Topbar } from './topbar';
+import { BarreTitre } from './barre-titre';
 import { Toaster } from '@/components/ui/sonner';
-import { estDansElectron } from '@/lib/api';
+import { api, estDansElectron } from '@/lib/api';
 import { ShieldAlert } from 'lucide-react';
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,22 @@ export function Shell({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     setEstMonte(true);
     setDansElectron(estDansElectron());
+  }, []);
+
+  // Gestionnaire de fermeture sans perte (Section 4.7)
+  React.useEffect(() => {
+    if (!estDansElectron()) return;
+
+    const cleanup = api.fenetre.surAvantFermeture(async () => {
+      // Clôture des saisies en attente (déclenche blur sur l'élément actif)
+      if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      // Pause brève pour permettre le dispatch des événements change/blur React
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    return () => cleanup();
   }, []);
 
   if (!estMonte) {
@@ -49,19 +66,24 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--page)] text-[var(--text)] flex">
-      {/* Barre latérale fixe (232px = 16.571rem) */}
-      <Sidebar />
+    <div className="min-h-screen bg-[var(--page)] text-[var(--text)] flex flex-col">
+      {/* Barre de titre personnalisée (32px = 2.286rem) */}
+      <BarreTitre />
 
-      {/* Colonne droite */}
-      <div className="flex-1 ml-[16.571rem] flex flex-col min-h-screen">
-        {/* Barre du haut fixe (52px = 3.714rem) */}
-        <Topbar />
+      <div className="flex-1 flex min-h-screen">
+        {/* Barre latérale fixe (232px = 16.571rem, décalée de 32px = 2.286rem) */}
+        <Sidebar />
 
-        {/* Zone de contenu principale (hauteur barre du haut 52px = 3.714rem, marges 20px = 1.429rem) */}
-        <main className="mt-[3.714rem] p-[1.429rem] flex-1 overflow-x-hidden">
-          <div className="max-w-[96.125rem] mx-auto w-full">{children}</div>
-        </main>
+        {/* Colonne droite */}
+        <div className="flex-1 ml-[16.571rem] flex flex-col min-h-screen">
+          {/* Barre du haut fixe (52px = 3.714rem, décalée de 32px = 2.286rem) */}
+          <Topbar />
+
+          {/* Zone de contenu principale (hauteur barre de titre 32px + barre du haut 52px = 84px = 6rem, marges 20px = 1.429rem) */}
+          <main className="mt-[6rem] p-[1.429rem] flex-1 overflow-x-hidden">
+            <div className="max-w-[96.125rem] mx-auto w-full">{children}</div>
+          </main>
+        </div>
       </div>
 
       <Toaster />

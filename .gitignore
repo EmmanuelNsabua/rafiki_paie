@@ -28,6 +28,8 @@ release/
 apps/web/AGENTS.md
 out-test-exports/
 screenshots/
+test-results/
+playwright-report/
 
 # Logs and runtime files
 npm-debug.log*

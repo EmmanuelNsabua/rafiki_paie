@@ -12,6 +12,9 @@ import type {
   ResultatExportBordereau,
   Parametre,
   Journal,
+  InfosFenetre,
+  PreferencesInterface,
+  ThemePreference,
 } from '@rafiki/contrat';
 
 // Calcul de estDev transmis par additionalArguments depuis le processus principal
@@ -79,6 +82,71 @@ const api: ElectronApi = {
   journal: {
     lister: (input): Promise<ReponseIpc<Journal[]>> => {
       return ipcRenderer.invoke(CANAUX_IPC.JOURNAL_LISTER, input);
+    },
+  },
+  fenetre: {
+    lirePreferences: (): Promise<ReponseIpc<InfosFenetre>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_LIRE_PREFERENCES);
+    },
+    definirTheme: (theme: ThemePreference): Promise<ReponseIpc<{ theme: ThemePreference }>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_DEFINIR_THEME, { theme });
+    },
+    definirZoom: (zoom: number): Promise<ReponseIpc<{ zoom: number }>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_DEFINIR_ZOOM, { zoom });
+    },
+    definirTailleTexte: (tailleTexte: number): Promise<ReponseIpc<{ tailleTexte: number }>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_DEFINIR_TAILLE_TEXTE, { tailleTexte });
+    },
+    reduire: (): Promise<ReponseIpc<void>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_REDUIRE);
+    },
+    basculerAgrandissement: (): Promise<ReponseIpc<{ estAgrandi: boolean }>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_BASCULER_AGRANDISSEMENT);
+    },
+    fermer: (): Promise<ReponseIpc<void>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_FERMER);
+    },
+    redemarrer: (): Promise<ReponseIpc<void>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.FENETRE_REDEMARRER);
+    },
+    surChangementEtatAgrandi: (callback: (estAgrandi: boolean) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, estAgrandi: boolean) =>
+        callback(estAgrandi);
+      ipcRenderer.on('fenetre:etatAgrandi', handler);
+      return () => {
+        ipcRenderer.removeListener('fenetre:etatAgrandi', handler);
+      };
+    },
+    surChangementPreferences: (callback: (prefs: PreferencesInterface) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, prefs: PreferencesInterface) =>
+        callback(prefs);
+      ipcRenderer.on('fenetre:changementPreferences', handler);
+      return () => {
+        ipcRenderer.removeListener('fenetre:changementPreferences', handler);
+      };
+    },
+    surChangementThemeSysteme: (callback: (theme: 'sombre' | 'clair') => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, theme: 'sombre' | 'clair') =>
+        callback(theme);
+      ipcRenderer.on('fenetre:themeSysteme', handler);
+      return () => {
+        ipcRenderer.removeListener('fenetre:themeSysteme', handler);
+      };
+    },
+    surAvantFermeture: (callback: () => Promise<void> | void) => {
+      const handler = async () => {
+        try {
+          await callback();
+        } catch {
+          // Ignorer pour ne pas bloquer la fermeture
+        } finally {
+          ipcRenderer.send('avant-fermeture:reponse');
+        }
+      };
+      ipcRenderer.on('avant-fermeture', handler);
+      return () => {
+        ipcRenderer.removeListener('avant-fermeture', handler);
+      };
     },
   },
 };

@@ -4,7 +4,7 @@ import { Providers } from '@/components/providers';
 import { Shell } from '@/components/layout/shell';
 
 export const metadata: Metadata = {
-  title: 'Paie Rafiki',
+  title: 'Gestionnaire de paie',
   description: "Logiciel de paie de l'École Rafiki",
 };
 

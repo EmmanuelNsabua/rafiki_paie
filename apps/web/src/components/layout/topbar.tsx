@@ -160,7 +160,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="fixed left-[16.571rem] right-0 top-0 h-[3.714rem] bg-[var(--surface)] border-b border-[var(--border)] z-20 flex items-center justify-between px-[1.429rem]">
+    <header className="fixed left-[16.571rem] right-0 top-[2.286rem] h-[3.714rem] bg-[var(--fenetre)] border-b border-[var(--trait)] z-20 flex items-center justify-between px-[1.429rem]">
       {/* Date du jour */}
       <div className="text-[0.929rem] leading-[1.286rem] font-medium text-[var(--text)] select-none">
         {dateDuJour || 'Date du jour'}
@@ -170,7 +170,7 @@ export function Topbar() {
       <div className="relative w-[22.857rem]" ref={conteneurRef}>
         <div
           onClick={() => inputRef.current?.focus()}
-          className="h-[2.286rem] w-full rounded-[0.429rem] border border-[var(--border)] bg-[var(--surface)] px-[0.714rem] flex items-center gap-[0.571rem] focus-within:ring-2 focus-within:ring-[var(--primary)] focus-within:border-transparent transition-all"
+          className="h-[2.286rem] w-full rounded-[0.429rem] border border-[var(--trait)] bg-[var(--carte)] px-[0.714rem] flex items-center gap-[0.571rem] focus-within:ring-2 focus-within:ring-[var(--primary)] focus-within:border-transparent transition-all"
         >
           <Search className="w-[1rem] h-[1rem] text-[var(--text-2)] shrink-0" />
           <input

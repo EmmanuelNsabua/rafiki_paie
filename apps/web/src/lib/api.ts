@@ -10,6 +10,9 @@ import type {
   Parametre,
   Journal,
   ReponseIpc,
+  InfosFenetre,
+  PreferencesInterface,
+  ThemePreference,
   ipcEmployesListerInput,
   ipcEmployesCreerInput,
   ipcEmployesModifierInput,
@@ -126,5 +129,41 @@ export const api = {
   journal: {
     lister: (input?: z.infer<typeof ipcJournalListerInput>): Promise<Journal[]> =>
       executerIpc((a) => a.journal.lister(input)),
+  },
+
+  fenetre: {
+    lirePreferences: (): Promise<InfosFenetre> => executerIpc((a) => a.fenetre.lirePreferences()),
+    definirTheme: (theme: ThemePreference) => executerIpc((a) => a.fenetre.definirTheme(theme)),
+    definirZoom: (zoom: number) => executerIpc((a) => a.fenetre.definirZoom(zoom)),
+    definirTailleTexte: (taille: number) =>
+      executerIpc((a) => a.fenetre.definirTailleTexte(taille)),
+    reduire: () => executerIpc((a) => a.fenetre.reduire()),
+    basculerAgrandissement: () => executerIpc((a) => a.fenetre.basculerAgrandissement()),
+    fermer: () => executerIpc((a) => a.fenetre.fermer()),
+    redemarrer: () => executerIpc((a) => a.fenetre.redemarrer()),
+    surChangementEtatAgrandi: (callback: (estAgrandi: boolean) => void) => {
+      if (typeof window !== 'undefined' && window.api?.fenetre?.surChangementEtatAgrandi) {
+        return window.api.fenetre.surChangementEtatAgrandi(callback);
+      }
+      return () => {};
+    },
+    surChangementPreferences: (callback: (prefs: PreferencesInterface) => void) => {
+      if (typeof window !== 'undefined' && window.api?.fenetre?.surChangementPreferences) {
+        return window.api.fenetre.surChangementPreferences(callback);
+      }
+      return () => {};
+    },
+    surChangementThemeSysteme: (callback: (theme: 'sombre' | 'clair') => void) => {
+      if (typeof window !== 'undefined' && window.api?.fenetre?.surChangementThemeSysteme) {
+        return window.api.fenetre.surChangementThemeSysteme(callback);
+      }
+      return () => {};
+    },
+    surAvantFermeture: (callback: () => Promise<void> | void) => {
+      if (typeof window !== 'undefined' && window.api?.fenetre?.surAvantFermeture) {
+        return window.api.fenetre.surAvantFermeture(callback);
+      }
+      return () => {};
+    },
   },
 };

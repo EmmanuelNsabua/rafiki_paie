@@ -16,6 +16,15 @@ export const CANAUX_IPC = {
   PARAMETRES_LIRE: 'parametres.lire',
   PARAMETRES_MODIFIER: 'parametres.modifier',
   JOURNAL_LISTER: 'journal.lister',
+  // Canaux FENETRE (Section 4.6)
+  FENETRE_LIRE_PREFERENCES: 'fenetre.lirePreferences',
+  FENETRE_DEFINIR_THEME: 'fenetre.definirTheme',
+  FENETRE_DEFINIR_ZOOM: 'fenetre.definirZoom',
+  FENETRE_DEFINIR_TAILLE_TEXTE: 'fenetre.definirTailleTexte',
+  FENETRE_REDUIRE: 'fenetre.reduire',
+  FENETRE_BASCULER_AGRANDISSEMENT: 'fenetre.basculerAgrandissement',
+  FENETRE_FERMER: 'fenetre.fermer',
+  FENETRE_REDEMARRER: 'fenetre.redemarrer',
 } as const;
 
 export type CanauxIpc = typeof CANAUX_IPC;
