@@ -170,7 +170,7 @@ export function Topbar() {
       <div className="relative w-[22.857rem]" ref={conteneurRef}>
         <div
           onClick={() => inputRef.current?.focus()}
-          className="h-[2.286rem] w-full rounded-[0.429rem] border border-[var(--trait)] bg-[var(--carte)] px-[0.714rem] flex items-center gap-[0.571rem] focus-within:ring-2 focus-within:ring-[var(--primary)] focus-within:border-transparent transition-all"
+          className="h-[2.286rem] w-full rounded-[0.429rem] border border-[var(--trait)] bg-[var(--carte)] px-[0.714rem] flex items-center gap-[0.571rem] focus-within:border-[var(--primary)] transition-all"
         >
           <Search className="w-[1rem] h-[1rem] text-[var(--text-2)] shrink-0" />
           <input
@@ -185,7 +185,7 @@ export function Topbar() {
             onKeyDown={handleKeyDownInput}
             placeholder="Rechercher…"
             aria-label="Rechercher des employés ou des opérations"
-            className="w-full bg-transparent text-[0.929rem] text-[var(--text)] placeholder:text-[var(--text-2)] outline-none"
+            className="w-full bg-transparent text-[0.929rem] text-[var(--text)] placeholder:text-[var(--text-2)] outline-none focus:outline-none"
           />
           <kbd className="h-[1.429rem] px-[0.429rem] rounded-[0.286rem] border border-[var(--border)] bg-[var(--hover)] text-[0.786rem] font-medium text-[var(--text-2)] flex items-center justify-center select-none shrink-0">
             Ctrl K

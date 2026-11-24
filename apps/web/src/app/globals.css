@@ -128,9 +128,24 @@ body {
   min-height: 100vh;
 }
 
-*:focus-visible {
+/* Navigation accessible au clavier (hors champs de saisie) */
+*:focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Suppression absolue de tout contour outline sur tous les champs de saisie */
+input,
+textarea,
+select,
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
 }
 
 button:active,

@@ -179,7 +179,7 @@ export function DialogueNouvelleOperation({
               id="champ-mois"
               value={mois}
               onChange={(e) => setMois(parseInt(e.target.value, 10))}
-              className="flex h-[2.286rem] w-full rounded-[0.429rem] border border-[var(--border)] bg-[var(--surface)] px-[0.714rem] py-[0.286rem] text-[1rem] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              className="flex h-[2.286rem] w-full rounded-[0.429rem] border border-[var(--border)] bg-[var(--surface)] px-[0.714rem] py-[0.286rem] text-[1rem] text-[var(--text)] outline-none focus:outline-none focus:border-[var(--primary)] transition-colors"
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <option key={m} value={m}>

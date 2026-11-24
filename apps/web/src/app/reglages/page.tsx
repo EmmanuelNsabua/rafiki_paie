@@ -59,7 +59,7 @@ function StepperLigne({
           type="text"
           value={valeur}
           onChange={(e) => onChange(e.target.value)}
-          className="w-[4.857rem] h-[2.143rem] text-center font-medium text-[0.929rem] text-[var(--text)] bg-transparent outline-none tabular-nums font-mono"
+          className="w-[4.857rem] h-[2.143rem] text-center font-medium text-[0.929rem] text-[var(--text)] bg-transparent focus:border-none focus:outline-none tabular-nums font-mono"
         />
 
         <button
