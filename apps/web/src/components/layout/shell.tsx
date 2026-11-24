@@ -66,25 +66,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--page)] text-[var(--text)] flex flex-col">
+    <div className="h-screen w-screen bg-[var(--page)] text-[var(--text)] overflow-hidden">
       {/* Barre de titre personnalisée (32px = 2.286rem) */}
       <BarreTitre />
 
-      <div className="flex-1 flex min-h-screen">
-        {/* Barre latérale fixe (232px = 16.571rem, décalée de 32px = 2.286rem) */}
-        <Sidebar />
+      {/* Barre latérale fixe (232px = 16.571rem, décalée de 32px = 2.286rem) */}
+      <Sidebar />
 
-        {/* Colonne droite */}
-        <div className="flex-1 ml-[16.571rem] flex flex-col min-h-screen">
-          {/* Barre du haut fixe (52px = 3.714rem, décalée de 32px = 2.286rem) */}
-          <Topbar />
+      {/* Barre du haut fixe (52px = 3.714rem, décalée de 32px = 2.286rem) */}
+      <Topbar />
 
-          {/* Zone de contenu principale (hauteur barre de titre 32px + barre du haut 52px = 84px = 6rem, marges 20px = 1.429rem) */}
-          <main className="mt-[6rem] p-[1.429rem] flex-1 overflow-x-hidden">
-            <div className="max-w-[96.125rem] mx-auto w-full">{children}</div>
-          </main>
-        </div>
-      </div>
+      {/* Zone de contenu principale scrollable indépendamment (32px + 52px = 84px = 6rem du haut) */}
+      <main className="fixed left-[16.571rem] right-0 top-[6rem] bottom-0 overflow-y-auto overflow-x-hidden p-[1.429rem] custom-scrollbar">
+        <div className="max-w-[96.125rem] mx-auto w-full pb-8">{children}</div>
+      </main>
 
       <Toaster />
     </div>

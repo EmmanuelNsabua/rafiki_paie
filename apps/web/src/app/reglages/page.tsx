@@ -220,7 +220,7 @@ export default function ReglagesPage() {
             className={cn(
               'flex items-center gap-[0.429rem] h-[2.286rem] px-[1.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer',
               ongletActif === 'parametres'
-                ? 'bg-[var(--primary)] text-white shadow-xs'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
                 : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--hover)]'
             )}
           >
@@ -234,7 +234,7 @@ export default function ReglagesPage() {
             className={cn(
               'flex items-center gap-[0.429rem] h-[2.286rem] px-[1.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer',
               ongletActif === 'journal'
-                ? 'bg-[var(--primary)] text-white shadow-xs'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
                 : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--hover)]'
             )}
           >
@@ -349,7 +349,7 @@ export default function ReglagesPage() {
                 <Button
                   type="submit"
                   disabled={mutationParametres.isPending}
-                  className="h-[2.429rem] px-[1.714rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.929rem] font-semibold cursor-pointer shadow-xs transition-colors"
+                  className="h-[2.429rem] px-[1.714rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-[var(--primary-foreground)] text-[0.929rem] font-semibold cursor-pointer shadow-xs transition-colors"
                 >
                   {mutationParametres.isPending ? 'Enregistrement…' : 'Enregistrer'}
                 </Button>

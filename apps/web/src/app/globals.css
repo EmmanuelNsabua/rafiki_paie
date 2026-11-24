@@ -6,7 +6,10 @@
 @import '@fontsource/ibm-plex-sans/400.css';
 @import '@fontsource/ibm-plex-sans/600.css';
 
-html {
+html,
+body {
+  height: 100%;
+  overflow: hidden;
   font-size: calc(14px * var(--echelle-texte, 1));
 }
 
@@ -31,6 +34,8 @@ html {
   --warning-tint: #fef3c7;
   --warning-trait: #fcd34d;
   --warning-texte: #92400e;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.35);
   --radius: 0.429rem; /* 6px */
 
   /* Alias de compatibilité */
@@ -64,6 +69,8 @@ html {
     --warning-tint: #3a2e10;
     --warning-trait: #7a5a12;
     --warning-texte: #fcd34d;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
   }
 }
 
@@ -85,6 +92,8 @@ html {
   --warning-tint: #3a2e10;
   --warning-trait: #7a5a12;
   --warning-texte: #fcd34d;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
 }
 
 :root[data-theme='clair'] {
@@ -105,6 +114,8 @@ html {
   --warning-tint: #fef3c7;
   --warning-trait: #fcd34d;
   --warning-texte: #92400e;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.35);
 }
 
 body {
@@ -146,4 +157,28 @@ a:active {
 /* Masque l'indicateur d'erreur/issue de développement de Next.js */
 nextjs-portal {
   display: none !important;
+}
+
+/* Scrollbar personnalisée moderne et discrète pour les zones de défilement */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
 }
