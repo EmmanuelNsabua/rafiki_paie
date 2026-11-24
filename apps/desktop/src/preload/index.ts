@@ -84,6 +84,39 @@ const api: ElectronApi = {
       return ipcRenderer.invoke(CANAUX_IPC.JOURNAL_LISTER, input);
     },
   },
+  importExcel: {
+    previsualiser: (cheminFichier) => {
+      return ipcRenderer.invoke(CANAUX_IPC.IMPORT_EXCEL_PREVISUALISER, { cheminFichier });
+    },
+    executer: (params) => {
+      return ipcRenderer.invoke(CANAUX_IPC.IMPORT_EXCEL_EXECUTER, params);
+    },
+  },
+  exports: {
+    employes: (options) => {
+      return ipcRenderer.invoke(CANAUX_IPC.EXPORTS_EMPLOYES, options);
+    },
+    operation: (options) => {
+      return ipcRenderer.invoke(CANAUX_IPC.EXPORTS_OPERATION, options);
+    },
+    recapitulatif: (options) => {
+      return ipcRenderer.invoke(CANAUX_IPC.EXPORTS_RECAPITULATIF, options);
+    },
+    bulletin: (options) => {
+      return ipcRenderer.invoke(CANAUX_IPC.EXPORTS_BULLETIN, options);
+    },
+    bordereau: (options) => {
+      return ipcRenderer.invoke(CANAUX_IPC.EXPORTS_BORDEREAU, options);
+    },
+  },
+  sauvegarde: {
+    exporter: (cheminDestination) => {
+      return ipcRenderer.invoke(CANAUX_IPC.SAUVEGARDE_EXPORTER, { cheminDestination });
+    },
+    restaurerFichier: (cheminFichier) => {
+      return ipcRenderer.invoke(CANAUX_IPC.SAUVEGARDE_RESTAURER_FICHIER, { cheminFichier });
+    },
+  },
   fenetre: {
     lirePreferences: (): Promise<ReponseIpc<InfosFenetre>> => {
       return ipcRenderer.invoke(CANAUX_IPC.FENETRE_LIRE_PREFERENCES);

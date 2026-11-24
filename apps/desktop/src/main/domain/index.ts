@@ -7,3 +7,5 @@ export * from './operation-service';
 export * from './ligne-service';
 export * from './sauvegarde-service';
 export * from './bordereau-service';
+export * from './import-excel-service';
+export * from './export-service';

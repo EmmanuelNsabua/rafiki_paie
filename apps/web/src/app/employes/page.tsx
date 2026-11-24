@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, estDansElectron } from '@/lib/api';
 import type { Employe } from '@rafiki/contrat';
 import { formaterMontant } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FicheEmployeSheet } from '@/components/employes/fiche-employe-sheet';
-import { Plus, MoreHorizontal, AlertTriangle, Users } from 'lucide-react';
+import { Plus, MoreHorizontal, AlertTriangle, Users, Download } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 
@@ -91,6 +91,19 @@ function EmployesContenu() {
     setFicheOuverte(true);
   };
 
+  const handleExporter = async () => {
+    try {
+      if (!estDansElectron()) {
+        toast.error('Exportation disponible uniquement dans l application desktop.');
+        return;
+      }
+      const res = await api.exports.employes({ format: 'xlsx', inclureInactifs: afficherInactifs });
+      toast.success(`Liste exportée : ${res.nomFichier}`);
+    } catch (err: any) {
+      toast.error(`Échec de l export : ${err?.message || err}`);
+    }
+  };
+
   const handleModifier = (emp: Employe) => {
     setEmployeSelectionne(emp);
     setFicheOuverte(true);
@@ -124,13 +137,24 @@ function EmployesContenu() {
         <h1 className="text-[1.714rem] font-semibold text-[var(--text)] leading-[2.286rem] tracking-tight">
           Liste des employés
         </h1>
-        <Button
-          onClick={handleAjouter}
-          className="h-[2.429rem] px-[1rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.929rem] font-semibold flex items-center gap-[0.429rem] cursor-pointer shadow-xs"
-        >
-          <Plus className="w-[1.143rem] h-[1.143rem]" />
-          <span>Ajouter un employé</span>
-        </Button>
+        <div className="flex items-center gap-[0.571rem]">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleExporter}
+            className="h-[2.429rem] px-[1rem] rounded-[0.429rem] border border-[var(--border)] text-[var(--text)] text-[0.929rem] font-medium flex items-center gap-[0.429rem] cursor-pointer hover:bg-[var(--hover)] transition-colors"
+          >
+            <Download className="w-[1.143rem] h-[1.143rem]" />
+            <span>Exporter</span>
+          </Button>
+          <Button
+            onClick={handleAjouter}
+            className="h-[2.429rem] px-[1rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-[var(--primary-foreground)] text-[0.929rem] font-semibold flex items-center gap-[0.429rem] cursor-pointer shadow-xs"
+          >
+            <Plus className="w-[1.143rem] h-[1.143rem]" />
+            <span>Ajouter un employé</span>
+          </Button>
+        </div>
       </div>
 
       {/* 2. Carte de tableau */}

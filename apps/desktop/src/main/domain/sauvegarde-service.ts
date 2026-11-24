@@ -204,12 +204,36 @@ export class SauvegardeService {
   }
 
   /**
+   * Exporte une sauvegarde vers un emplacement choisi par l'utilisateur.
+   * Utilise db.backup() pour garantir un instantané cohérent hors transaction.
+   */
+  async exporterVers(cheminDestination: string): Promise<string> {
+    const dir = path.dirname(cheminDestination);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    try {
+      await this.options.db.backup(cheminDestination);
+      log.info(`[SAUVEGARDE] Export de sauvegarde réussi vers : ${cheminDestination}`);
+      return cheminDestination;
+    } catch (err: any) {
+      log.error(`[SAUVEGARDE] Échec de l export vers ${cheminDestination} : ${err?.message}`);
+      throw new ErreurMetier(
+        'EXPORT_SAUVEGARDE_ECHOUE',
+        `Impossible d exporter la sauvegarde : ${err?.message}`
+      );
+    }
+  }
+
+  /**
    * Restaure la base de données à partir d'un fichier de sauvegarde :
    * 1. Vérifie l'existence du fichier
-   * 2. Exécute PRAGMA integrity_check sur la sauvegarde
-   * 3. Met de côté la base actuelle dans un fichier fallback
-   * 4. Remplace la base actuelle par la sauvegarde
-   * 5. Vérifie la nouvelle base restaurée
+   * 2. Exécute PRAGMA integrity_check et vérifie la compatibilité du schéma
+   * 3. Crée une sauvegarde de sécurité automatique préalable
+   * 4. Met de côté la base actuelle dans un fichier fallback
+   * 5. Remplace atomiquement la base actuelle par la sauvegarde
+   * 6. Vérifie la nouvelle base restaurée
    */
   restaurer(fichierBackup: string): void {
     if (!fs.existsSync(fichierBackup)) {
@@ -219,7 +243,7 @@ export class SauvegardeService {
       );
     }
 
-    // 1. Contrôle d'intégrité de la sauvegarde à restaurer
+    // 1. Contrôle d'intégrité et compatibilité de la sauvegarde
     let checkDb: Database.Database | null = null;
     try {
       checkDb = new Database(fichierBackup, { readonly: true });
@@ -227,7 +251,24 @@ export class SauvegardeService {
       if (!rows || rows.length === 0 || rows[0].integrity_check !== 'ok') {
         throw new Error(`Contrôle d'intégrité échoué: ${JSON.stringify(rows)}`);
       }
-    } catch {
+
+      // Vérification de compatibilité de schéma : tables essentielles
+      const tables = checkDb
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
+        .all() as Array<{ name: string }>;
+      const nomsTables = new Set(tables.map((t) => t.name));
+      const tablesRequises = ['employe', 'operation_paie', 'ligne_paie', 'schema_migrations'];
+
+      for (const t of tablesRequises) {
+        if (!nomsTables.has(t)) {
+          throw new ErreurMetier(
+            'FICHIER_INCOMPATIBLE',
+            `Le fichier de sauvegarde est incompatible : table requise "${t}" manquante.`
+          );
+        }
+      }
+    } catch (err: any) {
+      if (err instanceof ErreurMetier) throw err;
       throw new ErreurMetier(
         'FICHIER_CORROMPU',
         'Le fichier de sauvegarde est corrompu ou invalide et ne peut pas être restauré.'
@@ -244,6 +285,21 @@ export class SauvegardeService {
     if (!cheminDb || cheminDb === ':memory:') {
       // Pour une base sans fichier disque (mémoire), le contrôle d'intégrité suffit
       return;
+    }
+
+    // 2. Création d'une sauvegarde de sécurité préalable avant remplacement
+    try {
+      this.assurerDossierExiste();
+      const nomSecurite = `sauvegarde_pre_restauration_${Date.now()}.sqlite`;
+      const cheminSecurite = path.join(this.dossierSauvegardes, nomSecurite);
+      if (fs.existsSync(cheminDb)) {
+        fs.copyFileSync(cheminDb, cheminSecurite);
+        log.info(`[SAUVEGARDE] Sauvegarde de sécurité pré-restauration créée : ${nomSecurite}`);
+      }
+    } catch (err: any) {
+      log.warn(
+        `[SAUVEGARDE] Impossible de créer la sauvegarde de sécurité pré-restauration : ${err?.message}`
+      );
     }
 
     // 2. Mise de côté de la base actuelle (fallback de sécurité)

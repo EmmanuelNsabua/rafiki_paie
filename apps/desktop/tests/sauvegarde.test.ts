@@ -286,4 +286,44 @@ describe('SauvegardeService (Étape 6)', () => {
     expect(sauvegardes.length).toBe(1);
     expect(sauvegardes[0].tailleOctets).toBeGreaterThan(0);
   });
+
+  it('exporte une copie de sauvegarde vers un chemin externe choisi par l utilisateur', async () => {
+    const sauvegardeService = new SauvegardeService({
+      dossierSauvegardes: backupsDir,
+      db,
+      cheminFichierDb: dbPath,
+    });
+
+    const destinationExterne = path.join(
+      tempDir,
+      'export_externe',
+      'rafiki_sauvegarde_perso.sqlite'
+    );
+    const res = await sauvegardeService.exporterVers(destinationExterne);
+
+    expect(res).toBe(destinationExterne);
+    expect(fs.existsSync(destinationExterne)).toBe(true);
+
+    // Vérifier l'intégrité de la copie exportée
+    const verifDb = new Database(destinationExterne, { readonly: true });
+    const rows = verifDb.pragma('integrity_check') as Array<{ integrity_check: string }>;
+    expect(rows[0].integrity_check).toBe('ok');
+    verifDb.close();
+  });
+
+  it('refuse de restaurer une base SQLite incompatible ou manquant les tables requises', () => {
+    const sauvegardeService = new SauvegardeService({
+      dossierSauvegardes: backupsDir,
+      db,
+      cheminFichierDb: dbPath,
+    });
+
+    // Créer une base SQLite valide mais complètement étrangère
+    const autreDbPath = path.join(tempDir, 'autre_base.sqlite');
+    const autreDb = new Database(autreDbPath);
+    autreDb.exec('CREATE TABLE clients (id INT PRIMARY KEY, nom TEXT);');
+    autreDb.close();
+
+    expect(() => sauvegardeService.restaurer(autreDbPath)).toThrow(/incompatible/i);
+  });
 });

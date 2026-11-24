@@ -461,6 +461,23 @@ export interface ElectronApi {
   journal: {
     lister: (input?: z.infer<typeof ipcJournalListerInput>) => Promise<ReponseIpc<Journal[]>>;
   };
+  importExcel: {
+    previsualiser: (cheminFichier: string) => Promise<ReponseIpc<PrevisualisationImportResult>>;
+    executer: (params: ExecutionImportParams) => Promise<ReponseIpc<ExecutionImportResult>>;
+  };
+  exports: {
+    employes: (options: OptionsExportEmployes) => Promise<ReponseIpc<ResultatExportFichier>>;
+    operation: (options: OptionsExportOperation) => Promise<ReponseIpc<ResultatExportFichier>>;
+    recapitulatif: (
+      options: OptionsExportRecapitulatif
+    ) => Promise<ReponseIpc<ResultatExportFichier>>;
+    bulletin: (options: OptionsExportBulletin) => Promise<ReponseIpc<ResultatExportFichier>>;
+    bordereau: (options: OptionsExportBordereau) => Promise<ReponseIpc<ResultatExportBordereau>>;
+  };
+  sauvegarde: {
+    exporter: (cheminDestination: string) => Promise<ReponseIpc<string>>;
+    restaurerFichier: (cheminFichier: string) => Promise<ReponseIpc<void>>;
+  };
   fenetre: ApiFenetre;
 }
 
@@ -525,5 +542,127 @@ export interface ApiFenetre {
   surChangementThemeSysteme?: (callback: (theme: 'sombre' | 'clair') => void) => () => void;
   surAvantFermeture: (callback: () => Promise<void> | void) => () => void;
 }
+
+// ============================================================================
+// Phase 3 : Import, Export et Reprise des Données
+// ============================================================================
+
+export interface DonneesLigneImportExcel {
+  numero?: number;
+  nom: string;
+  postnom?: string;
+  prenom?: string;
+  fonction?: string;
+  salaire_base: string;
+  telephone?: string;
+  jours_ouvrables?: number;
+  heures_supplementaires?: string;
+  retrait?: string;
+  jours_maladie?: number;
+  jours_conge?: number;
+  jours_absence?: number;
+}
+
+export interface LignePrevisualisationImport {
+  indexLigne: number;
+  donnees: DonneesLigneImportExcel;
+  valide: boolean;
+  erreurs: string[];
+  avertissements: string[];
+  estDoublon: boolean;
+  employeExistantId?: string;
+  action: 'importer' | 'ignorer' | 'mettre_a_jour';
+}
+
+export interface PrevisualisationImportResult {
+  valide: boolean;
+  feuilleNom: string;
+  totalLignes: number;
+  lignesValides: number;
+  lignesInvalides: number;
+  lignes: LignePrevisualisationImport[];
+  recapitulatif: {
+    totalSalaireBase: string;
+    totalHs: string;
+    totalRetrait: string;
+  };
+  erreursGlobales?: string[];
+}
+
+export const executionImportParamsSchema = z.object({
+  cheminFichier: z.string().min(1, 'Chemin de fichier requis'),
+  annee: z.number().int().min(2000).max(2100),
+  mois: z.number().int().min(1).max(12),
+  lignesAExclure: z.array(z.number().int()).default([]),
+  modeDoublon: z.enum(['mettre_a_jour', 'ignorer', 'refuser']).default('mettre_a_jour'),
+  creerOperation: z.boolean().default(true),
+});
+export type ExecutionImportParams = z.infer<typeof executionImportParamsSchema>;
+
+export interface ExecutionImportResult {
+  succes: boolean;
+  employesCrees: number;
+  employesMisAJour: number;
+  operationCreeeId?: string;
+  lignesPaieCrees: number;
+  lignesPaieIgnorees: number;
+  erreurs?: string[];
+}
+
+export const optionsExportEmployesSchema = z.object({
+  format: z.enum(['xlsx', 'csv']),
+  inclureInactifs: z.boolean().default(false),
+  cheminDestination: z.string().optional(),
+});
+export type OptionsExportEmployes = z.infer<typeof optionsExportEmployesSchema>;
+
+export const optionsExportOperationSchema = z.object({
+  operationId: uuidSchema,
+  format: z.enum(['xlsx', 'csv']),
+  cheminDestination: z.string().optional(),
+});
+export type OptionsExportOperation = z.infer<typeof optionsExportOperationSchema>;
+
+export const optionsExportRecapitulatifSchema = z.object({
+  operationId: uuidSchema,
+  format: z.enum(['xlsx', 'csv']),
+  cheminDestination: z.string().optional(),
+});
+export type OptionsExportRecapitulatif = z.infer<typeof optionsExportRecapitulatifSchema>;
+
+export const optionsExportBulletinSchema = z.object({
+  operationId: uuidSchema,
+  employeId: uuidSchema.optional(), // Si omis, export collectif de tous les bulletins
+  format: z.enum(['pdf', 'html']),
+  cheminDestination: z.string().optional(),
+});
+export type OptionsExportBulletin = z.infer<typeof optionsExportBulletinSchema>;
+
+export const optionsExportBordereauSchema = z.object({
+  operationId: uuidSchema,
+  format: z.enum(['pdf', 'csv', 'xlsx']),
+  cheminDestination: z.string().optional(),
+});
+export type OptionsExportBordereau = z.infer<typeof optionsExportBordereauSchema>;
+
+export interface ResultatExportFichier {
+  succes: boolean;
+  cheminFichier: string;
+  nomFichier: string;
+  tailleOctets: number;
+  nombreLignes?: number;
+}
+
+export const optionsSauvegardeExporterSchema = z.object({
+  cheminDestination: z.string().min(1, 'Chemin de destination requis'),
+});
+export type OptionsSauvegardeExporter = z.infer<typeof optionsSauvegardeExporterSchema>;
+
+export const optionsSauvegardeRestaurerFichierSchema = z.object({
+  cheminFichier: z.string().min(1, 'Chemin du fichier de sauvegarde requis'),
+});
+export type OptionsSauvegardeRestaurerFichier = z.infer<
+  typeof optionsSauvegardeRestaurerFichierSchema
+>;
 
 export * from './canaux';

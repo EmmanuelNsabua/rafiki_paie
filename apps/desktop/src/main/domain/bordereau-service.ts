@@ -1,6 +1,7 @@
 import type Database from 'better-sqlite3';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as XLSX from 'xlsx';
 import { OperationService } from './operation-service';
 import { JournalService } from './journal-service';
 import { ErreurMetier } from './erreurs';
@@ -359,9 +360,72 @@ export class BordereauService {
   /**
    * Génère le nom de fichier standard du bordereau : Bordereau-virement-<Mois>-<Année>.<extension>
    */
-  private obtenirNomFichier(mois: number, annee: number, extension: 'pdf' | 'csv'): string {
+  private obtenirNomFichier(
+    mois: number,
+    annee: number,
+    extension: 'pdf' | 'csv' | 'xlsx'
+  ): string {
     const nomMois = NOMS_MOIS_FR[mois] || String(mois).padStart(2, '0');
     return `Bordereau-virement-${nomMois}-${annee}.${extension}`;
+  }
+
+  /**
+   * Génère le classeur Excel (.xlsx) du bordereau avec les 7 colonnes exactes et le total à provisionner.
+   */
+  genererXlsx(operationId: string): {
+    buffer: Buffer;
+    nomFichier: string;
+    nombreLignes: number;
+    totalVirement: string;
+  } {
+    const detail = this.operationService.obtenir(operationId);
+    const nomFichier = this.obtenirNomFichier(
+      detail.operation.mois,
+      detail.operation.annee,
+      'xlsx'
+    );
+
+    const headers = ['N°', 'Nom', 'Postnom', 'Prénom', 'Téléphone', 'Code banque', 'Virement'];
+    const rows: (string | number)[][] = [headers];
+
+    for (const lig of detail.lignes) {
+      const tel = lig.telephone?.trim() ? lig.telephone.trim() : '—';
+      const bk = lig.code_banque?.trim() ? lig.code_banque.trim() : '—';
+      const virement = Number(lig.virement) || 0;
+
+      rows.push([
+        lig.numero ?? '',
+        lig.nom ?? '',
+        lig.postnom || '',
+        lig.prenom || '',
+        tel,
+        bk,
+        virement,
+      ]);
+    }
+
+    rows.push([
+      'Total à provisionner',
+      '',
+      '',
+      '',
+      '',
+      '',
+      Number(detail.totaux.total_virement) || 0,
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Bordereau de virement');
+
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    return {
+      buffer,
+      nomFichier,
+      nombreLignes: detail.lignes.length,
+      totalVirement: detail.totaux.total_virement,
+    };
   }
 
   /**
@@ -440,12 +504,12 @@ export class BordereauService {
    */
   exporter(
     operationId: string,
-    format: 'pdf' | 'csv',
+    format: 'pdf' | 'csv' | 'xlsx',
     cheminDestination?: string
   ): {
     cheminFichier: string;
     nomFichier: string;
-    format: 'pdf' | 'csv';
+    format: 'pdf' | 'csv' | 'xlsx';
     nombreLignes: number;
     totalVirement: string;
     annule?: boolean;
@@ -458,6 +522,12 @@ export class BordereauService {
     if (format === 'csv') {
       const res = this.genererCsv(operationId);
       donnees = res.contenu;
+      nomFichier = res.nomFichier;
+      nombreLignes = res.nombreLignes;
+      totalVirement = res.totalVirement;
+    } else if (format === 'xlsx') {
+      const res = this.genererXlsx(operationId);
+      donnees = res.buffer;
       nomFichier = res.nomFichier;
       nombreLignes = res.nombreLignes;
       totalVirement = res.totalVirement;
@@ -482,7 +552,9 @@ export class BordereauService {
         const filtres =
           format === 'pdf'
             ? [{ name: 'Document PDF', extensions: ['pdf'] }]
-            : [{ name: 'Fichier CSV / Excel', extensions: ['csv'] }];
+            : format === 'xlsx'
+              ? [{ name: 'Classeur Excel', extensions: ['xlsx'] }]
+              : [{ name: 'Fichier CSV', extensions: ['csv'] }];
 
         cible = dialog?.showSaveDialogSync?.(fenetre, {
           title: 'Enregistrer le bordereau de virement',

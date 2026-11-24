@@ -25,6 +25,16 @@ export const CANAUX_IPC = {
   FENETRE_BASCULER_AGRANDISSEMENT: 'fenetre.basculerAgrandissement',
   FENETRE_FERMER: 'fenetre.fermer',
   FENETRE_REDEMARRER: 'fenetre.redemarrer',
+  // Canaux IMPORT, EXPORT & REPRISE (Phase 3)
+  IMPORT_EXCEL_PREVISUALISER: 'import.excel.previsualiser',
+  IMPORT_EXCEL_EXECUTER: 'import.excel.executer',
+  EXPORTS_EMPLOYES: 'exports.employes',
+  EXPORTS_OPERATION: 'exports.operation',
+  EXPORTS_RECAPITULATIF: 'exports.recapitulatif',
+  EXPORTS_BULLETIN: 'exports.bulletin',
+  EXPORTS_BORDEREAU: 'exports.bordereau',
+  SAUVEGARDE_EXPORTER: 'sauvegarde.exporter',
+  SAUVEGARDE_RESTAURER_FICHIER: 'sauvegarde.restaurerFichier',
 } as const;
 
 export type CanauxIpc = typeof CANAUX_IPC;

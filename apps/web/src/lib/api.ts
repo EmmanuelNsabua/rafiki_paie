@@ -7,6 +7,15 @@ import type {
   ResultatModificationLigne,
   ResultatAjoutEmployes,
   ResultatExportBordereau,
+  PrevisualisationImportResult,
+  ExecutionImportParams,
+  ExecutionImportResult,
+  OptionsExportEmployes,
+  OptionsExportOperation,
+  OptionsExportRecapitulatif,
+  OptionsExportBulletin,
+  OptionsExportBordereau,
+  ResultatExportFichier,
   Parametre,
   Journal,
   ReponseIpc,
@@ -129,6 +138,33 @@ export const api = {
   journal: {
     lister: (input?: z.infer<typeof ipcJournalListerInput>): Promise<Journal[]> =>
       executerIpc((a) => a.journal.lister(input)),
+  },
+
+  importExcel: {
+    previsualiser: (cheminFichier: string): Promise<PrevisualisationImportResult> =>
+      executerIpc((a) => a.importExcel.previsualiser(cheminFichier)),
+    executer: (params: ExecutionImportParams): Promise<ExecutionImportResult> =>
+      executerIpc((a) => a.importExcel.executer(params)),
+  },
+
+  exports: {
+    employes: (options: OptionsExportEmployes): Promise<ResultatExportFichier> =>
+      executerIpc((a) => a.exports.employes(options)),
+    operation: (options: OptionsExportOperation): Promise<ResultatExportFichier> =>
+      executerIpc((a) => a.exports.operation(options)),
+    recapitulatif: (options: OptionsExportRecapitulatif): Promise<ResultatExportFichier> =>
+      executerIpc((a) => a.exports.recapitulatif(options)),
+    bulletin: (options: OptionsExportBulletin): Promise<ResultatExportFichier> =>
+      executerIpc((a) => a.exports.bulletin(options)),
+    bordereau: (options: OptionsExportBordereau): Promise<ResultatExportBordereau> =>
+      executerIpc((a) => a.exports.bordereau(options)),
+  },
+
+  sauvegarde: {
+    exporter: (cheminDestination: string): Promise<string> =>
+      executerIpc((a) => a.sauvegarde.exporter(cheminDestination)),
+    restaurerFichier: (cheminFichier: string): Promise<void> =>
+      executerIpc((a) => a.sauvegarde.restaurerFichier(cheminFichier)),
   },
 
   fenetre: {

@@ -19,6 +19,7 @@ import { DialogueConfirmationTerminer } from './dialogue-confirmation-terminer';
 import { DialogueConfirmationRouvrir } from './dialogue-confirmation-rouvrir';
 import { DialogueNouvelleOperation } from '@/components/journal/dialogue-nouvelle-operation';
 import { DialogueRecapitulatif } from './dialogue-recapitulatif';
+import { DialogueExportsOperation } from './dialogue-exports-operation';
 import { cn } from '@/lib/utils';
 
 export interface EnTeteOperationProps {
@@ -57,6 +58,7 @@ export function EnTeteOperation({
   const [dialogueRouvrirOuvert, setDialogueRouvrirOuvert] = React.useState(false);
   const [dialogueNouvelleOuvert, setDialogueNouvelleOuvert] = React.useState(false);
   const [dialogueRecapitulatifOuvert, setDialogueRecapitulatifOuvert] = React.useState(false);
+  const [dialogueExportsOuvert, setDialogueExportsOuvert] = React.useState(false);
   const [actionEnCours, setActionEnCours] = React.useState(false);
 
   // Sélecteur de mois dropdown
@@ -256,19 +258,16 @@ export function EnTeteOperation({
           <span>Récapitulatif & Contrôle</span>
         </Button>
 
-        {/* Bouton Exporter (inactif en phase 2) */}
-        <Tooltip content="Bientôt disponible">
-          <Button
-            type="button"
-            variant="outline"
-            disabled
-            className="h-[2.429rem] px-[0.857rem] rounded-[0.429rem] border border-[var(--primary)] text-[var(--primary-strong)] text-[0.929rem] font-medium opacity-50 cursor-not-allowed flex items-center gap-[0.429rem]"
-          >
-            <Download className="w-[1.143rem] h-[1.143rem]" />
-            <span>Exporter</span>
-            <ChevronDown className="w-[0.857rem] h-[0.857rem] ml-[0.143rem] opacity-70" />
-          </Button>
-        </Tooltip>
+        {/* Bouton Exporter */}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setDialogueExportsOuvert(true)}
+          className="h-[2.429rem] px-[0.857rem] rounded-[0.429rem] border border-[var(--primary)] text-[var(--primary-strong)] text-[0.929rem] font-medium cursor-pointer flex items-center gap-[0.429rem] hover:bg-[var(--primary-tint)] transition-colors"
+        >
+          <Download className="w-[1.143rem] h-[1.143rem]" />
+          <span>Exporter</span>
+        </Button>
 
         {/* Bouton Terminer ou Rouvrir */}
         {estTerminee ? (
@@ -325,6 +324,15 @@ export function EnTeteOperation({
         totaux={totaux}
         synthese={synthese}
         lignes={lignes}
+      />
+
+      <DialogueExportsOperation
+        ouvert={dialogueExportsOuvert}
+        onOpenChange={setDialogueExportsOuvert}
+        operationId={operation.id}
+        mois={operation.mois}
+        annee={operation.annee}
+        estTerminee={estTerminee}
       />
     </div>
   );

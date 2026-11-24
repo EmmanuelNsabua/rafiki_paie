@@ -28,8 +28,20 @@ import {
   JournalService,
   SauvegardeService,
   BordereauService,
+  ImportExcelService,
+  ExportService,
   ErreurMetier,
 } from '../domain';
+import {
+  executionImportParamsSchema,
+  optionsExportEmployesSchema,
+  optionsExportOperationSchema,
+  optionsExportRecapitulatifSchema,
+  optionsExportBulletinSchema,
+  optionsExportBordereauSchema,
+  optionsSauvegardeExporterSchema,
+  optionsSauvegardeRestaurerFichierSchema,
+} from '@rafiki/contrat';
 
 /**
  * Contrôle que l'expéditeur de la requête IPC appartient bien à l'application.
@@ -132,6 +144,14 @@ export function enregistrerGestionnairesIpc(
   const parametreService = new ParametreService(db);
   const journalService = new JournalService(db);
   const bordereauService = new BordereauService(db, operationService, journalService);
+  const importExcelService = new ImportExcelService(
+    db,
+    employeService,
+    operationService,
+    ligneService,
+    journalService
+  );
+  const exportService = new ExportService(db, employeService, operationService, journalService);
 
   // --- Employés ---
   ipcMain.handle(
@@ -254,6 +274,92 @@ export function enregistrerGestionnairesIpc(
     CANAUX_IPC.JOURNAL_LISTER,
     creerGestionnaireSecurise(CANAUX_IPC.JOURNAL_LISTER, ipcJournalListerInput, (input) =>
       journalService.lister(input)
+    )
+  );
+
+  // --- Phase 3 : Import Excel ---
+  ipcMain.handle(
+    CANAUX_IPC.IMPORT_EXCEL_PREVISUALISER,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.IMPORT_EXCEL_PREVISUALISER,
+      z.object({ cheminFichier: z.string().min(1) }),
+      (input) => importExcelService.previsualiser(input.cheminFichier)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.IMPORT_EXCEL_EXECUTER,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.IMPORT_EXCEL_EXECUTER,
+      executionImportParamsSchema,
+      (input) => importExcelService.executer(input)
+    )
+  );
+
+  // --- Phase 3 : Exports Métier ---
+  ipcMain.handle(
+    CANAUX_IPC.EXPORTS_EMPLOYES,
+    creerGestionnaireSecurise(CANAUX_IPC.EXPORTS_EMPLOYES, optionsExportEmployesSchema, (input) =>
+      exportService.exporterEmployes(input)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.EXPORTS_OPERATION,
+    creerGestionnaireSecurise(CANAUX_IPC.EXPORTS_OPERATION, optionsExportOperationSchema, (input) =>
+      exportService.exporterOperation(input)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.EXPORTS_RECAPITULATIF,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.EXPORTS_RECAPITULATIF,
+      optionsExportRecapitulatifSchema,
+      (input) => exportService.exporterRecapitulatif(input)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.EXPORTS_BULLETIN,
+    creerGestionnaireSecurise(CANAUX_IPC.EXPORTS_BULLETIN, optionsExportBulletinSchema, (input) =>
+      exportService.exporterBulletins(input)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.EXPORTS_BORDEREAU,
+    creerGestionnaireSecurise(CANAUX_IPC.EXPORTS_BORDEREAU, optionsExportBordereauSchema, (input) =>
+      bordereauService.exporter(input.operationId, input.format, input.cheminDestination)
+    )
+  );
+
+  // --- Phase 3 : Sauvegarde et Restauration Externe ---
+  ipcMain.handle(
+    CANAUX_IPC.SAUVEGARDE_EXPORTER,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.SAUVEGARDE_EXPORTER,
+      optionsSauvegardeExporterSchema,
+      (input) => {
+        if (!sauvegardeService) {
+          throw new ErreurMetier('SERVICE_INDISPONIBLE', 'Service de sauvegarde non initialisé.');
+        }
+        return sauvegardeService.exporterVers(input.cheminDestination);
+      }
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.SAUVEGARDE_RESTAURER_FICHIER,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.SAUVEGARDE_RESTAURER_FICHIER,
+      optionsSauvegardeRestaurerFichierSchema,
+      (input) => {
+        if (!sauvegardeService) {
+          throw new ErreurMetier('SERVICE_INDISPONIBLE', 'Service de sauvegarde non initialisé.');
+        }
+        sauvegardeService.restaurer(input.cheminFichier);
+      }
     )
   );
 }

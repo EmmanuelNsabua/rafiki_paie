@@ -8,7 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/sonner';
-import { History, Sliders, Filter, Plus, Minus } from 'lucide-react';
+import {
+  History,
+  Sliders,
+  Filter,
+  Plus,
+  Minus,
+  Database,
+  Download,
+  Upload,
+  FileSpreadsheet,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
+import type { PrevisualisationImportResult } from '@rafiki/contrat';
 import { cn } from '@/lib/utils';
 
 interface StepperLigneProps {
@@ -77,7 +90,102 @@ function StepperLigne({
 
 export default function ReglagesPage() {
   const queryClient = useQueryClient();
-  const [ongletActif, setOngletActif] = React.useState<'parametres' | 'journal'>('parametres');
+  const [ongletActif, setOngletActif] = React.useState<'parametres' | 'journal' | 'donnees'>(
+    'parametres'
+  );
+
+  // États pour Import & Sauvegarde
+  const [cheminImport, setCheminImport] = React.useState('');
+  const [previsuImport, setPrevisuImport] = React.useState<PrevisualisationImportResult | null>(
+    null
+  );
+  const [anneeImport, setAnneeImport] = React.useState(2026);
+  const [moisImport, setMoisImport] = React.useState(11);
+  const [modeDoublon, setModeDoublon] = React.useState<'mettre_a_jour' | 'ignorer' | 'refuser'>(
+    'mettre_a_jour'
+  );
+  const [chargementPrevisu, setChargementPrevisu] = React.useState(false);
+  const [chargementImport, setChargementImport] = React.useState(false);
+
+  const [cheminExportSauvegarde, setCheminExportSauvegarde] = React.useState('');
+  const [cheminRestauration, setCheminRestauration] = React.useState('');
+  const [chargementSauvegarde, setChargementSauvegarde] = React.useState(false);
+  const [chargementRestauration, setChargementRestauration] = React.useState(false);
+
+  const handlePrevisualiser = async () => {
+    if (!cheminImport.trim()) {
+      toast.warning('Veuillez saisir le chemin du fichier .xlsx');
+      return;
+    }
+    setChargementPrevisu(true);
+    try {
+      const res = await api.importExcel.previsualiser(cheminImport.trim());
+      setPrevisuImport(res);
+      toast.success(`${res.totalLignes} ligne(s) détectée(s).`);
+    } catch (err: any) {
+      toast.error(`Échec d analyse : ${err?.message || err}`);
+    } finally {
+      setChargementPrevisu(false);
+    }
+  };
+
+  const handleExecuterImport = async () => {
+    if (!cheminImport.trim()) return;
+    setChargementImport(true);
+    try {
+      const res = await api.importExcel.executer({
+        cheminFichier: cheminImport.trim(),
+        annee: anneeImport,
+        mois: moisImport,
+        modeDoublon,
+        creerOperation: true,
+        lignesAExclure: [],
+      });
+      toast.success(
+        `${res.employesCrees} employé(s) créé(s), ${res.lignesPaieCrees} ligne(s) de paie importée(s).`
+      );
+      queryClient.invalidateQueries({ queryKey: ['employes-liste'] });
+      queryClient.invalidateQueries({ queryKey: ['operations-liste'] });
+      setPrevisuImport(null);
+    } catch (err: any) {
+      toast.error(err?.message || String(err));
+    } finally {
+      setChargementImport(false);
+    }
+  };
+
+  const handleExporterSauvegarde = async () => {
+    if (!cheminExportSauvegarde.trim()) {
+      toast.warning('Veuillez saisir le chemin de destination pour la sauvegarde.');
+      return;
+    }
+    setChargementSauvegarde(true);
+    try {
+      const cheminCible = await api.sauvegarde.exporter(cheminExportSauvegarde.trim());
+      toast.success(`Sauvegarde exportée vers : ${cheminCible}`);
+    } catch (err: any) {
+      toast.error(`Échec de sauvegarde : ${err?.message || err}`);
+    } finally {
+      setChargementSauvegarde(false);
+    }
+  };
+
+  const handleRestaurerSauvegarde = async () => {
+    if (!cheminRestauration.trim()) {
+      toast.warning('Veuillez saisir le chemin de la sauvegarde à restaurer.');
+      return;
+    }
+    setChargementRestauration(true);
+    try {
+      await api.sauvegarde.restaurerFichier(cheminRestauration.trim());
+      toast.success('La base a été restaurée avec succès. Données actualisées.');
+      queryClient.invalidateQueries();
+    } catch (err: any) {
+      toast.error(err?.message || String(err));
+    } finally {
+      setChargementRestauration(false);
+    }
+  };
 
   // État formulaire paramètres
   const [joursOuvrables, setJoursOuvrables] = React.useState('22');
@@ -241,6 +349,20 @@ export default function ReglagesPage() {
             <History className="w-[1rem] h-[1rem]" />
             <span>Journal d’activité</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setOngletActif('donnees')}
+            className={cn(
+              'flex items-center gap-[0.429rem] h-[2.286rem] px-[1.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer',
+              ongletActif === 'donnees'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
+                : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--hover)]'
+            )}
+          >
+            <Database className="w-[1rem] h-[1rem]" />
+            <span>Import & Sauvegarde</span>
+          </button>
         </div>
       </div>
 
@@ -360,7 +482,7 @@ export default function ReglagesPage() {
             </form>
           )}
         </div>
-      ) : (
+      ) : ongletActif === 'journal' ? (
         /* Journal d'activité */
         <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs overflow-hidden">
           {/* Bandeau de titre du journal */}
@@ -442,6 +564,187 @@ export default function ReglagesPage() {
           {/* Pied du journal */}
           <div className="flex items-center px-[1.143rem] h-[2.571rem] border-t border-[var(--border)] text-[0.857rem] text-[var(--text-2)] bg-[var(--surface)]">
             Affichage de {actionsJournal.length} action{actionsJournal.length > 1 ? 's' : ''}
+          </div>
+        </div>
+      ) : (
+        /* Onglet Import Excel & Sauvegarde / Restauration */
+        <div className="space-y-[1.714rem]">
+          {/* Section 1 : Importation du classeur historique Excel */}
+          <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[1.143rem]">
+            <div className="flex items-center gap-[0.571rem] border-b border-[var(--border)] pb-[0.857rem]">
+              <FileSpreadsheet className="w-[1.286rem] h-[1.286rem] text-[var(--primary)]" />
+              <div>
+                <h2 className="text-[1.143rem] font-semibold text-[var(--text)]">
+                  Importation du classeur Excel historique
+                </h2>
+                <p className="text-[0.786rem] text-[var(--text-2)]">
+                  Importez les employés et les données de paie à partir d’un fichier .xlsx
+                  historique
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-[0.857rem]">
+              <div>
+                <label className="text-[0.857rem] font-medium text-[var(--text)] block mb-[0.286rem]">
+                  Chemin d’accès complet au fichier .xlsx sur votre ordinateur :
+                </label>
+                <div className="flex items-center gap-[0.571rem]">
+                  <input
+                    type="text"
+                    value={cheminImport}
+                    onChange={(e) => setCheminImport(e.target.value)}
+                    placeholder="Ex: C:\Users\Documents\02-GESTION_PAIE_ECOLE_RAFIKI_COMPLET.xlsx"
+                    className="flex-1 h-[2.286rem] px-[0.714rem] rounded-[0.429rem] bg-[var(--page)] border border-[var(--border)] text-[0.857rem] text-[var(--text)] outline-none"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handlePrevisualiser}
+                    disabled={chargementPrevisu || !cheminImport.trim()}
+                    className="h-[2.286rem] px-[1rem] bg-[var(--primary)] text-[var(--primary-foreground)] text-[0.857rem] font-medium cursor-pointer"
+                  >
+                    {chargementPrevisu ? 'Analyse…' : 'Prévisualiser'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Aperçu si prévisualisation chargée */}
+              {previsuImport && (
+                <div className="mt-[1rem] p-[1.143rem] rounded-[0.429rem] border border-[var(--border)] bg-[var(--page)] space-y-[0.857rem]">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-[0.929rem] text-[var(--text)] flex items-center gap-[0.429rem]">
+                      <CheckCircle2 className="w-[1rem] h-[1rem] text-emerald-500" />
+                      Feuille détectée : « {previsuImport.feuilleNom} » ({previsuImport.totalLignes}{' '}
+                      ligne(s))
+                    </span>
+                    <span className="text-[0.786rem] text-[var(--text-2)]">
+                      Total salaires de base : {previsuImport.recapitulatif.totalSalaireBase} $
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-[0.857rem] pt-[0.571rem]">
+                    <div>
+                      <label className="text-[0.786rem] text-[var(--text-2)] block mb-[0.286rem]">
+                        Année de paie :
+                      </label>
+                      <input
+                        type="number"
+                        value={anneeImport}
+                        onChange={(e) => setAnneeImport(parseInt(e.target.value, 10) || 2026)}
+                        className="w-full h-[2rem] px-[0.571rem] rounded-[0.286rem] bg-[var(--surface)] border border-[var(--border)] text-[0.857rem]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[0.786rem] text-[var(--text-2)] block mb-[0.286rem]">
+                        Mois de paie :
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={moisImport}
+                        onChange={(e) => setMoisImport(parseInt(e.target.value, 10) || 1)}
+                        className="w-full h-[2rem] px-[0.571rem] rounded-[0.286rem] bg-[var(--surface)] border border-[var(--border)] text-[0.857rem]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[0.786rem] text-[var(--text-2)] block mb-[0.286rem]">
+                        Gestion des doublons :
+                      </label>
+                      <select
+                        value={modeDoublon}
+                        onChange={(e) => setModeDoublon(e.target.value as any)}
+                        className="w-full h-[2rem] px-[0.571rem] rounded-[0.286rem] bg-[var(--surface)] border border-[var(--border)] text-[0.857rem]"
+                      >
+                        <option value="mettre_a_jour">Mettre à jour l existant</option>
+                        <option value="ignorer">Conserver sans écraser</option>
+                        <option value="refuser">Refuser si doublon</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-[0.571rem]">
+                    <Button
+                      type="button"
+                      onClick={handleExecuterImport}
+                      disabled={chargementImport}
+                      className="h-[2.286rem] px-[1.429rem] bg-[var(--primary)] text-[var(--primary-foreground)] text-[0.857rem] font-semibold cursor-pointer"
+                    >
+                      {chargementImport
+                        ? 'Importation atomique en cours…'
+                        : 'Confirmer et Importer'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Section 2 : Sauvegarde et Restauration */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.714rem]">
+            {/* Export d'une sauvegarde */}
+            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[0.857rem]">
+              <div className="flex items-center gap-[0.571rem]">
+                <Download className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
+                <h3 className="font-semibold text-[1rem] text-[var(--text)]">
+                  Exporter une sauvegarde
+                </h3>
+              </div>
+              <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
+                Crée une copie de sécurité exacte et cohérente de la base SQLite vers l emplacement
+                de votre choix.
+              </p>
+              <div className="space-y-[0.571rem]">
+                <input
+                  type="text"
+                  value={cheminExportSauvegarde}
+                  onChange={(e) => setCheminExportSauvegarde(e.target.value)}
+                  placeholder="Ex: D:\Sauvegardes\paie_rafiki_backup.sqlite"
+                  className="w-full h-[2.286rem] px-[0.714rem] rounded-[0.429rem] bg-[var(--page)] border border-[var(--border)] text-[0.857rem]"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleExporterSauvegarde}
+                  disabled={chargementSauvegarde || !cheminExportSauvegarde.trim()}
+                  className="w-full h-[2.286rem] text-[0.857rem] font-medium"
+                >
+                  {chargementSauvegarde ? 'Sauvegarde…' : 'Exporter la sauvegarde'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Restauration d'une sauvegarde */}
+            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[0.857rem]">
+              <div className="flex items-center gap-[0.571rem]">
+                <Upload className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
+                <h3 className="font-semibold text-[1rem] text-[var(--text)]">
+                  Restaurer une sauvegarde
+                </h3>
+              </div>
+              <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
+                Restaure la base avec vérification d intégrité préalable et sauvegarde de sécurité
+                automatique.
+              </p>
+              <div className="space-y-[0.571rem]">
+                <input
+                  type="text"
+                  value={cheminRestauration}
+                  onChange={(e) => setCheminRestauration(e.target.value)}
+                  placeholder="Ex: D:\Sauvegardes\rafiki_paie_2026.sqlite"
+                  className="w-full h-[2.286rem] px-[0.714rem] rounded-[0.429rem] bg-[var(--page)] border border-[var(--border)] text-[0.857rem]"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleRestaurerSauvegarde}
+                  disabled={chargementRestauration || !cheminRestauration.trim()}
+                  className="w-full h-[2.286rem] text-[0.857rem] font-medium text-amber-600 border-amber-300 hover:bg-amber-50"
+                >
+                  {chargementRestauration ? 'Vérification et restauration…' : 'Restaurer la base'}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

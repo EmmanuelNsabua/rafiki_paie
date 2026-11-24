@@ -15,7 +15,7 @@ const MENU_ITEMS = [
   },
   {
     href: '/historique/',
-    label: 'Historique de paie',
+    label: 'Historique',
     icon: History,
   },
   {
