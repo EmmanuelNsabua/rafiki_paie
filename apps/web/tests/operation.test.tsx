@@ -353,6 +353,27 @@ describe('Écran Opération mensuelle — Tests des composants de saisie', () =>
         screen.getByText('Le total des absences dépasse le nombre de jours ouvrables.')
       ).toBeInTheDocument();
     });
+
+    it('affiche la colonne Prestation calculée (jours ouvrables - absences) et ouvre le panneau absences au clic', () => {
+      const onOuvrirAbsences = vi.fn();
+      renderWithQuery(
+        <TableauSalaires
+          lignes={[{ ...fakeLigne, jours_maladie: '2', jours_conge: '1', jours_absence: '0' }]}
+          joursOuvrables={22}
+          estTerminee={false}
+          onModifierLigne={vi.fn()}
+          onOuvrirAbsences={onOuvrirAbsences}
+        />
+      );
+
+      // Prestation = 22 - (2 + 1) = 19 j
+      expect(screen.getByText('Prestation')).toBeInTheDocument();
+      const boutonPrestation = screen.getByRole('button', { name: /19\s*j/i });
+      expect(boutonPrestation).toBeInTheDocument();
+
+      fireEvent.click(boutonPrestation);
+      expect(onOuvrirAbsences).toHaveBeenCalled();
+    });
   });
 
   describe('4. Panneau Absences', () => {

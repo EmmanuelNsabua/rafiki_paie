@@ -3,7 +3,12 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import type { LignePaieCalculee } from '@rafiki/contrat';
-import { formaterMontant, normaliserSaisieDecimale, totalJoursAbsences } from '@/lib/format';
+import {
+  formaterMontant,
+  normaliserSaisieDecimale,
+  totalJoursAbsences,
+  calculerPrestation,
+} from '@/lib/format';
 import { Tooltip } from '@/components/ui/tooltip';
 import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -13,6 +18,7 @@ import { cn } from '@/lib/utils';
 export interface TableauSalairesProps {
   lignes: LignePaieCalculee[];
   estTerminee: boolean;
+  joursOuvrables?: number;
   nbEmployesNonInclus?: number;
   onAjouterNouveauxEmployes?: () => Promise<void>;
   onModifierLigne: (
@@ -188,6 +194,7 @@ function CelluleEditable({
 export function TableauSalaires({
   lignes,
   estTerminee,
+  joursOuvrables = 22,
   nbEmployesNonInclus = 0,
   onAjouterNouveauxEmployes,
   onModifierLigne,
@@ -271,9 +278,9 @@ export function TableauSalaires({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="h-[2.571rem] bg-[var(--table-head)] border-b border-[var(--border)] text-[0.857rem] font-medium text-[var(--text-2)]">
-              <th className="w-[3.5rem] px-[0.857rem] text-center">N°</th>
-              <th className="px-[1.143rem]">Employé</th>
-              <th className="w-[14rem] px-[0.857rem] text-right">
+              <th className="w-[3.5rem] px-[0.714rem] text-center">N°</th>
+              <th className="min-w-[14rem] px-[0.857rem]">Employé</th>
+              <th className="w-[8.5rem] px-[0.714rem] text-right">
                 <div className="inline-flex items-center gap-[0.286rem] justify-end">
                   <span>HS / Primes ($)</span>
                   <Tooltip content="Heures supplémentaires et primes : somme qui s'ajoute au salaire.">
@@ -287,7 +294,7 @@ export function TableauSalaires({
                   </Tooltip>
                 </div>
               </th>
-              <th className="w-[14rem] px-[0.857rem] text-right">
+              <th className="w-[8.5rem] px-[0.714rem] text-right">
                 <div className="inline-flex items-center gap-[0.286rem] justify-end">
                   <span>Retrait ($)</span>
                   <Tooltip content="Avance déjà versée ou retenue convenue : somme qui est retirée du salaire.">
@@ -301,8 +308,22 @@ export function TableauSalaires({
                   </Tooltip>
                 </div>
               </th>
-              <th className="w-[14rem] px-[1.143rem] text-right">Salaire net ($)</th>
-              <th className="w-[5rem] px-[0.857rem] text-center">Action</th>
+              <th className="w-[7.5rem] px-[0.714rem] text-right">
+                <div className="inline-flex items-center gap-[0.286rem] justify-end">
+                  <span>Prestation</span>
+                  <Tooltip content="Jours effectivement prestés : jours ouvrables du mois moins les absences (maladie, congés, injustifiées).">
+                    <button
+                      type="button"
+                      aria-label="Aide sur Prestation"
+                      className="text-[var(--text-2)] hover:text-[var(--text)] transition-colors cursor-help"
+                    >
+                      <HelpCircle className="w-[0.857rem] h-[0.857rem]" />
+                    </button>
+                  </Tooltip>
+                </div>
+              </th>
+              <th className="w-[9.5rem] px-[0.857rem] text-right">Salaire net ($)</th>
+              <th className="w-[4rem] px-[0.714rem] text-center">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)] text-[1rem]">
@@ -315,6 +336,12 @@ export function TableauSalaires({
                 ligne.jours_absence
               );
               const aDesAbsences = totalAbs !== '0';
+              const prestation = calculerPrestation(
+                joursOuvrables,
+                ligne.jours_maladie,
+                ligne.jours_conge,
+                ligne.jours_absence
+              );
 
               return (
                 <React.Fragment key={ligne.id}>
@@ -327,29 +354,17 @@ export function TableauSalaires({
                     )}
                   >
                     {/* N° */}
-                    <td className="px-[0.857rem] text-center text-[var(--text-2)] font-mono">
+                    <td className="px-[0.714rem] text-center text-[var(--text-2)] font-mono">
                       {String(ligne.numero).padStart(2, '0')}
                     </td>
 
-                    {/* Employé */}
-                    <td className="px-[1.143rem] font-medium text-[var(--text)]">
-                      <div className="flex items-center gap-[0.571rem]">
-                        <span className="truncate">{nomComplet}</span>
-                        {aDesAbsences && (
-                          <button
-                            type="button"
-                            onClick={() => onOuvrirAbsences(ligne)}
-                            className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-[var(--hover)] hover:bg-[var(--border)] text-[0.786rem] text-[var(--text-2)] font-normal transition-colors cursor-pointer border border-[var(--border)]"
-                          >
-                            <Clock className="w-[0.857rem] h-[0.857rem]" />
-                            <span>Absences {totalAbs}&nbsp;j</span>
-                          </button>
-                        )}
-                      </div>
+                    {/* Employé (sans badge d'absences encombrant) */}
+                    <td className="px-[0.857rem] font-medium text-[var(--text)]">
+                      <span className="truncate">{nomComplet}</span>
                     </td>
 
                     {/* HS / Primes */}
-                    <td className="px-[0.857rem] text-right">
+                    <td className="px-[0.714rem] text-right">
                       <CelluleEditable
                         idCellule={`cellule-hs-${index}`}
                         valeurInitiale={ligne.hs || '0'}
@@ -362,7 +377,7 @@ export function TableauSalaires({
                     </td>
 
                     {/* Retrait */}
-                    <td className="px-[0.857rem] text-right">
+                    <td className="px-[0.714rem] text-right">
                       <CelluleEditable
                         idCellule={`cellule-retrait-${index}`}
                         valeurInitiale={ligne.retrait || '0'}
@@ -374,13 +389,30 @@ export function TableauSalaires({
                       />
                     </td>
 
+                    {/* Prestation (jours ouvrables - absences) */}
+                    <td className="px-[0.714rem] text-right">
+                      <button
+                        type="button"
+                        onClick={() => onOuvrirAbsences(ligne)}
+                        title="Modifier les absences"
+                        className={cn(
+                          'font-mono tabular-nums text-[0.929rem] px-2 py-0.5 rounded-[4px] transition-colors cursor-pointer inline-flex items-center gap-1',
+                          aDesAbsences
+                            ? 'font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50'
+                            : 'text-[var(--text)] hover:bg-[var(--hover)]'
+                        )}
+                      >
+                        <span>{prestation}&nbsp;j</span>
+                      </button>
+                    </td>
+
                     {/* Salaire net */}
-                    <td className="px-[1.143rem] text-right font-semibold text-[var(--text)] font-mono tabular-nums">
+                    <td className="px-[0.857rem] text-right font-semibold text-[var(--text)] font-mono tabular-nums">
                       {formaterMontant(ligne.net_global, 2)}
                     </td>
 
                     {/* Action */}
-                    <td className="px-[0.857rem] text-center">
+                    <td className="px-[0.714rem] text-center">
                       <DropdownMenu
                         align="right"
                         trigger={
@@ -415,7 +447,7 @@ export function TableauSalaires({
                   {aErreur && (
                     <tr className="bg-[var(--danger-tint)] border-l-4 border-l-[var(--danger)]">
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="px-[1.143rem] py-[0.429rem] text-[0.857rem] text-[var(--danger)] font-medium"
                         aria-live="polite"
                       >

@@ -101,10 +101,10 @@ export function EnTeteOperation({
     : undefined;
 
   return (
-    <div className="flex flex-col min-[1500px]:flex-row min-[1500px]:items-center justify-between gap-[0.857rem] min-h-[4.571rem] p-[1.143rem] rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
-      {/* Gauche : Titre et sélecteurs */}
-      <div className="flex flex-wrap items-center gap-[0.857rem]">
-        <h1 className="text-[1.714rem] font-semibold text-[var(--text)] leading-[2.286rem] tracking-tight">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[1.143rem] min-h-[4.571rem] p-[1.143rem] rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
+      {/* Gauche : Titre en haut, sous-éléments (mois, statut, jours ouvrables) en dessous */}
+      <div className="flex flex-col gap-[0.571rem]">
+        <h1 className="text-[1.714rem] font-bold text-[var(--text)] leading-[2.286rem] tracking-tight">
           Opération mensuelle
         </h1>
 
@@ -239,7 +239,7 @@ export function EnTeteOperation({
       </div>
 
       {/* Droite : Boutons Exporter et Terminer/Rouvrir */}
-      <div className="flex items-center gap-[0.714rem] shrink-0">
+      <div className="flex items-center justify-end gap-[0.714rem] shrink-0 sm:self-center">
         {/* Bouton Exporter (inactif en phase 2) */}
         <Tooltip content="Bientôt disponible">
           <Button

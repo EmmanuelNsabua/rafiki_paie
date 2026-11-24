@@ -238,6 +238,7 @@ function OperationMensuelleContenu() {
       <TableauSalaires
         lignes={detail.lignes}
         estTerminee={estTerminee}
+        joursOuvrables={detail.operation.jours_ouvrables}
         nbEmployesNonInclus={nbEmployesNonInclus}
         onAjouterNouveauxEmployes={async () => {
           await mutationAjouterNouveauxEmployes.mutateAsync();

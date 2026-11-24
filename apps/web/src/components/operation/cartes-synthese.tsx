@@ -49,7 +49,7 @@ function CarteSynthese({ titre, valeur, tooltipText, variation }: CarteSyntheseP
   }
 
   const carteContenu = (
-    <div className="flex flex-col justify-between h-[8rem] rounded-[0.429rem] bg-[var(--surface)] p-[0.857rem] shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-[var(--border)] transition-shadow hover:shadow-sm">
+    <div className="flex flex-col justify-between h-[8rem] w-full rounded-[0.429rem] bg-[var(--surface)] p-[0.857rem] shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-[var(--border)] transition-shadow hover:shadow-sm">
       {/* En-tête de carte */}
       <div className="flex items-center gap-[0.571rem] pb-[0.429rem] border-b border-[var(--border)]">
         <span className="w-[0.571rem] h-[0.571rem] rounded-full bg-[var(--primary)] shrink-0" />
@@ -74,10 +74,16 @@ function CarteSynthese({ titre, valeur, tooltipText, variation }: CarteSyntheseP
   );
 
   if (tooltipText) {
-    return <Tooltip content={tooltipText}>{carteContenu}</Tooltip>;
+    return (
+      <div className="w-full h-full min-w-0">
+        <Tooltip content={tooltipText} wrapperClassName="w-full h-full flex flex-col">
+          {carteContenu}
+        </Tooltip>
+      </div>
+    );
   }
 
-  return carteContenu;
+  return <div className="w-full h-full min-w-0">{carteContenu}</div>;
 }
 
 export function CartesSynthese({ synthese }: CartesSyntheseProps) {
@@ -90,8 +96,8 @@ export function CartesSynthese({ synthese }: CartesSyntheseProps) {
   )} · Écart d'arrondi : ${prefixSigne}${formaterMontant(synthese.ecart_arrondi, 2)}.`;
 
   return (
-    <div className="rounded-[0.571rem] bg-[var(--surface)] p-[1.143rem] border border-[var(--border)]">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[1.143rem]">
+    <div className="rounded-[0.571rem] bg-[var(--surface)] p-[1.143rem] border border-[var(--border)] shadow-xs">
+      <div className="grid grid-cols-4 gap-[1.143rem] w-full">
         {/* 1. Masse salariale */}
         <CarteSynthese
           titre="Masse salariale"

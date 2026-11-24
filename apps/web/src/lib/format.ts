@@ -198,3 +198,25 @@ export function totalJoursAbsences(maladie = '0', conge = '0', absence = '0'): s
     return '0';
   }
 }
+
+/**
+ * Calcule les jours de prestation effective : jours ouvrables moins tous les types d'absences.
+ */
+export function calculerPrestation(
+  joursOuvrables: number,
+  maladie = '0',
+  conge = '0',
+  absence = '0'
+): string {
+  try {
+    const dOuv = new Decimal(joursOuvrables || 0);
+    const dMal = new Decimal(maladie || '0');
+    const dCong = new Decimal(conge || '0');
+    const dAbs = new Decimal(absence || '0');
+    const totalAbs = dMal.plus(dCong).plus(dAbs);
+    const prest = dOuv.minus(totalAbs);
+    return prest.toString();
+  } catch {
+    return String(joursOuvrables || 0);
+  }
+}

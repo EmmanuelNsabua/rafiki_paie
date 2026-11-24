@@ -8,9 +8,16 @@ export interface TooltipProps {
   children: React.ReactElement;
   delayMs?: number;
   className?: string;
+  wrapperClassName?: string;
 }
 
-export function Tooltip({ content, children, delayMs = 350, className }: TooltipProps) {
+export function Tooltip({
+  content,
+  children,
+  delayMs = 350,
+  className,
+  wrapperClassName,
+}: TooltipProps) {
   const [visible, setVisible] = React.useState(false);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -40,7 +47,7 @@ export function Tooltip({ content, children, delayMs = 350, className }: Tooltip
 
   return (
     <div
-      className="relative inline-flex items-center"
+      className={cn('relative inline-flex items-center', wrapperClassName)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
