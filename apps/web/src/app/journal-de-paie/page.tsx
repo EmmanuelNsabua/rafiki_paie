@@ -52,16 +52,21 @@ export default function JournalDePaiePage() {
     return Array.from(setAnnees).sort((a, b) => b - a);
   }, [operations]);
 
+  // Seules les 3 dernières années sont affichées dans le filtre du journal
+  const anneesRecentes = React.useMemo(() => annees.slice(0, 3), [annees]);
+
   React.useEffect(() => {
-    if (annees.length > 0 && anneeFiltre === null) {
-      setAnneeFiltre(annees[0]);
+    if (anneesRecentes.length > 0 && anneeFiltre === null) {
+      setAnneeFiltre(anneesRecentes[0]);
     }
-  }, [annees, anneeFiltre]);
+  }, [anneesRecentes, anneeFiltre]);
 
   const operationsFiltrees = React.useMemo(() => {
-    if (anneeFiltre === null) return operations;
+    if (anneeFiltre === null) {
+      return operations.filter((op) => anneesRecentes.includes(op.annee));
+    }
     return operations.filter((op) => op.annee === anneeFiltre);
-  }, [operations, anneeFiltre]);
+  }, [operations, anneeFiltre, anneesRecentes]);
 
   return (
     <div className="space-y-[1.143rem] pb-[2.857rem]">
@@ -90,10 +95,10 @@ export default function JournalDePaiePage() {
               Montants en dollars ($)
             </span>
 
-            {/* Sélecteur d'année */}
-            {annees.length > 0 && (
+            {/* Sélecteur des 3 dernières années */}
+            {anneesRecentes.length > 0 && (
               <div className="flex items-center gap-[0.286rem] bg-[var(--hover)] p-[0.143rem] rounded-full border border-[var(--border)]">
-                {annees.map((a) => (
+                {anneesRecentes.map((a) => (
                   <button
                     key={a}
                     type="button"
@@ -107,19 +112,20 @@ export default function JournalDePaiePage() {
                     {a}
                   </button>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => setAnneeFiltre(null)}
-                  className={`px-[0.571rem] py-[0.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer ${
-                    anneeFiltre === null
-                      ? 'bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold'
-                      : 'text-[var(--text-2)] hover:text-[var(--text)]'
-                  }`}
-                >
-                  Toutes
-                </button>
               </div>
             )}
+
+            {/* Lien vers Historique complet */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/historique/')}
+              className="text-[0.786rem] text-[var(--text-2)] hover:text-[var(--text)] flex items-center gap-1 h-[1.714rem] px-2 rounded-full cursor-pointer"
+            >
+              <span>Historique complet</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Button>
           </div>
         </div>
 

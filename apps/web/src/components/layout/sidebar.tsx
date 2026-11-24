@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { FileText, ClipboardCheck, Users, Settings } from 'lucide-react';
+import { FileText, History, Users, Settings } from 'lucide-react';
 import { StarclipLogo } from '@/components/layout/starclip-logo';
 
 const MENU_ITEMS = [
@@ -14,9 +14,9 @@ const MENU_ITEMS = [
     icon: FileText,
   },
   {
-    href: '/operation/',
-    label: 'Opération mensuelle',
-    icon: ClipboardCheck,
+    href: '/historique/',
+    label: 'Historique de paie',
+    icon: History,
   },
   {
     href: '/employes/',
@@ -29,8 +29,8 @@ export function Sidebar() {
   const pathname = usePathname();
 
   const isItemActive = (href: string) => {
-    if (href === '/operation/') {
-      return pathname.startsWith('/operation');
+    if (href === '/journal-de-paie/') {
+      return pathname.startsWith('/journal-de-paie') || pathname.startsWith('/operation');
     }
     return pathname.startsWith(href);
   };
@@ -73,14 +73,14 @@ export function Sidebar() {
                 className={cn(
                   'h-[2.571rem] px-[0.857rem] rounded-[0.429rem] flex items-center gap-[0.714rem] text-[1rem] leading-[1.429rem] transition-colors',
                   active
-                    ? 'bg-[var(--primary)] text-white font-semibold shadow-xs'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold shadow-xs'
                     : 'text-[var(--text-2)] font-normal hover:bg-[var(--hover)] hover:text-[var(--text)]'
                 )}
               >
                 <Icon
                   className={cn(
                     'w-[1.286rem] h-[1.286rem] shrink-0',
-                    active ? 'text-white' : 'text-[var(--text-2)]'
+                    active ? 'text-[var(--primary-foreground)]' : 'text-[var(--text-2)]'
                   )}
                 />
                 <span className="truncate">{item.label}</span>
@@ -97,14 +97,14 @@ export function Sidebar() {
           className={cn(
             'h-[2.571rem] px-[0.857rem] rounded-[0.429rem] flex items-center gap-[0.714rem] text-[1rem] leading-[1.429rem] transition-colors',
             isReglagesActive
-              ? 'bg-[var(--primary)] text-white font-semibold shadow-xs'
+              ? 'bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold shadow-xs'
               : 'text-[var(--text-2)] font-medium hover:bg-[var(--hover)] hover:text-[var(--text)]'
           )}
         >
           <Settings
             className={cn(
               'w-[1.286rem] h-[1.286rem] shrink-0',
-              isReglagesActive ? 'text-white' : 'text-[var(--text-2)]'
+              isReglagesActive ? 'text-[var(--primary-foreground)]' : 'text-[var(--text-2)]'
             )}
           />
           <span className="truncate">Réglages</span>

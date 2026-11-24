@@ -7,16 +7,18 @@ import type {
   ResumeOperationLister,
   TotauxOperation,
   SyntheseOperation,
+  LignePaieCalculee,
 } from '@rafiki/contrat';
 import { libelleOperation } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Popover } from '@/components/ui/popover';
 import { Tooltip } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Pencil, Lock, Download, Plus } from 'lucide-react';
+import { ChevronDown, Pencil, Lock, Download, Plus, FileSpreadsheet } from 'lucide-react';
 import { DialogueConfirmationTerminer } from './dialogue-confirmation-terminer';
 import { DialogueConfirmationRouvrir } from './dialogue-confirmation-rouvrir';
 import { DialogueNouvelleOperation } from '@/components/journal/dialogue-nouvelle-operation';
+import { DialogueRecapitulatif } from './dialogue-recapitulatif';
 import { cn } from '@/lib/utils';
 
 export interface EnTeteOperationProps {
@@ -25,6 +27,7 @@ export interface EnTeteOperationProps {
   totaux: TotauxOperation;
   synthese: SyntheseOperation;
   joursOuvrablesDefaut?: number;
+  lignes?: LignePaieCalculee[];
   onModifierJours: (jours: number) => Promise<void>;
   onTerminer: () => Promise<void>;
   onRouvrir: () => Promise<void>;
@@ -36,6 +39,7 @@ export function EnTeteOperation({
   totaux,
   synthese,
   joursOuvrablesDefaut = 22,
+  lignes = [],
   onModifierJours,
   onTerminer,
   onRouvrir,
@@ -52,6 +56,7 @@ export function EnTeteOperation({
   const [dialogueTerminerOuvert, setDialogueTerminerOuvert] = React.useState(false);
   const [dialogueRouvrirOuvert, setDialogueRouvrirOuvert] = React.useState(false);
   const [dialogueNouvelleOuvert, setDialogueNouvelleOuvert] = React.useState(false);
+  const [dialogueRecapitulatifOuvert, setDialogueRecapitulatifOuvert] = React.useState(false);
   const [actionEnCours, setActionEnCours] = React.useState(false);
 
   // Sélecteur de mois dropdown
@@ -238,8 +243,19 @@ export function EnTeteOperation({
         </div>
       </div>
 
-      {/* Droite : Boutons Exporter et Terminer/Rouvrir */}
+      {/* Droite : Boutons Exporter, Récapitulatif et Terminer/Rouvrir */}
       <div className="flex items-center justify-end gap-[0.714rem] shrink-0 sm:self-center">
+        {/* Bouton Récapitulatif & Contrôle */}
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setDialogueRecapitulatifOuvert(true)}
+          className="h-[2.429rem] px-[0.857rem] rounded-[0.429rem] flex items-center gap-[0.429rem] text-[0.929rem] font-medium"
+        >
+          <FileSpreadsheet className="w-[1.143rem] h-[1.143rem]" />
+          <span>Récapitulatif & Contrôle</span>
+        </Button>
+
         {/* Bouton Exporter (inactif en phase 2) */}
         <Tooltip content="Bientôt disponible">
           <Button
@@ -300,6 +316,15 @@ export function EnTeteOperation({
       <DialogueNouvelleOperation
         ouvert={dialogueNouvelleOuvert}
         onOpenChange={setDialogueNouvelleOuvert}
+      />
+
+      <DialogueRecapitulatif
+        open={dialogueRecapitulatifOuvert}
+        onOpenChange={setDialogueRecapitulatifOuvert}
+        operation={operation}
+        totaux={totaux}
+        synthese={synthese}
+        lignes={lignes}
       />
     </div>
   );

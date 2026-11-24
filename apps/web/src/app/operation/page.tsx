@@ -216,6 +216,7 @@ function OperationMensuelleContenu() {
         toutesOperations={listeOperations}
         totaux={detail.totaux}
         synthese={detail.synthese}
+        lignes={detail.lignes}
         joursOuvrablesDefaut={detail.parametres.jours_ouvrables_defaut}
         onModifierJours={async (jours) => {
           await mutationModifierJours.mutateAsync(jours);
