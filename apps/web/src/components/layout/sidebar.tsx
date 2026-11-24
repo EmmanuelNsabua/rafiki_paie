@@ -61,7 +61,7 @@ export function Sidebar() {
         </div>
 
         {/* Entrées de menu */}
-        <nav className="mt-[1.429rem] px-[0.714rem] flex flex-col gap-[0.286rem]">
+        <nav className="mt-14 px-[0.714rem] flex flex-col gap-[0.286rem]">
           {MENU_ITEMS.map((item) => {
             const active = isItemActive(item.href);
             const Icon = item.icon;
@@ -73,7 +73,7 @@ export function Sidebar() {
                   'h-[2.571rem] px-[0.857rem] rounded-[0.429rem] flex items-center gap-[0.714rem] text-[1rem] leading-[1.429rem] transition-colors',
                   active
                     ? 'bg-[var(--primary)] text-white font-semibold shadow-xs'
-                    : 'text-[var(--text-2)] font-medium hover:bg-[var(--hover)] hover:text-[var(--text)]'
+                    : 'text-[var(--text-2)] font-normal hover:bg-[var(--hover)] hover:text-[var(--text)]'
                 )}
               >
                 <Icon

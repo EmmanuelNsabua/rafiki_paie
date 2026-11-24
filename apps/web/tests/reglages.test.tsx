@@ -74,6 +74,7 @@ describe('Écran Réglages (Section 6.7)', () => {
     await waitFor(() => {
       expect(screen.getByText('Réglages')).toBeInTheDocument();
       expect(screen.getByDisplayValue('22')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('30,0%')).toBeInTheDocument();
       expect(screen.getByDisplayValue('001')).toBeInTheDocument();
     });
 
@@ -88,6 +89,42 @@ describe('Écran Réglages (Section 6.7)', () => {
         expect.objectContaining({
           code_banque_defaut: '002',
           jours_ouvrables_defaut: 22,
+          diviseur_retenue: 3,
+        })
+      );
+    });
+  });
+
+  it('gère la retenue aussi bien en écrivant 30,0% que 1/3', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('30,0%')).toBeInTheDocument();
+    });
+
+    const champRetenue = screen.getByLabelText(/Retenue maladie et congé/i);
+
+    // Test avec "1/3"
+    fireEvent.change(champRetenue, { target: { value: '1/3' } });
+    const boutonEnregistrer = screen.getByRole('button', { name: /Enregistrer/i });
+    fireEvent.click(boutonEnregistrer);
+
+    await waitFor(() => {
+      expect(window.api!.parametres.modifier).toHaveBeenCalledWith(
+        expect.objectContaining({
+          diviseur_retenue: 3,
+        })
+      );
+    });
+
+    // Test avec "50%"
+    fireEvent.change(champRetenue, { target: { value: '50%' } });
+    fireEvent.click(boutonEnregistrer);
+
+    await waitFor(() => {
+      expect(window.api!.parametres.modifier).toHaveBeenCalledWith(
+        expect.objectContaining({
+          diviseur_retenue: 2,
         })
       );
     });

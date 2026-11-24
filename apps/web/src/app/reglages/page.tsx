@@ -3,15 +3,77 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Parametre, Journal } from '@rafiki/contrat';
 import { formaterDate } from '@/lib/format';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/sonner';
-import { Settings, History, Sliders, Filter } from 'lucide-react';
+import { History, Sliders, Filter, Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+interface StepperLigneProps {
+  id: string;
+  titre: string;
+  description: string;
+  valeur: string;
+  onChange: (val: string) => void;
+  onIncrement: () => void;
+  onDecrement: () => void;
+}
+
+function StepperLigne({
+  id,
+  titre,
+  description,
+  valeur,
+  onChange,
+  onIncrement,
+  onDecrement,
+}: StepperLigneProps) {
+  return (
+    <div className="flex items-center justify-between gap-[1.143rem] py-[0.571rem]">
+      {/* Intitulé & Description */}
+      <div className="space-y-[0.286rem] flex-1 pr-[1.143rem]">
+        <Label
+          htmlFor={id}
+          className="text-[0.929rem] font-semibold text-[var(--text)] cursor-pointer"
+        >
+          {titre}
+        </Label>
+        <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">{description}</p>
+      </div>
+
+      {/* Stepper : [ + ] [ Valeur ] [ - ] */}
+      <div className="flex items-center rounded-[0.429rem] border border-[var(--border)] bg-[var(--carte)] p-[2px] shadow-xs shrink-0">
+        <button
+          type="button"
+          onClick={onIncrement}
+          aria-label="Augmenter"
+          className="w-[2.143rem] h-[2.143rem] rounded-[0.286rem] bg-[#2563eb] hover:bg-blue-700 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        >
+          <Plus className="w-[14px] h-[14px] stroke-[2.5]" />
+        </button>
+
+        <input
+          id={id}
+          type="text"
+          value={valeur}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-[4.857rem] h-[2.143rem] text-center font-medium text-[0.929rem] text-[var(--text)] bg-transparent outline-none tabular-nums font-mono"
+        />
+
+        <button
+          type="button"
+          onClick={onDecrement}
+          aria-label="Diminuer"
+          className="w-[2.143rem] h-[2.143rem] rounded-[0.286rem] border border-blue-200 bg-white hover:bg-blue-50 active:scale-95 text-[#2563eb] flex items-center justify-center transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        >
+          <Minus className="w-[14px] h-[14px] stroke-[2.5]" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ReglagesPage() {
   const queryClient = useQueryClient();
@@ -19,12 +81,53 @@ export default function ReglagesPage() {
 
   // État formulaire paramètres
   const [joursOuvrables, setJoursOuvrables] = React.useState('22');
-  const [diviseurRetenue, setDiviseurRetenue] = React.useState('3');
+  const [retenuePourcentage, setRetenuePourcentage] = React.useState('30,0%');
   const [uniteArrondi, setUniteArrondi] = React.useState('10');
-  const [codeBanqueDefaut, setCodeBanqueDefaut] = React.useState('');
+  const [codeBanqueDefaut, setCodeBanqueDefaut] = React.useState('840');
 
   // Filtre journal d'activité
   const [filtreEntite, setFiltreEntite] = React.useState<string>('tous');
+
+  // Conversion diviseur <-> affichage (3 -> "30,0%", ou fraction "1/3")
+  const diviseurEnPourcentage = (diviseur: number): string => {
+    if (diviseur === 3) return '30,0%';
+    if (diviseur === 1) return '100,0%';
+    if (diviseur === 2) return '50,0%';
+    if (diviseur === 4) return '25,0%';
+    if (diviseur === 5) return '20,0%';
+    const pct = 100 / diviseur;
+    return `${pct.toFixed(1).replace('.', ',')}%`;
+  };
+
+  const parserPourcentageOuFraction = (inputStr: string): number => {
+    const str = inputStr.trim().replace('%', '');
+
+    // Cas fraction : ex. "1/3", "1 / 3"
+    if (str.includes('/')) {
+      const [numStr, denStr] = str.split('/');
+      const num = parseFloat(numStr.replace(',', '.'));
+      const den = parseFloat(denStr.replace(',', '.'));
+      if (!isNaN(num) && !isNaN(den) && num > 0 && den > 0) {
+        return Math.max(1, Math.round(den / num));
+      }
+    }
+
+    // Cas nombre : ex. "30,0", "30", "33,3", "0,03"
+    const val = parseFloat(str.replace(',', '.'));
+    if (isNaN(val) || val <= 0) return 3;
+
+    // Tolérance 0,03 ou 0.03
+    if (val <= 0.1) return 3;
+
+    // Si l'utilisateur saisit directement le diviseur 3 (comme 1/3)
+    if (val === 3) return 3;
+
+    // Si l'utilisateur saisit 30, 30.0, 33, 33.3... (autour de 30% - 33.3%)
+    if (val >= 28 && val <= 35) return 3;
+
+    // Pourcentage général (ex: 50 -> 2, 25 -> 4, 100 -> 1, 20 -> 5)
+    return Math.max(1, Math.round(100 / val));
+  };
 
   // 1. Paramètres
   const { data: parametres, isLoading: chargementParametres } = useQuery({
@@ -35,9 +138,9 @@ export default function ReglagesPage() {
   React.useEffect(() => {
     if (parametres) {
       setJoursOuvrables(String(parametres.jours_ouvrables_defaut));
-      setDiviseurRetenue(String(parametres.diviseur_retenue));
+      setRetenuePourcentage(diviseurEnPourcentage(parametres.diviseur_retenue));
       setUniteArrondi(String(parametres.unite_arrondi));
-      setCodeBanqueDefaut(parametres.code_banque_defaut || '');
+      setCodeBanqueDefaut(parametres.code_banque_defaut || '840');
     }
   }, [parametres]);
 
@@ -68,15 +171,13 @@ export default function ReglagesPage() {
   const handleEnregistrerParametres = async (e: React.FormEvent) => {
     e.preventDefault();
     const jOuv = parseInt(joursOuvrables, 10);
-    const div = parseInt(diviseurRetenue, 10);
     const arrondi = parseInt(uniteArrondi, 10);
+
+    // Analyse du pourcentage ou de la fraction de retenue (ex: "30,0%", "30%", "1/3")
+    const diviseur = parserPourcentageOuFraction(retenuePourcentage);
 
     if (isNaN(jOuv) || jOuv < 1) {
       toast.error('Les jours ouvrables par défaut doivent être supérieurs ou égaux à 1');
-      return;
-    }
-    if (isNaN(div) || div < 1) {
-      toast.error('Le diviseur de retenue doit être supérieur ou égal à 1');
       return;
     }
     if (isNaN(arrondi) || arrondi < 1) {
@@ -86,7 +187,7 @@ export default function ReglagesPage() {
 
     await mutationParametres.mutateAsync({
       jours_ouvrables_defaut: jOuv,
-      diviseur_retenue: div,
+      diviseur_retenue: diviseur,
       unite_arrondi: arrondi,
       code_banque_defaut: codeBanqueDefaut.trim() || undefined,
     });
@@ -106,18 +207,18 @@ export default function ReglagesPage() {
 
   return (
     <div className="space-y-[1.143rem]">
-      {/* 1. Carte d'en-tête avec onglets en pastille */}
-      <div className="flex flex-col gap-[1rem] p-[1.143rem] rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
-        <h1 className="text-[1.714rem] font-semibold text-[var(--text)] leading-[2.286rem] tracking-tight">
+      {/* 1. Carte d'en-tête avec titre à gauche et onglets en pastille à droite */}
+      <div className="flex items-center justify-between p-[1.143rem] rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
+        <h1 className="text-[1.714rem] font-bold text-[var(--text)] leading-[2.286rem] tracking-tight">
           Réglages
         </h1>
 
-        <div className="flex items-center gap-[0.429rem] p-[0.286rem] rounded-full bg-[var(--page)] border border-[var(--border)] w-fit">
+        <div className="flex items-center gap-[0.286rem] p-[0.286rem] rounded-full bg-[var(--page)] border border-[var(--border)]">
           <button
             type="button"
             onClick={() => setOngletActif('parametres')}
             className={cn(
-              'flex items-center gap-[0.429rem] h-[2.286rem] px-[1rem] rounded-full text-[0.929rem] font-medium transition-colors cursor-pointer',
+              'flex items-center gap-[0.429rem] h-[2.286rem] px-[1.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer',
               ongletActif === 'parametres'
                 ? 'bg-[var(--primary)] text-white shadow-xs'
                 : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--hover)]'
@@ -131,7 +232,7 @@ export default function ReglagesPage() {
             type="button"
             onClick={() => setOngletActif('journal')}
             className={cn(
-              'flex items-center gap-[0.429rem] h-[2.286rem] px-[1rem] rounded-full text-[0.929rem] font-medium transition-colors cursor-pointer',
+              'flex items-center gap-[0.429rem] h-[2.286rem] px-[1.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer',
               ongletActif === 'journal'
                 ? 'bg-[var(--primary)] text-white shadow-xs'
                 : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--hover)]'
@@ -145,119 +246,116 @@ export default function ReglagesPage() {
 
       {/* 2. Contenu de l'onglet actif */}
       {ongletActif === 'parametres' ? (
-        <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.429rem] max-w-xl">
+        <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem]">
           {chargementParametres ? (
-            <div className="space-y-[0.857rem]">
-              <Skeleton className="h-[2.286rem] w-full" />
-              <Skeleton className="h-[2.286rem] w-full" />
-              <Skeleton className="h-[2.286rem] w-full" />
+            <div className="space-y-[1.143rem]">
+              <Skeleton className="h-[3.429rem] w-full" />
+              <Skeleton className="h-[3.429rem] w-full" />
+              <Skeleton className="h-[3.429rem] w-full" />
+              <Skeleton className="h-[3.429rem] w-full" />
             </div>
           ) : (
             <form onSubmit={handleEnregistrerParametres} className="space-y-[1.143rem]">
-              {/* Jours ouvrables par défaut */}
-              <div className="space-y-[0.286rem]">
-                <Label
-                  htmlFor="reglage-jours"
-                  className="text-[0.857rem] font-medium text-[var(--text)]"
-                >
-                  Jours ouvrables par défaut
-                </Label>
-                <Input
-                  id="reglage-jours"
-                  type="number"
-                  min="1"
-                  max="31"
-                  value={joursOuvrables}
-                  onChange={(e) => setJoursOuvrables(e.target.value)}
-                  className="h-[2.286rem] text-[1rem]"
-                />
-                <p className="text-[0.786rem] text-[var(--text-2)]">
-                  Proposé automatiquement lors de la création d’une nouvelle opération mensuelle.
-                </p>
-              </div>
+              {/* Ligne 1 : Jours ouvrables par défaut */}
+              <StepperLigne
+                id="reglage-jours"
+                titre="Jours ouvrables par défaut"
+                description="Proposé automatiquement lors de la création d’une nouvelle opération mensuelle."
+                valeur={joursOuvrables}
+                onChange={setJoursOuvrables}
+                onIncrement={() =>
+                  setJoursOuvrables((prev) => String(Math.min(31, (parseInt(prev, 10) || 22) + 1)))
+                }
+                onDecrement={() =>
+                  setJoursOuvrables((prev) => String(Math.max(1, (parseInt(prev, 10) || 22) - 1)))
+                }
+              />
 
-              {/* Diviseur de retenue */}
-              <div className="space-y-[0.286rem]">
-                <Label
-                  htmlFor="reglage-diviseur"
-                  className="text-[0.857rem] font-medium text-[var(--text)]"
-                >
-                  Retenue maladie et congé (1 / X du salaire journalier)
-                </Label>
-                <div className="flex items-center gap-[0.571rem]">
-                  <span className="text-[0.929rem] text-[var(--text-2)] font-mono">1 /</span>
-                  <Input
-                    id="reglage-diviseur"
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={diviseurRetenue}
-                    onChange={(e) => setDiviseurRetenue(e.target.value)}
-                    className="h-[2.286rem] text-[1rem] w-[5rem]"
-                  />
-                  <span className="text-[0.857rem] text-[var(--text-2)]">
-                    du salaire journalier par jour
-                  </span>
-                </div>
-                <p className="text-[0.786rem] text-[var(--text-2)]">
-                  Par défaut 3 (soit 1/3 retenu par jour pour maladie ou congé de circonstance).
-                </p>
-              </div>
+              {/* Ligne 2 : Retenue maladie et congé (pourcentage du salaire journalier) */}
+              <StepperLigne
+                id="reglage-diviseur"
+                titre="Retenue maladie et congé (pourcentage du salaire journalier)"
+                description="Par défaut 3 (soit 1/3 retenu par jour pour maladie ou congé de circonstance)."
+                valeur={retenuePourcentage}
+                onChange={setRetenuePourcentage}
+                onIncrement={() => {
+                  setRetenuePourcentage((prev) => {
+                    if (prev.includes('/')) {
+                      const cur = parserPourcentageOuFraction(prev);
+                      const next = Math.max(1, cur - 1);
+                      return `1/${next}`;
+                    }
+                    const clean = prev.replace('%', '').replace(',', '.').trim();
+                    const num = parseFloat(clean);
+                    if (isNaN(num)) return '30,0%';
+                    const next = Math.min(100, Math.round(num + 5));
+                    return `${next},0%`;
+                  });
+                }}
+                onDecrement={() => {
+                  setRetenuePourcentage((prev) => {
+                    if (prev.includes('/')) {
+                      const cur = parserPourcentageOuFraction(prev);
+                      const next = cur + 1;
+                      return `1/${next}`;
+                    }
+                    const clean = prev.replace('%', '').replace(',', '.').trim();
+                    const num = parseFloat(clean);
+                    if (isNaN(num)) return '30,0%';
+                    const next = Math.max(5, Math.round(num - 5));
+                    return `${next},0%`;
+                  });
+                }}
+              />
 
-              {/* Unité d'arrondi */}
-              <div className="space-y-[0.286rem]">
-                <Label
-                  htmlFor="reglage-arrondi"
-                  className="text-[0.857rem] font-medium text-[var(--text)]"
-                >
-                  Virement arrondi au multiple de ($)
-                </Label>
-                <Input
-                  id="reglage-arrondi"
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value={uniteArrondi}
-                  onChange={(e) => setUniteArrondi(e.target.value)}
-                  className="h-[2.286rem] text-[1rem]"
-                />
-                <p className="text-[0.786rem] text-[var(--text-2)]">
-                  Arrondi à la dizaine la plus proche (ex: 10 $). La moitié monte.
-                </p>
-              </div>
+              {/* Ligne 3 : Virement arrondi au multiple de ($) */}
+              <StepperLigne
+                id="reglage-arrondi"
+                titre="Virement arrondi au multiple de ($)"
+                description="Arrondi à la dizaine la plus proche (ex: 10 $). La moitié monte."
+                valeur={uniteArrondi}
+                onChange={setUniteArrondi}
+                onIncrement={() =>
+                  setUniteArrondi((prev) => String((parseInt(prev, 10) || 10) + 10))
+                }
+                onDecrement={() =>
+                  setUniteArrondi((prev) =>
+                    String(Math.max(1, (parseInt(prev, 10) || 10) - 10 || 1))
+                  )
+                }
+              />
 
-              {/* Code banque proposé */}
-              <div className="space-y-[0.286rem]">
-                <Label
-                  htmlFor="reglage-code-banque"
-                  className="text-[0.857rem] font-medium text-[var(--text)]"
-                >
-                  Code banque proposé aux nouveaux employés
-                </Label>
-                <Input
-                  id="reglage-code-banque"
-                  type="text"
-                  value={codeBanqueDefaut}
-                  onChange={(e) => setCodeBanqueDefaut(e.target.value)}
-                  placeholder="Ex: 001"
-                  className="h-[2.286rem] text-[1rem]"
-                />
-                <p className="text-[0.786rem] text-[var(--text-2)]">
-                  Pré-rempli lors de la création d’une fiche employé (peut être modifié ou effacé).
-                </p>
-              </div>
+              {/* Ligne 4 : Code banque proposé aux nouveaux employés */}
+              <StepperLigne
+                id="reglage-code-banque"
+                titre="Code banque proposé aux nouveaux employés"
+                description="Pré-rempli lors de la création d’une fiche employé (peut être modifié ou effacé)."
+                valeur={codeBanqueDefaut}
+                onChange={setCodeBanqueDefaut}
+                onIncrement={() =>
+                  setCodeBanqueDefaut((prev) =>
+                    String((parseInt(prev, 10) || 0) + 1).padStart(3, '0')
+                  )
+                }
+                onDecrement={() =>
+                  setCodeBanqueDefaut((prev) =>
+                    String(Math.max(1, (parseInt(prev, 10) || 1) - 1)).padStart(3, '0')
+                  )
+                }
+              />
 
-              <div className="pt-[0.857rem] border-t border-[var(--border)] flex items-center justify-between">
-                <p className="text-[0.786rem] text-[var(--text-2)] italic">
-                  Ces réglages s’appliquent aux prochaines opérations.
-                </p>
+              {/* Section d'enregistrement à droite */}
+              <div className="flex flex-col items-end gap-[0.429rem] pt-[1.714rem]">
                 <Button
                   type="submit"
                   disabled={mutationParametres.isPending}
-                  className="h-[2.429rem] px-[1rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.929rem] font-semibold cursor-pointer shadow-xs"
+                  className="h-[2.429rem] px-[1.714rem] rounded-[0.429rem] bg-[var(--primary)] hover:bg-[var(--primary-strong)] text-white text-[0.929rem] font-semibold cursor-pointer shadow-xs transition-colors"
                 >
                   {mutationParametres.isPending ? 'Enregistrement…' : 'Enregistrer'}
                 </Button>
+                <p className="text-[0.786rem] text-[var(--text-2)] italic text-right">
+                  Ces réglages s’appliquent aux prochaines opérations.
+                </p>
               </div>
             </form>
           )}
