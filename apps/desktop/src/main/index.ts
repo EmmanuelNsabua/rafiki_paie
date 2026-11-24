@@ -74,7 +74,7 @@ function createWindow(): void {
   Menu.setApplicationMenu(null);
 
   mainWindow = new BrowserWindow({
-    title: 'Gestionnaire de paie',
+    title: 'Starclip',
     frame: false,
     autoHideMenuBar: true,
     width: preferences.fenetre.largeur || 1440,

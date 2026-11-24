@@ -5,6 +5,7 @@ import { type ThemePreference, type PreferencesInterface } from '@rafiki/contrat
 import { api, estDansElectron } from '@/lib/api';
 import { Minus, Square, Copy, X, RotateCcw, Monitor, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { StarclipLogo } from '@/components/layout/starclip-logo';
 
 export function BarreTitre() {
   const [menuOuvert, setMenuOuvert] = React.useState(false);
@@ -200,15 +201,15 @@ export function BarreTitre() {
             e.stopPropagation();
             setMenuOuvert((prev) => !prev);
           }}
-          className="w-[1.429rem] h-[1.429rem] rounded-[4px] bg-[var(--primary)] text-white flex items-center justify-center text-[0.786rem] font-bold shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+          className="w-[1.429rem] h-[1.429rem] rounded-[4px] overflow-hidden bg-white border border-[var(--border)] flex items-center justify-center shadow-xs hover:opacity-90 active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] shrink-0"
           style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         >
-          R
+          <StarclipLogo className="w-full h-full" />
         </button>
 
         {/* Titre de la fenêtre */}
         <span className="text-[12px] leading-[16px] font-medium text-[var(--texte)]">
-          Gestionnaire de paie
+          Starclip — Gestionnaire de paie
         </span>
       </div>
 

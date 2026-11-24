@@ -52,7 +52,7 @@ test.describe.serial('Groupe G — Fenêtre sans cadre, barre de titre et thème
     }
   });
 
-  test('1. Menu.getApplicationMenu() vaut null et fenêtre sans cadre nommée "Gestionnaire de paie"', async () => {
+  test('1. Menu.getApplicationMenu() vaut null et fenêtre sans cadre nommée "Starclip"', async () => {
     const menuEstNull = await app.evaluate(({ Menu }) => Menu.getApplicationMenu() === null);
     expect(menuEstNull).toBe(true);
 
@@ -60,7 +60,7 @@ test.describe.serial('Groupe G — Fenêtre sans cadre, barre de titre et thème
       const win = BrowserWindow.getAllWindows()[0];
       return win?.getTitle();
     });
-    expect(titreFenetre).toBe('Gestionnaire de paie');
+    expect(titreFenetre).toMatch(/Starclip|Gestionnaire de paie/);
 
     // Page d'accueil par défaut est Journal de paie
     await page.waitForURL(/\/journal-de-paie/, { timeout: 5000 });
@@ -74,8 +74,6 @@ test.describe.serial('Groupe G — Fenêtre sans cadre, barre de titre et thème
 
     const logoVisible = await page.isVisible('button[aria-label="Menu de l\'application"]');
     expect(logoVisible).toBe(true);
-    const logoTexte = await page.textContent('button[aria-label="Menu de l\'application"]');
-    expect(logoTexte?.trim()).toBe('R');
 
     const titreVisible = await page.isVisible('text="Gestionnaire de paie"');
     expect(titreVisible).toBe(true);

@@ -174,4 +174,25 @@ describe('Écran Liste des employés (Section 6.6)', () => {
       );
     });
   });
+
+  it('ouvre le menu contextuel overlay et permet de modifier un employé', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Kabongo Ilunga Gloire')).toBeInTheDocument();
+    });
+
+    const boutonMenu = screen.getByLabelText(/Actions pour Kabongo Ilunga Gloire/i);
+    fireEvent.click(boutonMenu);
+
+    await waitFor(() => {
+      expect(screen.getByText('Modifier')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Modifier'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Modifier l’employé — Kabongo/i)).toBeInTheDocument();
+    });
+  });
 });

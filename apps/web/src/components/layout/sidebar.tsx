@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { FileText, ClipboardCheck, Users, Settings } from 'lucide-react';
+import { StarclipLogo } from '@/components/layout/starclip-logo';
 
 const MENU_ITEMS = [
   {
@@ -42,17 +43,17 @@ export function Sidebar() {
       className="fixed left-0 top-[2.286rem] bottom-0 w-[16.571rem] bg-[var(--fenetre)] border-r border-[var(--trait)] z-30 flex flex-col justify-between select-none"
     >
       <div>
-        {/* Marque : Tuile verte compacte + École Rafiki */}
+        {/* Marque : Tuile Starclip */}
         <div className="pt-[1.143rem] px-[1rem] flex items-center gap-[0.714rem]">
           <div
-            className="w-[2.286rem] h-[2.286rem] rounded-[0.429rem] bg-[var(--primary)] text-white flex items-center justify-center text-[1.143rem] font-bold shrink-0 shadow-xs"
+            className="w-[2.286rem] h-[2.286rem] rounded-[0.429rem] overflow-hidden flex items-center justify-center shrink-0 border border-[var(--border)] shadow-xs bg-white"
             aria-hidden="true"
           >
-            R
+            <StarclipLogo className="w-full h-full" />
           </div>
           <div className="min-w-0">
             <h1 className="text-[1.143rem] font-bold text-[var(--text)] leading-[1.429rem] truncate">
-              École Rafiki
+              Starclip
             </h1>
             <p className="text-[0.857rem] font-normal text-[var(--text-2)] leading-[1.143rem] truncate">
               Gestionnaire de paie

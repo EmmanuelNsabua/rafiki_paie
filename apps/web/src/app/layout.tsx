@@ -4,8 +4,11 @@ import { Providers } from '@/components/providers';
 import { Shell } from '@/components/layout/shell';
 
 export const metadata: Metadata = {
-  title: 'Gestionnaire de paie',
-  description: "Logiciel de paie de l'École Rafiki",
+  title: 'Starclip - Gestionnaire de paie',
+  description: "Starclip - Logiciel de paie de l'École Rafiki",
+  icons: {
+    icon: '/icon_starclip.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

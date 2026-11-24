@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 export interface DropdownMenuItem {
@@ -20,72 +21,155 @@ export interface DropdownMenuProps {
 
 export function DropdownMenu({ trigger, items, align = 'right', className }: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = React.useState(false);
+  const [coords, setCoords] = React.useState<{ top: number; left?: number; right?: number }>({
+    top: 0,
+    right: 0,
+  });
+
+  const triggerRef = React.useRef<HTMLDivElement>(null);
+  const menuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const calculatePosition = React.useCallback(() => {
+    if (!triggerRef.current || typeof window === 'undefined') return;
+
+    const rect = triggerRef.current.getBoundingClientRect();
+    const margin = 4;
+    const estimatedHeight = items.length * 40 + 16;
+    const estimatedWidth = 192; // 12rem
+
+    let top = rect.bottom + margin;
+    // Si déborde en bas de l'écran, afficher au-dessus du bouton
+    if (top + estimatedHeight > window.innerHeight && rect.top - estimatedHeight - margin > 0) {
+      top = rect.top - estimatedHeight - margin;
+    }
+
+    let left: number | undefined = undefined;
+    let right: number | undefined = undefined;
+
+    if (align === 'right') {
+      right = Math.max(8, window.innerWidth - rect.right);
+    } else {
+      left = Math.min(Math.max(8, rect.left), window.innerWidth - estimatedWidth - 8);
+    }
+
+    setCoords({ top, left, right });
+  }, [align, items.length]);
+
+  const toggleOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!open) {
+      calculatePosition();
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!open) return;
+
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     }
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
     }
+
+    function handleScrollOrResize() {
+      setOpen(false);
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
     };
   }, [open]);
 
   return (
-    <div className="relative inline-block text-left" ref={containerRef}>
+    <div className="inline-flex" ref={triggerRef}>
       {React.cloneElement(trigger, {
-        onClick: (e: React.MouseEvent) => {
-          e.stopPropagation();
-          setOpen((prev) => !prev);
-        },
+        onClick: toggleOpen,
         'aria-expanded': open,
       })}
 
-      {open && (
-        <div
-          className={cn(
-            'absolute z-50 mt-1 min-w-[12.5rem] rounded-[8px] bg-[var(--surface)] p-1.5 shadow-lg border border-[var(--border)] animate-in fade-in zoom-in-95 duration-150',
-            align === 'right' ? 'right-0' : 'left-0',
-            className
-          )}
-        >
-          {items.map((item, idx) => (
-            <button
-              key={idx}
-              type="button"
-              disabled={item.disabled}
-              title={item.tooltip}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!item.disabled && item.onClick) {
-                  item.onClick();
-                  setOpen(false);
-                }
-              }}
-              className={cn(
-                'flex w-full items-center px-3 py-2 text-[1rem] rounded-[6px] text-left transition-colors cursor-pointer',
-                item.disabled
-                  ? 'opacity-40 cursor-not-allowed text-[var(--text-2)]'
-                  : item.destructive
-                    ? 'text-[var(--danger)] hover:bg-[var(--danger-tint)]'
-                    : 'text-[var(--text)] hover:bg-[var(--hover)]'
-              )}
-            >
-              {item.label}
-              {item.tooltip && item.disabled && (
-                <span className="ml-auto text-[0.75rem] text-[var(--text-2)] pl-2">
-                  ({item.tooltip})
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+      {open &&
+        mounted &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: `${coords.top}px`,
+              ...(coords.right !== undefined
+                ? { right: `${coords.right}px` }
+                : { left: `${coords.left}px` }),
+              zIndex: 99999,
+            }}
+            className={cn(
+              'min-w-[12rem] rounded-[8px] bg-[var(--surface)] p-1.5 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95 duration-100 select-none pointer-events-auto',
+              className
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {items.map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                disabled={item.disabled}
+                title={item.tooltip}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!item.disabled && item.onClick) {
+                    item.onClick();
+                    setOpen(false);
+                  }
+                }}
+                className={cn(
+                  'flex w-full items-center px-3 py-2 text-[0.857rem] font-medium rounded-[6px] text-left transition-colors cursor-pointer',
+                  item.disabled
+                    ? 'opacity-40 cursor-not-allowed text-[var(--text-2)]'
+                    : item.destructive
+                      ? 'text-[var(--danger)] hover:bg-[var(--danger-tint)]'
+                      : 'text-[var(--text)] hover:bg-[var(--hover)]'
+                )}
+              >
+                {item.label}
+                {item.tooltip && item.disabled && (
+                  <span className="ml-auto text-[0.75rem] text-[var(--text-2)] pl-2">
+                    ({item.tooltip})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
