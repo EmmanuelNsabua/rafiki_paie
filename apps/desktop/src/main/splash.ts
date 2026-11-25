@@ -32,9 +32,6 @@ export function obtenirHtmlSplashScreen(): string {
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
       position: relative;
-      background: radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.18), transparent 48%),
-                  radial-gradient(circle at 15% 85%, rgba(6, 182, 212, 0.14), transparent 42%),
-                  linear-gradient(135deg, #091412 0%, #0d211d 50%, #06100e 100%);
     }
     .header {
       display: flex;
@@ -50,7 +47,7 @@ export function obtenirHtmlSplashScreen(): string {
     .brand-icon {
       width: 24px;
       height: 24px;
-      color: #10b981;
+      color: #ffffff;
     }
     .brand-name {
       font-size: 13px;
@@ -89,7 +86,7 @@ export function obtenirHtmlSplashScreen(): string {
     .app-subtitle {
       font-size: 13px;
       font-weight: 700;
-      color: #10b981;
+      color: #96a2b3ff;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       margin-top: 5px;
@@ -163,7 +160,7 @@ export function obtenirHtmlSplashScreen(): string {
     .progress-bar {
       height: 100%;
       width: 10%;
-      background: linear-gradient(90deg, #06b6d4, #10b981);
+      background: #10b981;
       border-radius: 4px;
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
@@ -183,9 +180,8 @@ export function obtenirHtmlSplashScreen(): string {
 
   <div class="main-content">
     <div class="title-group">
-      <h1 class="app-title">PAIE RAFIKI</h1>
-      <div class="app-subtitle">Gestionnaire de paie</div>
-      <p class="app-desc">École Rafiki — République Démocratique du Congo</p>
+      <h1 class="app-title">STARCLIP</h1>
+      <div class="app-subtitle">Gestionnaire de paie École Rafiki</div>
     </div>
     <div class="hero-graphic">
       <svg class="hero-svg" viewBox="0 0 150 150" fill="none">

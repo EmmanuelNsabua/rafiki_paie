@@ -6,7 +6,7 @@ describe('Splash Screen (Démarrage élégant type DBeaver)', () => {
     const html = obtenirHtmlSplashScreen();
 
     expect(html).toContain('Starclip');
-    expect(html).toContain('PAIE RAFIKI');
+    expect(html).toContain('STARCLIP');
     expect(html).toContain('Gestionnaire de paie');
     expect(html).toContain('status-text');
     expect(html).toContain('progress-bar');

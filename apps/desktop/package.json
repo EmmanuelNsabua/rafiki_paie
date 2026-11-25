@@ -5,10 +5,12 @@
   "main": "./dist/main/index.js",
   "scripts": {
     "build": "tsup && node -e \"require('fs').cpSync('migrations', 'dist/main/migrations', { recursive: true })\"",
+    "build:icons": "node ../../scripts/build-icons.mjs",
     "typecheck": "tsc --noEmit",
     "db:seed": "node ../../scripts/run-electron-node.mjs dist/main/seed.js",
     "dev": "npm run build && concurrently -k \"npm run dev --workspace=@rafiki/web\" \"wait-on http://localhost:3000 && node ../../scripts/run-electron-gui.mjs\"",
-    "build:electron": "electron-builder --dir",
+    "build:electron": "electron-builder --win nsis",
+    "build:electron:dir": "electron-builder --dir",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
@@ -30,17 +32,50 @@
     "typescript": "5.8.2",
     "wait-on": "8.0.4"
   },
+  "author": "Starclip",
+  "description": "Starclip — Gestionnaire de paie École Rafiki",
   "build": {
-    "appId": "cd.rafiki.paie",
-    "productName": "Paie Rafiki",
+    "appId": "com.starclip.paie",
+    "productName": "Starclip",
+    "copyright": "© 2026 Starclip",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "win": {
       "target": [
-        "nsis",
-        "dir"
-      ]
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "executableName": "Starclip",
+      "artifactName": "Starclip-Setup-${version}.${ext}",
+      "legalTrademarks": "© 2026 Starclip",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Starclip",
+      "runAfterFinish": true,
+      "installerLanguages": [
+        "fr_FR"
+      ],
+      "language": "1036"
     },
     "files": [
       "dist/**/*"

@@ -23,6 +23,30 @@ import { creerSplashScreen, mettreAJourSplashScreen } from './splash';
 log.initialize();
 log.transports.console.level = 'info';
 
+// Stabilisation absolue du dossier userData pour préserver la base SQLite et les sauvegardes
+if (app?.getPath && app?.setPath) {
+  try {
+    const dossierUserDataStable = path.join(app.getPath('appData'), 'rafiki-paie');
+    app.setPath('userData', dossierUserDataStable);
+    log.info(`[MAIN] Chemin userData stabilisé : ${dossierUserDataStable}`);
+  } catch (err: any) {
+    log.warn('[MAIN] Impossible de stabiliser userData :', err?.message);
+  }
+}
+
+// Identifiant d'application permanent dans la barre des tâches Windows
+if (app?.setAppUserModelId) {
+  app.setAppUserModelId('com.starclip.paie');
+}
+
+// Verrou d'instance unique pour empêcher les conflits SQLite
+const verrouInstanceUnique =
+  typeof app?.requestSingleInstanceLock === 'function' ? app.requestSingleInstanceLock() : true;
+if (!verrouInstanceUnique) {
+  log.warn('[MAIN] Une instance de Starclip est déjà en cours d exécution. Fermeture immédiate.');
+  app.quit();
+}
+
 // Configuration du schéma de protocole privilégié AVANT app.whenReady()
 enregistrerSchemaApp();
 
@@ -341,6 +365,16 @@ app.whenReady().then(async () => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
+    }
+  });
+
+  app.on('second-instance', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      mainWindow.show();
+      mainWindow.focus();
     }
   });
 });
