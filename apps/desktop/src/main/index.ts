@@ -18,6 +18,7 @@ import {
 } from './preferences';
 import { SauvegardeService } from './domain';
 import { enregistrerSchemaApp, enregistrerGestionnaireApp, obtenirDossierWebOut } from './protocol';
+import { creerSplashScreen, mettreAJourSplashScreen } from './splash';
 
 log.initialize();
 log.transports.console.level = 'info';
@@ -62,7 +63,7 @@ function reinitialiserZoom(): void {
   mainWindow.webContents.send('fenetre:changementPreferences', maj);
 }
 
-function createWindow(): void {
+function createWindow(splashWindow: BrowserWindow | null = null): void {
   const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
   const preferences = obtenirPreferences();
 
@@ -76,6 +77,7 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     title: 'Starclip',
     frame: false,
+    show: false,
     autoHideMenuBar: true,
     width: preferences.fenetre.largeur || 1440,
     height: preferences.fenetre.hauteur || 900,
@@ -93,9 +95,37 @@ function createWindow(): void {
     },
   });
 
-  if (preferences.fenetre.estAgrandi) {
-    mainWindow.maximize();
-  }
+  let fenetreRevelee = false;
+  const revelerFenetrePrincipale = () => {
+    if (fenetreRevelee || !mainWindow || mainWindow.isDestroyed()) return;
+    fenetreRevelee = true;
+
+    if (preferences.fenetre.estAgrandi) {
+      mainWindow.maximize();
+    }
+    mainWindow.show();
+    mainWindow.focus();
+
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      setTimeout(() => {
+        if (splashWindow && !splashWindow.isDestroyed()) {
+          splashWindow.destroy();
+        }
+      }, 350);
+    }
+  };
+
+  mainWindow.once('ready-to-show', async () => {
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      await mettreAJourSplashScreen(splashWindow, 'Prêt ! Lancement de l application...', 100);
+    }
+    revelerFenetrePrincipale();
+  });
+
+  // Sécurité : si ready-to-show tarde, affichage forcé
+  setTimeout(() => {
+    revelerFenetrePrincipale();
+  }, 6000);
 
   // Écoute de l'événement système de thème pour mettre à jour backgroundColor et renderer
   nativeTheme.on('updated', () => {
@@ -252,8 +282,12 @@ function createWindow(): void {
 
 log.info('[MAIN] Registering app.whenReady');
 
-app.whenReady().then(() => {
-  log.info('[MAIN] app.whenReady resolved! Initializing preferences and database...');
+app.whenReady().then(async () => {
+  log.info('[MAIN] app.whenReady resolved! Démarrage avec Splash Screen...');
+
+  // 1. Affichage immédiat du Splash Screen inspiré de DBeaver
+  const splashWindow = creerSplashScreen();
+  await mettreAJourSplashScreen(splashWindow, 'Chargement des préférences...', 20);
 
   // Chargement des préférences avant toute création de fenêtre
   chargerPreferences();
@@ -261,12 +295,14 @@ app.whenReady().then(() => {
   // Suppression absolue du menu d'application
   Menu.setApplicationMenu(null);
 
+  await mettreAJourSplashScreen(splashWindow, 'Connexion à la base de données...', 40);
   db = initDatabase();
 
   // Enregistrer le gestionnaire du protocole app:// servant resources/web/out
   const dossierWebOut = obtenirDossierWebOut();
   enregistrerGestionnaireApp(dossierWebOut);
 
+  await mettreAJourSplashScreen(splashWindow, 'Vérification des sauvegardes locales...', 60);
   // Initialisation du service de sauvegarde locale
   const dbPath = obtenirCheminBaseParDefaut();
   const dossierSauvegardes = path.join(path.dirname(dbPath), 'sauvegardes');
@@ -280,6 +316,7 @@ app.whenReady().then(() => {
     log.warn(`[SAUVEGARDE] Erreur lors de la vérification au démarrage : ${err?.message}`);
   });
 
+  await mettreAJourSplashScreen(splashWindow, 'Initialisation des services métier...', 80);
   // Enregistrer les gestionnaires IPC du domaine
   enregistrerGestionnairesIpc(db, sauvegardeService);
 
@@ -298,7 +335,8 @@ app.whenReady().then(() => {
     };
   });
 
-  createWindow();
+  await mettreAJourSplashScreen(splashWindow, 'Ouverture du tableau de bord...', 92);
+  createWindow(splashWindow);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
