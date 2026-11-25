@@ -14,7 +14,15 @@ import { Button } from '@/components/ui/button';
 import { Popover } from '@/components/ui/popover';
 import { Tooltip } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Pencil, Lock, Download, Plus, FileSpreadsheet } from 'lucide-react';
+import {
+  ChevronDown,
+  Pencil,
+  Lock,
+  Download,
+  Plus,
+  FileSpreadsheet,
+  ArrowLeft,
+} from 'lucide-react';
 import { DialogueConfirmationTerminer } from './dialogue-confirmation-terminer';
 import { DialogueConfirmationRouvrir } from './dialogue-confirmation-rouvrir';
 import { DialogueNouvelleOperation } from '@/components/journal/dialogue-nouvelle-operation';
@@ -109,11 +117,24 @@ export function EnTeteOperation({
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[1.143rem] min-h-[4.571rem] p-[1.143rem] rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs">
-      {/* Gauche : Titre en haut, sous-éléments (mois, statut, jours ouvrables) en dessous */}
+      {/* Gauche : Bouton retour, Titre en haut, sous-éléments (mois, statut, jours ouvrables) en dessous */}
       <div className="flex flex-col gap-[0.571rem]">
-        <h1 className="text-[1.714rem] font-bold text-[var(--text)] leading-[2.286rem] tracking-tight">
-          Opération mensuelle
-        </h1>
+        <div className="flex items-center gap-[0.714rem]">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/journal-de-paie/')}
+            className="h-[2rem] px-[0.571rem] rounded-[0.429rem] flex items-center gap-[0.357rem] text-[0.857rem] text-[var(--text-2)] hover:text-[var(--text)] cursor-pointer"
+            title="Retour au Journal de paie"
+          >
+            <ArrowLeft className="w-[1rem] h-[1rem]" />
+            <span>Journal de paie</span>
+          </Button>
+          <h1 className="text-[1.714rem] font-bold text-[var(--text)] leading-[2.286rem] tracking-tight">
+            Opération mensuelle
+          </h1>
+        </div>
 
         <div className="flex flex-wrap items-center gap-[0.714rem]">
           {/* Sélecteur de mois */}
@@ -187,8 +208,8 @@ export function EnTeteOperation({
               <span>Terminée</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-[0.357rem] h-[1.571rem] px-[0.571rem] rounded-full bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[0.857rem] font-semibold border border-[var(--primary)]/20">
-              <span className="w-[0.429rem] h-[0.429rem] rounded-full bg-[var(--primary)]" />
+            <span className="inline-flex items-center gap-[0.357rem] h-[1.571rem] px-[0.571rem] rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[0.857rem] font-semibold border border-emerald-500/30">
+              <span className="w-[0.429rem] h-[0.429rem] rounded-full bg-emerald-500" />
               <span>En cours</span>
             </span>
           )}
@@ -245,19 +266,8 @@ export function EnTeteOperation({
         </div>
       </div>
 
-      {/* Droite : Boutons Exporter, Récapitulatif et Terminer/Rouvrir */}
+      {/* Droite : Boutons Exporter et Terminer/Rouvrir */}
       <div className="flex items-center justify-end gap-[0.714rem] shrink-0 sm:self-center">
-        {/* Bouton Récapitulatif & Contrôle */}
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => setDialogueRecapitulatifOuvert(true)}
-          className="h-[2.429rem] px-[0.857rem] rounded-[0.429rem] flex items-center gap-[0.429rem] text-[0.929rem] font-medium"
-        >
-          <FileSpreadsheet className="w-[1.143rem] h-[1.143rem]" />
-          <span>Récapitulatif & Contrôle</span>
-        </Button>
-
         {/* Bouton Exporter */}
         <Button
           type="button"

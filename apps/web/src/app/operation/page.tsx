@@ -241,6 +241,7 @@ function OperationMensuelleContenu() {
         estTerminee={estTerminee}
         joursOuvrables={detail.operation.jours_ouvrables}
         nbEmployesNonInclus={nbEmployesNonInclus}
+        operation={detail.operation}
         onAjouterNouveauxEmployes={async () => {
           await mutationAjouterNouveauxEmployes.mutateAsync();
         }}

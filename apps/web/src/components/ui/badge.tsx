@@ -8,6 +8,8 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: 'bg-[var(--primary-tint)] text-[var(--primary-strong)] font-semibold',
+        actif:
+          'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold',
         secondary: 'bg-[var(--hover)] text-[var(--text-2)] font-medium',
         destructive: 'bg-[var(--danger-tint)] text-[var(--danger)] font-semibold',
         warning:

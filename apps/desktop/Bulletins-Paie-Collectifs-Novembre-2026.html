@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bulletin de paie — MUBIKAYI NSABUA Emmanuel (Novembre 2026)</title>
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 15mm;
+      }
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #1a1a1a;
+        font-size: 11pt;
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+      }
+      .bulletin-container {
+        page-break-after: always;
+        max-width: 180mm;
+        margin: 0 auto;
+        padding-bottom: 20mm;
+      }
+      .bulletin-container:last-child {
+        page-break-after: avoid;
+      }
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+      }
+      .header h1 {
+        font-size: 16pt;
+        margin: 0 0 4px 0;
+        text-transform: uppercase;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+      }
+      .header h2 {
+        font-size: 10pt;
+        margin: 0;
+        font-weight: normal;
+        color: #444;
+      }
+      .section-title {
+        font-size: 11pt;
+        font-weight: bold;
+        background: #f0f0f0;
+        padding: 4px 8px;
+        margin: 14px 0 8px 0;
+        border-left: 4px solid #333;
+      }
+      .table-info {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+      }
+      .table-info td {
+        padding: 4px 6px;
+        font-size: 10pt;
+      }
+      .table-info td.label {
+        font-weight: 600;
+        width: 22%;
+        color: #333;
+      }
+      .table-info td.val {
+        width: 28%;
+      }
+      .table-detail {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+      }
+      .table-detail th,
+      .table-detail td {
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        font-size: 10pt;
+      }
+      .table-detail th {
+        background: #f7f7f7;
+        font-weight: bold;
+        text-align: center;
+      }
+      .table-detail td.num {
+        text-align: right;
+        font-family: 'Consolas', monospace;
+      }
+      .table-detail tr.subtotal {
+        font-weight: bold;
+        background: #fafafa;
+      }
+      .table-detail tr.total-final {
+        font-weight: bold;
+        font-size: 12pt;
+        background: #f0f4f8;
+      }
+      .signatures {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 35px;
+        page-break-inside: avoid;
+      }
+      .sig-box {
+        width: 45%;
+        border-top: 1px dashed #666;
+        padding-top: 6px;
+        text-align: center;
+        font-size: 9pt;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bulletin-container">
+      <div class="header">
+        <h1>École Rafiki — Bulletin de paie individuel</h1>
+        <h2>République Démocratique du Congo — Document officiel de paie mensuelle</h2>
+      </div>
+
+      <div class="section-title">1. IDENTIFICATION DE L'AGENT & PÉRIODE</div>
+      <table class="table-info">
+        <tr>
+          <td class="label">Matricule / N° :</td>
+          <td class="val">1</td>
+          <td class="label">Mois / Période :</td>
+          <td class="val"><strong>Novembre 2026</strong></td>
+        </tr>
+        <tr>
+          <td class="label">Nom complet :</td>
+          <td class="val"><strong>MUBIKAYI NSABUA Emmanuel</strong></td>
+          <td class="label">Jours ouvrables :</td>
+          <td class="val">22 jours</td>
+        </tr>
+        <tr>
+          <td class="label">Fonction :</td>
+          <td class="val">Informaticien</td>
+          <td class="label">Jours prestés :</td>
+          <td class="val">19 jours</td>
+        </tr>
+        <tr>
+          <td class="label">Téléphone :</td>
+          <td class="val">+243 851 059 958</td>
+          <td class="label">Mode de paiement :</td>
+          <td class="val">Virement Bancaire</td>
+        </tr>
+      </table>
+
+      <div class="section-title">2. DÉTAIL DES GAINS ET RETENUES</div>
+      <table class="table-detail">
+        <thead>
+          <tr>
+            <th>RUBRIQUE / LIBELLÉ</th>
+            <th style="width: 25%">BASE / JOURS</th>
+            <th style="width: 20%">GAINS (+)</th>
+            <th style="width: 20%">RETENUES (-)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Salaire de base contractuel</td>
+            <td style="text-align: center">22 j. ouvrables</td>
+            <td class="num">500.00 $</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Heures Supplémentaires (HS) & Primes</td>
+            <td style="text-align: center">—</td>
+            <td class="num">40.00 $</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Retraits / Avances sur salaire perçues</td>
+            <td style="text-align: center">—</td>
+            <td class="num">—</td>
+            <td class="num">0.00 $</td>
+          </tr>
+          <tr class="subtotal">
+            <td colspan="2">SOUS-TOTAL : SALAIRE À PAYER</td>
+            <td class="num" style="border-top: 2px solid #333"><strong>540.00 $</strong></td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Retenue pour Maladie (1/3 taux journalier)</td>
+            <td style="text-align: center">0 jour(s)</td>
+            <td class="num">—</td>
+            <td class="num">0.00 $</td>
+          </tr>
+          <tr>
+            <td>Retenue Congés de circonstance / Maternité / Deuil (1/3)</td>
+            <td style="text-align: center">2 jour(s)</td>
+            <td class="num">—</td>
+            <td class="num">15.15 $</td>
+          </tr>
+          <tr>
+            <td>Retenue Absences non justifiées / Retards / Mise à pied</td>
+            <td style="text-align: center">1 jour(s)</td>
+            <td class="num">—</td>
+            <td class="num">22.73 $</td>
+          </tr>
+          <tr class="subtotal">
+            <td colspan="3">TOTAL DES RETENUES D'ABSENCES & CONGÉS</td>
+            <td class="num"><strong>37.88 $</strong></td>
+          </tr>
+          <tr>
+            <td colspan="2">SALAIRE NET GLOBAL CALCULÉ (AVANT ARRONDI)</td>
+            <td class="num" colspan="2"><strong>502.12 $</strong></td>
+          </tr>
+          <tr class="total-final">
+            <td colspan="2">NET À PAYER — VIREMENT BANQUE (ARRONDI À LA DIZAINE)</td>
+            <td class="num" colspan="2" style="font-size: 13pt; color: #000">
+              <strong>500 $</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="signatures">
+        <div class="sig-box">Signature de l'Employé<br />(Pour acquit)</div>
+        <div class="sig-box">Cachet et Signature de la Direction<br />École Rafiki</div>
+      </div>
+    </div>
+  </body>
+</html>
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bulletin de paie — MUKUNDA WILONDJA Glodie (Novembre 2026)</title>
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 15mm;
+      }
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #1a1a1a;
+        font-size: 11pt;
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+      }
+      .bulletin-container {
+        page-break-after: always;
+        max-width: 180mm;
+        margin: 0 auto;
+        padding-bottom: 20mm;
+      }
+      .bulletin-container:last-child {
+        page-break-after: avoid;
+      }
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+      }
+      .header h1 {
+        font-size: 16pt;
+        margin: 0 0 4px 0;
+        text-transform: uppercase;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+      }
+      .header h2 {
+        font-size: 10pt;
+        margin: 0;
+        font-weight: normal;
+        color: #444;
+      }
+      .section-title {
+        font-size: 11pt;
+        font-weight: bold;
+        background: #f0f0f0;
+        padding: 4px 8px;
+        margin: 14px 0 8px 0;
+        border-left: 4px solid #333;
+      }
+      .table-info {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+      }
+      .table-info td {
+        padding: 4px 6px;
+        font-size: 10pt;
+      }
+      .table-info td.label {
+        font-weight: 600;
+        width: 22%;
+        color: #333;
+      }
+      .table-info td.val {
+        width: 28%;
+      }
+      .table-detail {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+      }
+      .table-detail th,
+      .table-detail td {
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        font-size: 10pt;
+      }
+      .table-detail th {
+        background: #f7f7f7;
+        font-weight: bold;
+        text-align: center;
+      }
+      .table-detail td.num {
+        text-align: right;
+        font-family: 'Consolas', monospace;
+      }
+      .table-detail tr.subtotal {
+        font-weight: bold;
+        background: #fafafa;
+      }
+      .table-detail tr.total-final {
+        font-weight: bold;
+        font-size: 12pt;
+        background: #f0f4f8;
+      }
+      .signatures {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 35px;
+        page-break-inside: avoid;
+      }
+      .sig-box {
+        width: 45%;
+        border-top: 1px dashed #666;
+        padding-top: 6px;
+        text-align: center;
+        font-size: 9pt;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bulletin-container">
+      <div class="header">
+        <h1>École Rafiki — Bulletin de paie individuel</h1>
+        <h2>République Démocratique du Congo — Document officiel de paie mensuelle</h2>
+      </div>
+
+      <div class="section-title">1. IDENTIFICATION DE L'AGENT & PÉRIODE</div>
+      <table class="table-info">
+        <tr>
+          <td class="label">Matricule / N° :</td>
+          <td class="val">2</td>
+          <td class="label">Mois / Période :</td>
+          <td class="val"><strong>Novembre 2026</strong></td>
+        </tr>
+        <tr>
+          <td class="label">Nom complet :</td>
+          <td class="val"><strong>MUKUNDA WILONDJA Glodie</strong></td>
+          <td class="label">Jours ouvrables :</td>
+          <td class="val">22 jours</td>
+        </tr>
+        <tr>
+          <td class="label">Fonction :</td>
+          <td class="val">Time and Attendance Unit manager</td>
+          <td class="label">Jours prestés :</td>
+          <td class="val">17 jours</td>
+        </tr>
+        <tr>
+          <td class="label">Téléphone :</td>
+          <td class="val">0991901766</td>
+          <td class="label">Mode de paiement :</td>
+          <td class="val">Virement Bancaire</td>
+        </tr>
+      </table>
+
+      <div class="section-title">2. DÉTAIL DES GAINS ET RETENUES</div>
+      <table class="table-detail">
+        <thead>
+          <tr>
+            <th>RUBRIQUE / LIBELLÉ</th>
+            <th style="width: 25%">BASE / JOURS</th>
+            <th style="width: 20%">GAINS (+)</th>
+            <th style="width: 20%">RETENUES (-)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Salaire de base contractuel</td>
+            <td style="text-align: center">22 j. ouvrables</td>
+            <td class="num">850.00 $</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Heures Supplémentaires (HS) & Primes</td>
+            <td style="text-align: center">—</td>
+            <td class="num">0.00 $</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Retraits / Avances sur salaire perçues</td>
+            <td style="text-align: center">—</td>
+            <td class="num">—</td>
+            <td class="num">30.00 $</td>
+          </tr>
+          <tr class="subtotal">
+            <td colspan="2">SOUS-TOTAL : SALAIRE À PAYER</td>
+            <td class="num" style="border-top: 2px solid #333"><strong>820.00 $</strong></td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Retenue pour Maladie (1/3 taux journalier)</td>
+            <td style="text-align: center">0 jour(s)</td>
+            <td class="num">—</td>
+            <td class="num">0.00 $</td>
+          </tr>
+          <tr>
+            <td>Retenue Congés de circonstance / Maternité / Deuil (1/3)</td>
+            <td style="text-align: center">3 jour(s)</td>
+            <td class="num">—</td>
+            <td class="num">38.64 $</td>
+          </tr>
+          <tr>
+            <td>Retenue Absences non justifiées / Retards / Mise à pied</td>
+            <td style="text-align: center">2 jour(s)</td>
+            <td class="num">—</td>
+            <td class="num">77.27 $</td>
+          </tr>
+          <tr class="subtotal">
+            <td colspan="3">TOTAL DES RETENUES D'ABSENCES & CONGÉS</td>
+            <td class="num"><strong>115.91 $</strong></td>
+          </tr>
+          <tr>
+            <td colspan="2">SALAIRE NET GLOBAL CALCULÉ (AVANT ARRONDI)</td>
+            <td class="num" colspan="2"><strong>704.09 $</strong></td>
+          </tr>
+          <tr class="total-final">
+            <td colspan="2">NET À PAYER — VIREMENT BANQUE (ARRONDI À LA DIZAINE)</td>
+            <td class="num" colspan="2" style="font-size: 13pt; color: #000">
+              <strong>700 $</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="signatures">
+        <div class="sig-box">Signature de l'Employé<br />(Pour acquit)</div>
+        <div class="sig-box">Cachet et Signature de la Direction<br />École Rafiki</div>
+      </div>
+    </div>
+  </body>
+</html>

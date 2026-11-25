@@ -23,14 +23,14 @@ function CarteSynthese({ titre, valeur, tooltipText, variation }: CarteSyntheseP
 
   if (variation?.sens === 'hausse') {
     pastilleVariation = (
-      <span className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[0.857rem] font-semibold">
+      <span className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[0.857rem] font-semibold">
         <TrendingUp className="w-[1rem] h-[1rem]" />
         {formaterPourcentage(variation.pourcentage)}
       </span>
     );
   } else if (variation?.sens === 'baisse') {
     pastilleVariation = (
-      <span className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-[var(--danger-tint)] text-[var(--danger)] text-[0.857rem] font-semibold">
+      <span className="inline-flex items-center gap-[0.286rem] px-[0.571rem] py-[0.143rem] rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[0.857rem] font-semibold">
         <TrendingDown className="w-[1rem] h-[1rem]" />
         {formaterPourcentage(variation.pourcentage)}
       </span>

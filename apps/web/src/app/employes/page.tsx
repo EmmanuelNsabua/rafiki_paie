@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FicheEmployeSheet } from '@/components/employes/fiche-employe-sheet';
-import { Plus, MoreHorizontal, AlertTriangle, Users, Download } from 'lucide-react';
+import { Plus, MoreHorizontal, AlertTriangle, Users, Upload } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 
@@ -86,22 +86,45 @@ function EmployesContenu() {
     },
   });
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [importEnCours, setImportEnCours] = React.useState(false);
+
+  const handleImporterFichier = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Dans Electron, file.path contient le chemin absolu du fichier
+    const cheminFichier = (file as any).path;
+    if (!cheminFichier) {
+      toast.error('Veuillez exécuter l application desktop pour importer un fichier local.');
+      return;
+    }
+
+    setImportEnCours(true);
+    try {
+      const res = await api.importExcel.executer({
+        cheminFichier,
+        annee: new Date().getFullYear(),
+        mois: new Date().getMonth() + 1,
+        modeDoublon: 'mettre_a_jour',
+        creerOperation: false,
+        lignesAExclure: [],
+      });
+      toast.success(
+        `Importation réussie : ${res.employesCrees} employé(s) créé(s), ${res.employesMisAJour} mis à jour.`
+      );
+      queryClient.invalidateQueries({ queryKey: ['employes'] });
+    } catch (err: any) {
+      toast.error(`Échec de l import : ${err?.message || err}`);
+    } finally {
+      setImportEnCours(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleAjouter = () => {
     setEmployeSelectionne(null);
     setFicheOuverte(true);
-  };
-
-  const handleExporter = async () => {
-    try {
-      if (!estDansElectron()) {
-        toast.error('Exportation disponible uniquement dans l application desktop.');
-        return;
-      }
-      const res = await api.exports.employes({ format: 'xlsx', inclureInactifs: afficherInactifs });
-      toast.success(`Liste exportée : ${res.nomFichier}`);
-    } catch (err: any) {
-      toast.error(`Échec de l export : ${err?.message || err}`);
-    }
   };
 
   const handleModifier = (emp: Employe) => {
@@ -138,14 +161,22 @@ function EmployesContenu() {
           Liste des employés
         </h1>
         <div className="flex items-center gap-[0.571rem]">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImporterFichier}
+            accept=".xlsx"
+            className="hidden"
+          />
           <Button
             type="button"
             variant="outline"
-            onClick={handleExporter}
+            disabled={importEnCours}
+            onClick={() => fileInputRef.current?.click()}
             className="h-[2.429rem] px-[1rem] rounded-[0.429rem] border border-[var(--border)] text-[var(--text)] text-[0.929rem] font-medium flex items-center gap-[0.429rem] cursor-pointer hover:bg-[var(--hover)] transition-colors"
           >
-            <Download className="w-[1.143rem] h-[1.143rem]" />
-            <span>Exporter</span>
+            <Upload className="w-[1.143rem] h-[1.143rem]" />
+            <span>{importEnCours ? 'Import en cours...' : 'Importer des employés'}</span>
           </Button>
           <Button
             onClick={handleAjouter}
@@ -274,8 +305,8 @@ function EmployesContenu() {
                       {/* État */}
                       <td className="px-[1.143rem] text-center">
                         {estActif ? (
-                          <span className="inline-flex items-center gap-[0.286rem] h-[1.571rem] px-[0.571rem] rounded-full bg-[var(--primary-tint)] text-[var(--primary-strong)] text-[0.786rem] font-semibold">
-                            <span className="w-[0.429rem] h-[0.429rem] rounded-full bg-[var(--primary)]" />
+                          <span className="inline-flex items-center gap-[0.286rem] h-[1.571rem] px-[0.571rem] rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[0.786rem] font-semibold">
+                            <span className="w-[0.429rem] h-[0.429rem] rounded-full bg-emerald-500" />
                             <span>Actif</span>
                           </span>
                         ) : (

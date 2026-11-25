@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { FileText, History, Users, Settings } from 'lucide-react';
+import { FileText, FileSpreadsheet, Users, Settings } from 'lucide-react';
 import { StarclipLogo } from '@/components/layout/starclip-logo';
 
 const MENU_ITEMS = [
@@ -15,8 +15,8 @@ const MENU_ITEMS = [
   },
   {
     href: '/historique/',
-    label: 'Historique',
-    icon: History,
+    label: 'Récapitulatif & Contrôle',
+    icon: FileSpreadsheet,
   },
   {
     href: '/employes/',

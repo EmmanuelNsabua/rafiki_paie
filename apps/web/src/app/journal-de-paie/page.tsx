@@ -18,7 +18,7 @@ import {
 import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { AlertDialog } from '@/components/ui/alert-dialog';
 import { DialogueNouvelleOperation } from '@/components/journal/dialogue-nouvelle-operation';
-import { Plus, ArrowUpRight, ArrowDownRight, Minus, Lock, Clock } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, Minus, Lock, Clock, Upload } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 export default function JournalDePaiePage() {
@@ -28,6 +28,47 @@ export default function JournalDePaiePage() {
   const [dialogueOuvert, setDialogueOuvert] = React.useState(false);
   const [anneeFiltre, setAnneeFiltre] = React.useState<number | null>(null);
   const [opARouvrir, setOpARouvrir] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [importEnCours, setImportEnCours] = React.useState(false);
+
+  const handleImporterOperation = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const cheminFichier = (file as any).path;
+    if (!cheminFichier) {
+      toast.error('Veuillez exécuter l application desktop pour importer un classeur local.');
+      return;
+    }
+
+    setImportEnCours(true);
+    try {
+      const anneeCible = new Date().getFullYear();
+      const moisCible = new Date().getMonth() + 1;
+
+      const res = await api.importExcel.executer({
+        cheminFichier,
+        annee: anneeCible,
+        mois: moisCible,
+        modeDoublon: 'mettre_a_jour',
+        creerOperation: true,
+        lignesAExclure: [],
+      });
+
+      toast.success(
+        `Opération ${moisCible}/${anneeCible} importée avec succès (${res.lignesPaieCrees} ligne(s) de paie).`
+      );
+      queryClient.invalidateQueries({ queryKey: ['operations'] });
+      if (res.operationCreeeId) {
+        router.push(`/operation/?id=${res.operationCreeeId}`);
+      }
+    } catch (err: any) {
+      toast.error(`Échec de l import d opération : ${err?.message || err}`);
+    } finally {
+      setImportEnCours(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const { data: operations = [], isLoading } = useQuery({
     queryKey: ['operations'],
@@ -75,13 +116,32 @@ export default function JournalDePaiePage() {
         <h1 className="text-[1.714rem] font-semibold text-[var(--text)] tracking-tight leading-[2.286rem]">
           Journal de paie
         </h1>
-        <Button
-          onClick={() => setDialogueOuvert(true)}
-          className="h-[2.429rem] px-[1rem] rounded-[0.429rem] flex items-center gap-[0.429rem] text-[0.929rem] font-semibold"
-        >
-          <Plus className="w-[1.143rem] h-[1.143rem]" />
-          <span>Nouvelle opération</span>
-        </Button>
+        <div className="flex items-center gap-[0.571rem]">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImporterOperation}
+            accept=".xlsx"
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={importEnCours}
+            onClick={() => fileInputRef.current?.click()}
+            className="h-[2.429rem] px-[1rem] rounded-[0.429rem] flex items-center gap-[0.429rem] text-[0.929rem] font-medium border border-[var(--border)] text-[var(--text)] hover:bg-[var(--hover)] transition-colors cursor-pointer"
+          >
+            <Upload className="w-[1.143rem] h-[1.143rem]" />
+            <span>{importEnCours ? 'Importation...' : 'Importer une opération'}</span>
+          </Button>
+          <Button
+            onClick={() => setDialogueOuvert(true)}
+            className="h-[2.429rem] px-[1rem] rounded-[0.429rem] flex items-center gap-[0.429rem] text-[0.929rem] font-semibold"
+          >
+            <Plus className="w-[1.143rem] h-[1.143rem]" />
+            <span>Nouvelle opération</span>
+          </Button>
+        </div>
       </div>
 
       {/* Carte de tableau */}
@@ -226,7 +286,7 @@ export default function JournalDePaiePage() {
                           <span>Terminée</span>
                         </Badge>
                       ) : (
-                        <Badge variant="default" className="gap-[0.286rem]">
+                        <Badge variant="actif" className="gap-[0.286rem]">
                           <Clock className="w-[0.857rem] h-[0.857rem]" />
                           <span>En cours</span>
                         </Badge>

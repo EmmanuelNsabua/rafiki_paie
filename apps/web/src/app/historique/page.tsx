@@ -3,10 +3,11 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, estDansElectron } from '@/lib/api';
 import { formaterMontant, libelleOperation, formaterDate } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/sonner';
 import {
   Table,
   TableHeader,
@@ -15,39 +16,110 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import { History, Lock, Clock, Search, ArrowRight } from 'lucide-react';
+import {
+  FileSpreadsheet,
+  Download,
+  Lock,
+  Clock,
+  ArrowRight,
+  TrendingUp,
+  BarChart3,
+  Calendar,
+  Layers,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Decimal from 'decimal.js';
 
-export default function HistoriqueDePaiePage() {
+export default function RecapitulatifEtControlePage() {
   const router = useRouter();
-  const [anneeFiltre, setAnneeFiltre] = React.useState<number | null>(null);
-  const [statutFiltre, setStatutFiltre] = React.useState<'tous' | 'en_cours' | 'terminee'>('tous');
-  const [recherche, setRecherche] = React.useState('');
+  const [operationSelectionneeId, setOperationSelectionneeId] = React.useState<string | null>(null);
+  const [exportEnCours, setExportEnCours] = React.useState(false);
 
-  const { data: operations = [], isLoading } = useQuery({
+  // 1. Liste de toutes les opérations
+  const { data: operations = [], isLoading: chargementOperations } = useQuery({
     queryKey: ['operations'],
     queryFn: () => api.operations.lister(),
   });
 
-  // Toutes les années depuis le début
-  const annees = React.useMemo(() => {
-    const setAnnees = new Set<number>();
-    operations.forEach((op) => setAnnees.add(op.annee));
-    return Array.from(setAnnees).sort((a, b) => b - a);
-  }, [operations]);
+  // Sélectionner par défaut la première opération (la plus récente)
+  React.useEffect(() => {
+    if (operations.length > 0 && !operationSelectionneeId) {
+      setOperationSelectionneeId(operations[0].id);
+    }
+  }, [operations, operationSelectionneeId]);
 
-  const operationsFiltrees = React.useMemo(() => {
-    return operations.filter((op) => {
-      if (anneeFiltre !== null && op.annee !== anneeFiltre) return false;
-      if (statutFiltre !== 'tous' && op.statut !== statutFiltre) return false;
-      if (recherche.trim()) {
-        const query = recherche.toLowerCase();
-        const libelle = libelleOperation(op.annee, op.mois).toLowerCase();
-        if (!libelle.includes(query) && !String(op.annee).includes(query)) return false;
-      }
-      return true;
+  // 2. Détail de l'opération sélectionnée
+  const { data: detail, isLoading: chargementDetail } = useQuery({
+    queryKey: ['operation-detail-recap', operationSelectionneeId],
+    queryFn: () =>
+      operationSelectionneeId ? api.operations.obtenir({ id: operationSelectionneeId }) : null,
+    enabled: Boolean(operationSelectionneeId),
+  });
+
+  // Calcul des données de la feuille Récapitulatif & Contrôle
+  const recapitulatif = React.useMemo(() => {
+    if (!detail) return null;
+
+    let totalSalaire = new Decimal(0);
+    let totalHs = new Decimal(0);
+    let totalRetrait = new Decimal(0);
+    let totalNetMaladie = new Decimal(0);
+    let totalNetConge = new Decimal(0);
+    let totalNetAbsence = new Decimal(0);
+    let totalGlobal = new Decimal(0);
+    let totalVirement = new Decimal(0);
+
+    detail.lignes.forEach((l) => {
+      totalSalaire = totalSalaire.plus(new Decimal(l.salaire_base || 0));
+      totalHs = totalHs.plus(new Decimal(l.hs || 0));
+      totalRetrait = totalRetrait.plus(new Decimal(l.retrait || 0));
+      totalNetMaladie = totalNetMaladie.plus(new Decimal(l.retenue_maladie || 0));
+      totalNetConge = totalNetConge.plus(new Decimal(l.retenue_conge || 0));
+      totalNetAbsence = totalNetAbsence.plus(new Decimal(l.retenue_absence || 0));
+      totalGlobal = totalGlobal.plus(new Decimal(l.net_global || 0));
+      totalVirement = totalVirement.plus(new Decimal(l.virement || 0));
     });
-  }, [operations, anneeFiltre, statutFiltre, recherche]);
+
+    const totalRetenues = totalNetMaladie.plus(totalNetConge).plus(totalNetAbsence);
+    const ecartArrondi = totalVirement.minus(totalGlobal);
+
+    return {
+      effectif: detail.lignes.length,
+      totalSalaire: totalSalaire.toNumber(),
+      totalHs: totalHs.toNumber(),
+      totalRetrait: totalRetrait.toNumber(),
+      totalNetMaladie: totalNetMaladie.toNumber(),
+      totalNetConge: totalNetConge.toNumber(),
+      totalNetAbsence: totalNetAbsence.toNumber(),
+      totalRetenues: totalRetenues.toNumber(),
+      totalGlobal: totalGlobal.toNumber(),
+      totalVirement: totalVirement.toNumber(),
+      ecartArrondi: ecartArrondi.toNumber(),
+    };
+  }, [detail]);
+
+  // Export de la synthèse
+  const handleExporterSynthese = async () => {
+    if (!operationSelectionneeId) return;
+    setExportEnCours(true);
+    try {
+      if (!estDansElectron()) {
+        toast.error('Exportation disponible uniquement dans l application desktop.');
+        return;
+      }
+      const res = await api.exports.recapitulatif({
+        operationId: operationSelectionneeId,
+        format: 'xlsx',
+      });
+      toast.success(`Synthèse exportée : ${res.nomFichier}`);
+    } catch (err: any) {
+      toast.error(`Échec de l export : ${err?.message || err}`);
+    } finally {
+      setExportEnCours(false);
+    }
+  };
+
+  const operationCourante = operations.find((o) => o.id === operationSelectionneeId);
 
   return (
     <div className="space-y-[1.143rem] pb-[2.857rem]">
@@ -55,201 +127,363 @@ export default function HistoriqueDePaiePage() {
       <div className="min-h-[4.571rem] bg-[var(--surface)] rounded-[0.571rem] p-[1.143rem] flex flex-col sm:flex-row sm:items-center justify-between gap-[0.857rem] border border-[var(--border)] shadow-xs">
         <div>
           <h1 className="text-[1.714rem] font-bold text-[var(--text)] tracking-tight leading-[2.286rem] flex items-center gap-[0.571rem]">
-            <History className="w-[1.714rem] h-[1.714rem] text-[var(--text-2)]" />
-            <span>Historique de paie</span>
+            <FileSpreadsheet className="w-[1.714rem] h-[1.714rem] text-[var(--primary)]" />
+            <span>Récapitulatif & Contrôle</span>
           </h1>
-          <p className="text-[0.857rem] text-[var(--text-2)] mt-[0.286rem]">
-            Toutes les opérations mensuelles enregistrées depuis l’origine.
+          <p className="text-[0.857rem] text-[var(--text-2)] mt-0.5">
+            Tableau de bord de synthèse et contrôle de cohérence conforme au classeur d origine.
           </p>
         </div>
 
-        {/* Barre de recherche rapide */}
-        <div className="relative w-full sm:w-[15rem]">
-          <Search className="w-[1rem] h-[1rem] absolute left-[0.714rem] top-1/2 -translate-y-1/2 text-[var(--text-2)] pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Rechercher un mois, année…"
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-            className="w-full h-[2.286rem] pl-[2.286rem] pr-[0.714rem] rounded-[0.429rem] bg-[var(--page)] border border-[var(--border)] text-[0.857rem] text-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors"
-          />
+        {/* Bouton d'export de la synthèse */}
+        <div className="flex items-center gap-[0.571rem]">
+          <Button
+            type="button"
+            disabled={!operationSelectionneeId || exportEnCours}
+            onClick={handleExporterSynthese}
+            className="h-[2.429rem] px-[1rem] rounded-[0.429rem] flex items-center gap-[0.429rem] text-[0.929rem] font-semibold cursor-pointer"
+          >
+            <Download className="w-[1.143rem] h-[1.143rem]" />
+            <span>{exportEnCours ? 'Exportation...' : 'Exporter la synthèse (Excel)'}</span>
+          </Button>
         </div>
       </div>
 
-      {/* 2. Filtres avancés */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[0.571rem] p-[0.857rem] flex flex-wrap items-center justify-between gap-[0.857rem] shadow-xs">
-        {/* Années (toutes disponibles) */}
-        <div className="flex flex-wrap items-center gap-[0.429rem]">
-          <span className="text-[0.857rem] font-medium text-[var(--text-2)] mr-[0.286rem]">
-            Année :
-          </span>
-          <button
-            type="button"
-            onClick={() => setAnneeFiltre(null)}
-            className={cn(
-              'h-[1.857rem] px-[0.714rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer',
-              anneeFiltre === null
-                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
-                : 'bg-[var(--hover)] text-[var(--text-2)] hover:text-[var(--text)]'
-            )}
-          >
-            Toutes ({operations.length})
-          </button>
-          {annees.map((a) => (
-            <button
-              key={a}
-              type="button"
-              onClick={() => setAnneeFiltre(a)}
-              className={cn(
-                'h-[1.857rem] px-[0.714rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer',
-                anneeFiltre === a
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
-                  : 'bg-[var(--hover)] text-[var(--text-2)] hover:text-[var(--text)]'
+      {/* 2. Contenu en 2 colonnes */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[1.143rem] items-start">
+        {/* Colonne gauche (Récapitulatif & Contrôle + Diagramme) : 8 cols */}
+        <div className="lg:col-span-8 space-y-[1.143rem]">
+          {/* Tableau Récapitulatif & Contrôle */}
+          <div className="bg-[var(--surface)] rounded-[0.571rem] border border-[var(--border)] shadow-xs overflow-hidden">
+            <div className="px-[1.143rem] h-[3.143rem] flex items-center justify-between border-b border-[var(--border)] bg-[var(--page)]">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[var(--primary)]" />
+                <h2 className="text-[1.071rem] font-semibold text-[var(--text)]">
+                  {operationCourante
+                    ? `Synthèse mensuelle — ${libelleOperation(operationCourante.annee, operationCourante.mois)}`
+                    : 'Synthèse mensuelle'}
+                </h2>
+              </div>
+              {operationCourante && (
+                <Badge
+                  variant={operationCourante.statut === 'terminee' ? 'secondary' : 'actif'}
+                  className="gap-1 text-xs"
+                >
+                  {operationCourante.statut === 'terminee' ? (
+                    <>
+                      <Lock className="w-3 h-3" />
+                      <span>Terminée</span>
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="w-3 h-3" />
+                      <span>En cours</span>
+                    </>
+                  )}
+                </Badge>
               )}
-            >
-              {a}
-            </button>
-          ))}
-        </div>
+            </div>
 
-        {/* Statut */}
-        <div className="flex items-center gap-[0.286rem] bg-[var(--hover)] p-[0.143rem] rounded-full border border-[var(--border)]">
-          <button
-            type="button"
-            onClick={() => setStatutFiltre('tous')}
-            className={cn(
-              'px-[0.714rem] py-[0.143rem] rounded-full text-[0.786rem] font-medium transition-colors cursor-pointer',
-              statutFiltre === 'tous'
-                ? 'bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold'
-                : 'text-[var(--text-2)] hover:text-[var(--text)]'
-            )}
-          >
-            Tous
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatutFiltre('terminee')}
-            className={cn(
-              'px-[0.714rem] py-[0.143rem] rounded-full text-[0.786rem] font-medium transition-colors cursor-pointer',
-              statutFiltre === 'terminee'
-                ? 'bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold'
-                : 'text-[var(--text-2)] hover:text-[var(--text)]'
-            )}
-          >
-            Terminées
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatutFiltre('en_cours')}
-            className={cn(
-              'px-[0.714rem] py-[0.143rem] rounded-full text-[0.786rem] font-medium transition-colors cursor-pointer',
-              statutFiltre === 'en_cours'
-                ? 'bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold'
-                : 'text-[var(--text-2)] hover:text-[var(--text)]'
-            )}
-          >
-            En cours
-          </button>
-        </div>
-      </div>
+            {chargementDetail ? (
+              <div className="p-8 text-center text-sm text-[var(--text-2)]">
+                Chargement de la synthèse…
+              </div>
+            ) : !recapitulatif ? (
+              <div className="p-8 text-center text-sm text-[var(--text-2)]">
+                Sélectionnez une opération dans la liste pour afficher le contrôle.
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50%]">Indicateur de contrôle</TableHead>
+                    <TableHead className="text-right w-[25%]">Montant ($)</TableHead>
+                    <TableHead className="w-[25%]">Observation</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium text-[var(--text)]">
+                      Effectif actif (employés saisis)
+                    </TableCell>
+                    <TableCell className="text-right font-mono font-bold">
+                      {recapitulatif.effectif}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">
+                      Lignes renseignées
+                    </TableCell>
+                  </TableRow>
 
-      {/* 3. Carte de tableau */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[0.571rem] overflow-hidden shadow-xs">
-        <div className="h-[3.143rem] px-[1.143rem] flex items-center justify-between border-b border-[var(--border)]">
-          <h2 className="text-[1.143rem] font-semibold text-[var(--text)]">Opérations archivées</h2>
-          <span className="text-[0.857rem] text-[var(--text-2)]">
-            {operationsFiltrees.length} opération{operationsFiltrees.length > 1 ? 's' : ''} trouvée
-            {operationsFiltrees.length > 1 ? 's' : ''}
-          </span>
-        </div>
+                  <TableRow>
+                    <TableCell className="font-medium text-[var(--text)]">
+                      Total Salaires de Base
+                    </TableCell>
+                    <TableCell className="text-right font-mono font-semibold">
+                      {formaterMontant(String(recapitulatif.totalSalaire), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">
+                      Somme contractuelle
+                    </TableCell>
+                  </TableRow>
 
-        {isLoading ? (
-          <div className="p-[2.857rem] text-center text-[var(--text-2)]">
-            Chargement de l’historique…
+                  <TableRow>
+                    <TableCell className="font-medium text-[var(--text)]">
+                      Total Heures Supplémentaires (HS)
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+                      +{formaterMontant(String(recapitulatif.totalHs), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">Primes & HS</TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell className="font-medium text-[var(--text)]">
+                      Total Retraits / Avances
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-rose-600 dark:text-rose-400 font-medium">
+                      -{formaterMontant(String(recapitulatif.totalRetrait), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">Avances déduites</TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell className="text-[var(--text)] pl-6 text-xs">
+                      • Dont retenues Maladie
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-[var(--text-2)]">
+                      -{formaterMontant(String(recapitulatif.totalNetMaladie), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">
+                      Déduction maladie
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell className="text-[var(--text)] pl-6 text-xs">
+                      • Dont retenues Congés
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-[var(--text-2)]">
+                      -{formaterMontant(String(recapitulatif.totalNetConge), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">Circonstance</TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell className="text-[var(--text)] pl-6 text-xs">
+                      • Dont retenues Absences
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-[var(--text-2)]">
+                      -{formaterMontant(String(recapitulatif.totalNetAbsence), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">Injustifiées</TableCell>
+                  </TableRow>
+
+                  <TableRow className="bg-[var(--hover)] font-semibold">
+                    <TableCell className="text-[var(--text)]">
+                      Total GLOBAL (Avant arrondi)
+                    </TableCell>
+                    <TableCell className="text-right font-mono">
+                      {formaterMontant(String(recapitulatif.totalGlobal), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">
+                      Montant exact net
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow className="bg-emerald-500/15 font-bold">
+                    <TableCell className="text-emerald-950 dark:text-emerald-200">
+                      TOTAL VIREMENT BANQUE (Arrondi à 10 $)
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-base text-emerald-950 dark:text-emerald-200">
+                      {formaterMontant(String(recapitulatif.totalVirement), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-emerald-800 dark:text-emerald-300">
+                      Bordereau bancaire
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow className="border-t-2 border-[var(--border)]">
+                    <TableCell className="font-semibold text-[var(--text)]">
+                      Écart d arrondissement global
+                    </TableCell>
+                    <TableCell className="text-right font-mono font-bold text-sky-600 dark:text-sky-400">
+                      {recapitulatif.ecartArrondi >= 0 ? '+' : ''}
+                      {formaterMontant(String(recapitulatif.ecartArrondi), 2)}
+                    </TableCell>
+                    <TableCell className="text-xs text-[var(--text-2)]">
+                      Corrigé : Virements - Globaux
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            )}
           </div>
-        ) : operationsFiltrees.length === 0 ? (
-          <div className="p-[2.857rem] text-center text-[var(--text-2)]">
-            Aucune opération ne correspond aux critères sélectionnés.
+
+          {/* Diagramme visuel conforme */}
+          {recapitulatif && (
+            <div className="bg-[var(--surface)] rounded-[0.571rem] border border-[var(--border)] p-4 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-[var(--primary)]" />
+                  <h3 className="text-sm font-semibold text-[var(--text)]">
+                    Répartition financière de l opération
+                  </h3>
+                </div>
+                <span className="text-xs text-[var(--text-2)]">Montants arrondis en dollars</span>
+              </div>
+
+              {/* Barres comparatives */}
+              <div className="space-y-3">
+                {/* Barre Salaires de base */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-medium text-[var(--text)]">Salaires de base</span>
+                    <span className="font-mono font-semibold">
+                      {formaterMontant(String(recapitulatif.totalSalaire), 0)}
+                    </span>
+                  </div>
+                  <div className="h-4 w-full bg-[var(--page)] rounded-full overflow-hidden border border-[var(--border)]">
+                    <div
+                      className="h-full bg-slate-500 rounded-full transition-all duration-500"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Barre Retenues déduites */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-medium text-rose-600 dark:text-rose-400">
+                      Total retenues (Absences, maladie, congés)
+                    </span>
+                    <span className="font-mono font-semibold text-rose-600 dark:text-rose-400">
+                      {formaterMontant(String(recapitulatif.totalRetenues), 0)}
+                    </span>
+                  </div>
+                  <div className="h-4 w-full bg-[var(--page)] rounded-full overflow-hidden border border-[var(--border)]">
+                    <div
+                      className="h-full bg-rose-500 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.max(
+                            4,
+                            (recapitulatif.totalRetenues / (recapitulatif.totalSalaire || 1)) * 100
+                          )
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Barre Net Global */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-medium text-[var(--text)]">
+                      Net global (avant arrondi)
+                    </span>
+                    <span className="font-mono font-semibold">
+                      {formaterMontant(String(recapitulatif.totalGlobal), 0)}
+                    </span>
+                  </div>
+                  <div className="h-4 w-full bg-[var(--page)] rounded-full overflow-hidden border border-[var(--border)]">
+                    <div
+                      className="h-full bg-sky-500 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          (recapitulatif.totalGlobal / (recapitulatif.totalSalaire || 1)) * 100
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Barre Total Virement Banque */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      Virement bancaire (montant payé)
+                    </span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {formaterMontant(String(recapitulatif.totalVirement), 0)}
+                    </span>
+                  </div>
+                  <div className="h-4 w-full bg-[var(--page)] rounded-full overflow-hidden border border-[var(--border)]">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          (recapitulatif.totalVirement / (recapitulatif.totalSalaire || 1)) * 100
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Colonne droite : Liste des opérations scrollable indépendamment (4 cols) */}
+        <div className="lg:col-span-4 bg-[var(--surface)] rounded-[0.571rem] border border-[var(--border)] shadow-xs overflow-hidden flex flex-col">
+          <div className="p-3 border-b border-[var(--border)] bg-[var(--page)] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-[var(--primary)]" />
+              <h2 className="text-sm font-semibold text-[var(--text)]">Mois d opération</h2>
+            </div>
+            <span className="text-xs text-[var(--text-2)]">{operations.length} enregistrée(s)</span>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="h-[2.571rem] bg-[var(--table-head)]">
-                  <TableHead className="w-[14rem] pl-[1.143rem]">Période</TableHead>
-                  <TableHead className="w-[10rem]">Statut</TableHead>
-                  <TableHead className="text-right w-[11rem]">Effectif</TableHead>
-                  <TableHead className="text-right w-[12rem]">Total viré banque</TableHead>
-                  <TableHead className="text-right w-[12rem]">Dernière mise à jour</TableHead>
-                  <TableHead className="text-center w-[9rem] pr-[1.143rem]">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {operationsFiltrees.map((op) => {
-                  const estTerminee = op.statut === 'terminee';
-                  return (
-                    <TableRow
-                      key={op.id}
-                      onClick={() => router.push(`/operation/?id=${op.id}`)}
-                      className="cursor-pointer hover:bg-[var(--hover)] h-[3.429rem] transition-colors"
-                    >
-                      {/* Période */}
-                      <TableCell className="font-semibold text-[var(--text)] pl-[1.143rem]">
+
+          <div className="overflow-y-auto max-h-[calc(100vh-14rem)] divide-y divide-[var(--border)]">
+            {chargementOperations ? (
+              <div className="p-6 text-center text-xs text-[var(--text-2)]">
+                Chargement des opérations…
+              </div>
+            ) : operations.length === 0 ? (
+              <div className="p-6 text-center text-xs text-[var(--text-2)]">
+                Aucune opération trouvée.
+              </div>
+            ) : (
+              operations.map((op) => {
+                const estSelectionnee = op.id === operationSelectionneeId;
+                return (
+                  <button
+                    key={op.id}
+                    type="button"
+                    onClick={() => setOperationSelectionneeId(op.id)}
+                    className={cn(
+                      'w-full text-left p-3.5 flex flex-col gap-1 transition-all cursor-pointer',
+                      estSelectionnee
+                        ? 'bg-[var(--primary-tint)] border-l-4 border-l-[var(--primary)] text-[var(--text)] font-semibold'
+                        : 'hover:bg-[var(--hover)] text-[var(--text-2)] hover:text-[var(--text)]'
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-[var(--text)]">
                         {libelleOperation(op.annee, op.mois)}
-                      </TableCell>
-
-                      {/* Statut */}
-                      <TableCell>
-                        {estTerminee ? (
-                          <Badge variant="outline" className="gap-[0.286rem]">
-                            <Lock className="w-[0.857rem] h-[0.857rem]" />
-                            <span>Terminée</span>
-                          </Badge>
-                        ) : (
-                          <Badge variant="default" className="gap-[0.286rem]">
-                            <Clock className="w-[0.857rem] h-[0.857rem]" />
-                            <span>En cours</span>
-                          </Badge>
-                        )}
-                      </TableCell>
-
-                      {/* Effectif */}
-                      <TableCell className="text-right font-medium text-[var(--text)]">
-                        {op.nombre_employes} employé{op.nombre_employes > 1 ? 's' : ''}
-                      </TableCell>
-
-                      {/* Total payé */}
-                      <TableCell className="text-right font-mono tabular-nums font-semibold text-[var(--text)]">
-                        {formaterMontant(op.total_paye, 0)}
-                      </TableCell>
-
-                      {/* Dernière mise à jour */}
-                      <TableCell className="text-right text-[var(--text-2)] text-[0.857rem]">
-                        {formaterDate(new Date(op.mis_a_jour_le))}
-                      </TableCell>
-
-                      {/* Action */}
-                      <TableCell
-                        className="text-center pr-[1.143rem]"
-                        onClick={(e) => e.stopPropagation()}
+                      </span>
+                      <Badge
+                        variant={op.statut === 'terminee' ? 'secondary' : 'actif'}
+                        className="text-[0.7rem] px-2 py-0"
                       >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/operation/?id=${op.id}`)}
-                          className="h-[2rem] px-[0.714rem] text-[0.857rem] font-medium flex items-center gap-[0.286rem] mx-auto hover:bg-[var(--hover)]"
-                        >
-                          <span>Consulter</span>
-                          <ArrowRight className="w-[0.857rem] h-[0.857rem]" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                        {op.statut === 'terminee' ? 'Terminée' : 'En cours'}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs mt-1">
+                      <span>{op.nombre_employes} employé(s)</span>
+                      <span className="font-mono font-semibold text-[var(--text)]">
+                        {formaterMontant(op.total_paye || op.total_virement, 0)}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

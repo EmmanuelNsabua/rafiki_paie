@@ -2,7 +2,10 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import type { LignePaieCalculee } from '@rafiki/contrat';
+import { useQueryClient } from '@tanstack/react-query';
+import type { LignePaieCalculee, OperationPaie, Employe } from '@rafiki/contrat';
+import { api } from '@/lib/api';
+import { toast } from '@/components/ui/sonner';
 import {
   formaterMontant,
   normaliserSaisieDecimale,
@@ -14,12 +17,15 @@ import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, Clock, MoreHorizontal, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DialogueBulletinIndividuel } from './dialogue-bulletin-individuel';
+import { FicheEmployeSheet } from '@/components/employes/fiche-employe-sheet';
 
 export interface TableauSalairesProps {
   lignes: LignePaieCalculee[];
   estTerminee: boolean;
   joursOuvrables?: number;
   nbEmployesNonInclus?: number;
+  operation?: OperationPaie;
   onAjouterNouveauxEmployes?: () => Promise<void>;
   onModifierLigne: (
     ligneId: string,
@@ -196,12 +202,17 @@ export function TableauSalaires({
   estTerminee,
   joursOuvrables = 22,
   nbEmployesNonInclus = 0,
+  operation,
   onAjouterNouveauxEmployes,
   onModifierLigne,
   onOuvrirAbsences,
 }: TableauSalairesProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [chargementAjout, setChargementAjout] = React.useState(false);
+  const [ligneBulletin, setLigneBulletin] = React.useState<LignePaieCalculee | null>(null);
+  const [employeAModifier, setEmployeAModifier] = React.useState<Employe | null>(null);
+  const [ficheEmployeOuverte, setFicheEmployeOuverte] = React.useState(false);
 
   // File d'attente de requêtes sérialisées par ligne pour éviter les réponses désordonnées
   const filesAttenteParLigne = React.useRef<Map<string, Promise<any>>>(new Map());
@@ -426,17 +437,33 @@ export function TableauSalaires({
                         }
                         items={[
                           {
+                            label: 'Voir la fiche',
+                            onClick: () => setLigneBulletin(ligne),
+                          },
+                          {
+                            label: 'Modifier',
+                            onClick: () => {
+                              setEmployeAModifier({
+                                id: ligne.employe_id,
+                                numero: ligne.numero,
+                                nom: ligne.nom,
+                                postnom: ligne.postnom || '',
+                                prenom: ligne.prenom || '',
+                                fonction: ligne.fonction || '',
+                                telephone: ligne.telephone || '',
+                                code_banque: ligne.code_banque || '',
+                                salaire_base: String(ligne.salaire_base),
+                                actif: 1,
+                                version: 1,
+                                mis_a_jour_le: new Date().toISOString(),
+                                supprime_le: null,
+                              });
+                              setFicheEmployeOuverte(true);
+                            },
+                          },
+                          {
                             label: 'Absences',
                             onClick: () => onOuvrirAbsences(ligne),
-                          },
-                          {
-                            label: 'Bulletin',
-                            disabled: true,
-                            tooltip: 'Bientôt disponible',
-                          },
-                          {
-                            label: 'Voir la fiche',
-                            onClick: () => router.push(`/employes/?id=${ligne.employe_id}`),
                           },
                         ]}
                       />
@@ -466,6 +493,50 @@ export function TableauSalaires({
       <div className="flex items-center px-[1.143rem] h-[2.571rem] border-t border-[var(--border)] text-[0.857rem] text-[var(--text-2)] bg-[var(--surface)]">
         Affichage de 1 à {lignes.length} employé{lignes.length > 1 ? 's' : ''}
       </div>
+
+      {/* Overlay Bulletin de paie individuel */}
+      <DialogueBulletinIndividuel
+        ouvert={Boolean(ligneBulletin)}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setLigneBulletin(null);
+        }}
+        ligne={ligneBulletin}
+        operation={
+          operation ||
+          ({
+            annee: new Date().getFullYear(),
+            mois: new Date().getMonth() + 1,
+            jours_ouvrables: joursOuvrables,
+          } as any)
+        }
+      />
+
+      {/* Panneau latéral de modification de l'employé */}
+      <FicheEmployeSheet
+        open={ficheEmployeOuverte}
+        onOpenChange={(ouvert) => {
+          setFicheEmployeOuverte(ouvert);
+          if (!ouvert) setEmployeAModifier(null);
+        }}
+        employe={employeAModifier}
+        onEnregistrer={async (donnees) => {
+          if (employeAModifier) {
+            await api.employes.modifier({
+              id: employeAModifier.id,
+              nom: donnees.nom,
+              postnom: donnees.postnom,
+              prenom: donnees.prenom,
+              fonction: donnees.fonction,
+              telephone: donnees.telephone,
+              code_banque: donnees.code_banque,
+              salaire_base: donnees.salaire_base,
+              actif: donnees.actif,
+            });
+            toast.success(`Fiche de ${donnees.nom} mise à jour avec succès.`);
+            queryClient.invalidateQueries();
+          }
+        }}
+      />
     </div>
   );
 }

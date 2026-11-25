@@ -132,7 +132,7 @@ export function DropdownMenu({ trigger, items, align = 'right', className }: Dro
               zIndex: 99999,
             }}
             className={cn(
-              'min-w-[12rem] rounded-[8px] bg-[var(--surface)] p-1.5 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95 duration-100 select-none pointer-events-auto',
+              'min-w-[12rem] rounded-[8px] bg-[#4d4d4d] text-[#f3f4f6] p-1.5 shadow-2xl border border-[#5c5c5c] animate-in fade-in zoom-in-95 duration-100 select-none pointer-events-auto',
               className
             )}
             onClick={(e) => e.stopPropagation()}
@@ -153,15 +153,15 @@ export function DropdownMenu({ trigger, items, align = 'right', className }: Dro
                 className={cn(
                   'flex w-full items-center px-3 py-2 text-[0.857rem] font-medium rounded-[6px] text-left transition-colors cursor-pointer',
                   item.disabled
-                    ? 'opacity-40 cursor-not-allowed text-[var(--text-2)]'
+                    ? 'opacity-40 cursor-not-allowed text-[#a3a3a3]'
                     : item.destructive
-                      ? 'text-[var(--danger)] hover:bg-[var(--danger-tint)]'
-                      : 'text-[var(--text)] hover:bg-[var(--hover)]'
+                      ? 'text-rose-400 hover:bg-rose-950/40'
+                      : 'text-[#f3f4f6] hover:bg-white/10 hover:text-white'
                 )}
               >
                 {item.label}
                 {item.tooltip && item.disabled && (
-                  <span className="ml-auto text-[0.75rem] text-[var(--text-2)] pl-2">
+                  <span className="ml-auto text-[0.75rem] text-[#a3a3a3] pl-2">
                     ({item.tooltip})
                   </span>
                 )}
