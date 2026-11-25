@@ -281,6 +281,14 @@ export const ipcOperationsRouvrirInput = z.object({
   id: uuidSchema,
 });
 
+export const ipcOperationsSupprimerInput = z.object({
+  id: uuidSchema,
+});
+
+export const ipcOperationsAnnulerInput = z.object({
+  id: uuidSchema,
+});
+
 export const ipcOperationsAjouterNouveauxEmployesInput = z.object({
   id: uuidSchema,
 });
@@ -438,6 +446,10 @@ export interface ElectronApi {
     ) => Promise<ReponseIpc<OperationPaie>>;
     rouvrir: (
       input: z.infer<typeof ipcOperationsRouvrirInput>
+    ) => Promise<ReponseIpc<OperationPaie>>;
+    supprimer: (input: z.infer<typeof ipcOperationsSupprimerInput>) => Promise<ReponseIpc<void>>;
+    annuler: (
+      input: z.infer<typeof ipcOperationsAnnulerInput>
     ) => Promise<ReponseIpc<OperationPaie>>;
     ajouterNouveauxEmployes: (
       input: z.infer<typeof ipcOperationsAjouterNouveauxEmployesInput>

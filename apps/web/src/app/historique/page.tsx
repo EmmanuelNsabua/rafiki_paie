@@ -426,9 +426,9 @@ export default function RecapitulatifEtControlePage() {
           )}
         </div>
 
-        {/* Colonne droite : Liste des opérations scrollable indépendamment (4 cols) */}
-        <div className="lg:col-span-4 bg-[var(--surface)] rounded-[0.571rem] border border-[var(--border)] shadow-xs overflow-hidden flex flex-col">
-          <div className="p-3 border-b border-[var(--border)] bg-[var(--page)] flex items-center justify-between">
+        {/* Colonne droite : Liste des opérations sticky avec hauteur fixe et défilement interne (4 cols) */}
+        <div className="lg:col-span-4 sticky top-4 h-[calc(100vh-9.5rem)] mb-4 bg-[var(--surface)] rounded-[0.571rem] border border-[var(--border)] shadow-xs overflow-hidden flex flex-col">
+          <div className="p-3 border-b border-[var(--border)] bg-[var(--page)] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[var(--primary)]" />
               <h2 className="text-sm font-semibold text-[var(--text)]">Mois d opération</h2>
@@ -436,7 +436,7 @@ export default function RecapitulatifEtControlePage() {
             <span className="text-xs text-[var(--text-2)]">{operations.length} enregistrée(s)</span>
           </div>
 
-          <div className="overflow-y-auto max-h-[calc(100vh-14rem)] divide-y divide-[var(--border)]">
+          <div className="overflow-y-auto flex-1 divide-y divide-[var(--border)]">
             {chargementOperations ? (
               <div className="p-6 text-center text-xs text-[var(--text-2)]">
                 Chargement des opérations…

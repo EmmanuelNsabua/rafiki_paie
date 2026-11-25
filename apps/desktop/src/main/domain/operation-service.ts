@@ -601,4 +601,89 @@ export class OperationService {
     tx();
     return this.obtenir(operationId).operation;
   }
+
+  /**
+   * Supprime une opération de paie et ses lignes (soft-delete avec traçabilité d'audit).
+   */
+  supprimer(operationId: string): void {
+    const detail = this.obtenir(operationId);
+    const maintenant = new Date().toISOString();
+
+    const tx = this.db.transaction(() => {
+      this.db
+        .prepare(
+          'UPDATE ligne_paie SET supprime_le = ? WHERE operation_id = ? AND supprime_le IS NULL'
+        )
+        .run(maintenant, operationId);
+
+      this.db
+        .prepare('UPDATE operation_paie SET supprime_le = ? WHERE id = ?')
+        .run(maintenant, operationId);
+
+      this.journalService.ajouter({
+        action: 'SUPPRIMER_OPERATION',
+        entite: 'operation_paie',
+        entite_id: operationId,
+        detail: `Suppression de la paie ${detail.operation.mois}/${detail.operation.annee}`,
+      });
+    });
+
+    tx();
+  }
+
+  /**
+   * Annule une opération de paie :
+   * Si terminée, la rouvre.
+   * Réinitialise toutes les variables des lignes à 0.
+   */
+  annuler(operationId: string): OperationPaie {
+    const detail = this.obtenir(operationId);
+    const maintenant = new Date().toISOString();
+
+    const tx = this.db.transaction(() => {
+      if (detail.operation.statut === 'terminee') {
+        this.db
+          .prepare(
+            `UPDATE operation_paie
+             SET statut = 'ouverte',
+                 terminee_le = NULL,
+                 version = version + 1,
+                 mis_a_jour_le = ?
+             WHERE id = ?`
+          )
+          .run(maintenant, operationId);
+      }
+
+      this.db
+        .prepare(
+          `UPDATE ligne_paie
+           SET hs = '0',
+               retrait = '0',
+               jours_maladie = '0',
+               jours_conge = '0',
+               jours_absence = '0',
+               salaire_a_payer = NULL,
+               jours_prestes = NULL,
+               retenue_maladie = NULL,
+               retenue_conge = NULL,
+               retenue_absence = NULL,
+               net_global = NULL,
+               virement = NULL,
+               version = version + 1,
+               mis_a_jour_le = ?
+           WHERE operation_id = ? AND supprime_le IS NULL`
+        )
+        .run(maintenant, operationId);
+
+      this.journalService.ajouter({
+        action: 'ANNULER_OPERATION',
+        entite: 'operation_paie',
+        entite_id: operationId,
+        detail: `Annulation et remise à zéro des variables de la paie ${detail.operation.mois}/${detail.operation.annee}`,
+      });
+    });
+
+    tx();
+    return this.obtenir(operationId).operation;
+  }
 }

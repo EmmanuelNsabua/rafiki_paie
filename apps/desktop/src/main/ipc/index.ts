@@ -13,6 +13,8 @@ import {
   ipcOperationsObtenirInput,
   ipcOperationsTerminerInput,
   ipcOperationsRouvrirInput,
+  ipcOperationsSupprimerInput,
+  ipcOperationsAnnulerInput,
   ipcOperationsAjouterNouveauxEmployesInput,
   ipcOperationsModifierJoursInput,
   ipcOperationsExporterBordereauInput,
@@ -215,6 +217,22 @@ export function enregistrerGestionnairesIpc(
     CANAUX_IPC.OPERATIONS_ROUVRIR,
     creerGestionnaireSecurise(CANAUX_IPC.OPERATIONS_ROUVRIR, ipcOperationsRouvrirInput, (input) =>
       operationService.rouvrir(input.id)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.OPERATIONS_SUPPRIMER,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.OPERATIONS_SUPPRIMER,
+      ipcOperationsSupprimerInput,
+      (input) => operationService.supprimer(input.id)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.OPERATIONS_ANNULER,
+    creerGestionnaireSecurise(CANAUX_IPC.OPERATIONS_ANNULER, ipcOperationsAnnulerInput, (input) =>
+      operationService.annuler(input.id)
     )
   );
 

@@ -108,6 +108,12 @@ export const api = {
     rouvrir: (input: z.infer<typeof ipcOperationsRouvrirInput>): Promise<OperationPaie> =>
       executerIpc((a) => a.operations.rouvrir(input)),
 
+    supprimer: (input: { id: string }): Promise<void> =>
+      executerIpc((a) => a.operations.supprimer(input)),
+
+    annuler: (input: { id: string }): Promise<OperationPaie> =>
+      executerIpc((a) => a.operations.annuler(input)),
+
     ajouterNouveauxEmployes: (
       input: z.infer<typeof ipcOperationsAjouterNouveauxEmployesInput>
     ): Promise<ResultatAjoutEmployes> =>

@@ -9,6 +9,8 @@ export const CANAUX_IPC = {
   OPERATIONS_OBTENIR: 'operations.obtenir',
   OPERATIONS_TERMINER: 'operations.terminer',
   OPERATIONS_ROUVRIR: 'operations.rouvrir',
+  OPERATIONS_SUPPRIMER: 'operations.supprimer',
+  OPERATIONS_ANNULER: 'operations.annuler',
   OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES: 'operations.ajouterNouveauxEmployes',
   OPERATIONS_MODIFIER_JOURS: 'operations.modifierJours',
   OPERATIONS_EXPORTER_BORDEREAU: 'operations.exporterBordereau',

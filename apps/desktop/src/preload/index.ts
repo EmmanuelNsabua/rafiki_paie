@@ -56,6 +56,12 @@ const api: ElectronApi = {
     rouvrir: (input): Promise<ReponseIpc<OperationPaie>> => {
       return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_ROUVRIR, input);
     },
+    supprimer: (input): Promise<ReponseIpc<void>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_SUPPRIMER, input);
+    },
+    annuler: (input): Promise<ReponseIpc<OperationPaie>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_ANNULER, input);
+    },
     ajouterNouveauxEmployes: (input): Promise<ReponseIpc<ResultatAjoutEmployes>> => {
       return ipcRenderer.invoke(CANAUX_IPC.OPERATIONS_AJOUTER_NOUVEAUX_EMPLOYES, input);
     },

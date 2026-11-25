@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, estDansElectron } from '@/lib/api';
 import { formaterMontant, formaterPourcentage, formaterDate, libelleOperation } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,10 +26,53 @@ export default function JournalDePaiePage() {
   const queryClient = useQueryClient();
 
   const [dialogueOuvert, setDialogueOuvert] = React.useState(false);
-  const [anneeFiltre, setAnneeFiltre] = React.useState<number | null>(null);
+  const [anneeFiltre, setAnneeFiltre] = React.useState<string | null>(null);
   const [opARouvrir, setOpARouvrir] = React.useState<string | null>(null);
+  const [opASupprimer, setOpASupprimer] = React.useState<string | null>(null);
+  const [opAAnnuler, setOpAAnnuler] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [importEnCours, setImportEnCours] = React.useState(false);
+
+  const mutationSupprimer = useMutation({
+    mutationFn: (id: string) => api.operations.supprimer({ id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['operations'] });
+      toast.success('Opération supprimée avec succès.');
+      setOpASupprimer(null);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Erreur lors de la suppression de l opération.');
+    },
+  });
+
+  const mutationAnnuler = useMutation({
+    mutationFn: (id: string) => api.operations.annuler({ id }),
+    onSuccess: (op) => {
+      queryClient.invalidateQueries({ queryKey: ['operations'] });
+      toast.success(`Opération ${libelleOperation(op.annee, op.mois)} annulée et réinitialisée.`);
+      setOpAAnnuler(null);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Erreur lors de l annulation de l opération.');
+    },
+  });
+
+  const handleTelechargerBordereau = async (operationId: string) => {
+    try {
+      if (!estDansElectron()) {
+        toast.error('Téléchargement disponible uniquement dans l application desktop.');
+        return;
+      }
+      const res = await api.exports.bordereau({ operationId, format: 'pdf' });
+      if (res.annule) {
+        toast.info('Téléchargement annulé.');
+      } else {
+        toast.success(`Bordereau bancaire exporté avec succès (${res.nom_fichier}).`);
+      }
+    } catch (err: any) {
+      toast.error(`Échec de l export du bordereau : ${err?.message || err}`);
+    }
+  };
 
   const handleImporterOperation = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,21 +136,12 @@ export default function JournalDePaiePage() {
     return Array.from(setAnnees).sort((a, b) => b - a);
   }, [operations]);
 
-  // Seules les 3 dernières années sont affichées dans le filtre du journal
-  const anneesRecentes = React.useMemo(() => annees.slice(0, 3), [annees]);
-
-  React.useEffect(() => {
-    if (anneesRecentes.length > 0 && anneeFiltre === null) {
-      setAnneeFiltre(anneesRecentes[0]);
-    }
-  }, [anneesRecentes, anneeFiltre]);
-
   const operationsFiltrees = React.useMemo(() => {
-    if (anneeFiltre === null) {
-      return operations.filter((op) => anneesRecentes.includes(op.annee));
+    if (!anneeFiltre || anneeFiltre === 'toutes') {
+      return operations;
     }
-    return operations.filter((op) => op.annee === anneeFiltre);
-  }, [operations, anneeFiltre, anneesRecentes]);
+    return operations.filter((op) => String(op.annee) === anneeFiltre);
+  }, [operations, anneeFiltre]);
 
   return (
     <div className="space-y-[1.143rem] pb-[2.857rem]">
@@ -155,37 +189,24 @@ export default function JournalDePaiePage() {
               Montants en dollars ($)
             </span>
 
-            {/* Sélecteur des 3 dernières années */}
-            {anneesRecentes.length > 0 && (
-              <div className="flex items-center gap-[0.286rem] bg-[var(--hover)] p-[0.143rem] rounded-full border border-[var(--border)]">
-                {anneesRecentes.map((a) => (
-                  <button
-                    key={a}
-                    type="button"
-                    onClick={() => setAnneeFiltre(a)}
-                    className={`px-[0.571rem] py-[0.143rem] rounded-full text-[0.857rem] font-medium transition-colors cursor-pointer ${
-                      anneeFiltre === a
-                        ? 'bg-[var(--surface)] text-[var(--text)] shadow-xs font-semibold'
-                        : 'text-[var(--text-2)] hover:text-[var(--text)]'
-                    }`}
-                  >
+            {/* Sélecteur déroulant des années */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-[var(--text-2)]">Année :</span>
+              <select
+                value={anneeFiltre || 'toutes'}
+                onChange={(e) =>
+                  setAnneeFiltre(e.target.value === 'toutes' ? null : e.target.value)
+                }
+                className="h-[1.857rem] px-2.5 rounded-[0.357rem] bg-[var(--page)] border border-[var(--border)] text-xs font-medium text-[var(--text)] outline-none cursor-pointer hover:bg-[var(--hover)] transition-colors"
+              >
+                <option value="toutes">Toutes ({operations.length})</option>
+                {annees.map((a) => (
+                  <option key={a} value={String(a)}>
                     {a}
-                  </button>
+                  </option>
                 ))}
-              </div>
-            )}
-
-            {/* Lien vers Historique complet */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/historique/')}
-              className="text-[0.786rem] text-[var(--text-2)] hover:text-[var(--text)] flex items-center gap-1 h-[1.714rem] px-2 rounded-full cursor-pointer"
-            >
-              <span>Historique complet</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Button>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -312,8 +333,11 @@ export default function JournalDePaiePage() {
                           },
                           {
                             label: 'Bordereau de la banque',
-                            disabled: true,
-                            tooltip: 'Bientôt disponible',
+                            onClick: () => handleTelechargerBordereau(op.id),
+                          },
+                          {
+                            label: 'Annuler l opération',
+                            onClick: () => setOpAAnnuler(op.id),
                           },
                           ...(estTerminee
                             ? [
@@ -323,6 +347,11 @@ export default function JournalDePaiePage() {
                                 },
                               ]
                             : []),
+                          {
+                            label: 'Supprimer',
+                            destructive: true,
+                            onClick: () => setOpASupprimer(op.id),
+                          },
                         ]}
                       />
                     </TableCell>
@@ -353,6 +382,34 @@ export default function JournalDePaiePage() {
         onAction={() => {
           if (opARouvrir) {
             mutationRouvrir.mutate(opARouvrir);
+          }
+        }}
+      />
+
+      {/* Dialogue de confirmation d'annulation */}
+      <AlertDialog
+        open={Boolean(opAAnnuler)}
+        onOpenChange={(open) => !open && setOpAAnnuler(null)}
+        title="Annuler cette opération de paie ?"
+        description="Toutes les saisies de cette période (heures supplémentaires, retraits, absences) seront remises à zéro."
+        actionText="Annuler et réinitialiser"
+        onAction={() => {
+          if (opAAnnuler) {
+            mutationAnnuler.mutate(opAAnnuler);
+          }
+        }}
+      />
+
+      {/* Dialogue de confirmation de suppression */}
+      <AlertDialog
+        open={Boolean(opASupprimer)}
+        onOpenChange={(open) => !open && setOpASupprimer(null)}
+        title="Supprimer cette opération de paie ?"
+        description="L'opération et toutes ses lignes seront définitivement supprimées du journal. Cette action est irréversible."
+        actionText="Supprimer définitivement"
+        onAction={() => {
+          if (opASupprimer) {
+            mutationSupprimer.mutate(opASupprimer);
           }
         }}
       />
