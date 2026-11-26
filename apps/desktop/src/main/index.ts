@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, nativeTheme } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, nativeTheme, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import Database from 'better-sqlite3';
@@ -16,7 +16,7 @@ import {
   modifierPreferences,
   forcerSauvegardePreferences,
 } from './preferences';
-import { SauvegardeService } from './domain';
+import { SauvegardeService, UpdateService } from './domain';
 import { enregistrerSchemaApp, enregistrerGestionnaireApp, obtenirDossierWebOut } from './protocol';
 import { creerSplashScreen, mettreAJourSplashScreen } from './splash';
 
@@ -320,7 +320,24 @@ app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
 
   await mettreAJourSplashScreen(splashWindow, 'Connexion à la base de données...', 40);
-  db = initDatabase();
+  try {
+    db = initDatabase();
+  } catch (err: any) {
+    if (err?.code === 'BASE_TROP_RECENTE') {
+      log.error(`[MAIN] Échec démarrage : ${err.message}`);
+      dialog.showErrorBox(
+        'Version de Starclip obsolète',
+        err.message ||
+          'Cette version de Starclip est plus ancienne que vos données. Installez la dernière version.'
+      );
+      if (splashWindow && !splashWindow.isDestroyed()) {
+        splashWindow.destroy();
+      }
+      app.quit();
+      return;
+    }
+    throw err;
+  }
 
   // Enregistrer le gestionnaire du protocole app:// servant resources/web/out
   const dossierWebOut = obtenirDossierWebOut();
@@ -340,9 +357,13 @@ app.whenReady().then(async () => {
     log.warn(`[SAUVEGARDE] Erreur lors de la vérification au démarrage : ${err?.message}`);
   });
 
+  // Initialisation du service de mise à jour automatique (Lot 2)
+  const updateService = new UpdateService(sauvegardeService, () => mainWindow);
+  updateService.planifierVerificationInitiale();
+
   await mettreAJourSplashScreen(splashWindow, 'Initialisation des services métier...', 80);
   // Enregistrer les gestionnaires IPC du domaine
-  enregistrerGestionnairesIpc(db, sauvegardeService);
+  enregistrerGestionnairesIpc(db, sauvegardeService, updateService);
 
   // Enregistrer les gestionnaires IPC de la fenêtre
   enregistrerGestionnairesFenetreIpc(() => mainWindow);

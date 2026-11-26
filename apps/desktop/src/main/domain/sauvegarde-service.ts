@@ -106,6 +106,28 @@ export class SauvegardeService {
   }
 
   /**
+   * Crée une copie de sauvegarde spécifique avant mise à jour de l'application.
+   * Cette sauvegarde est nommée ..._avant-maj-<version>.sqlite et n'est pas écrasée par la rotation à 10 fichiers.
+   */
+  async creerSauvegardeAvantMaj(version: string): Promise<string> {
+    this.assurerDossierExiste();
+    const nom = `rafiki_paie_avant-maj-${version}.sqlite`;
+    const cheminComplet = path.join(this.dossierSauvegardes, nom);
+
+    try {
+      await this.options.db.backup(cheminComplet);
+      log.info(`[SAUVEGARDE] Sauvegarde avant mise à jour créée : ${nom}`);
+      return cheminComplet;
+    } catch (err: any) {
+      log.error(`[SAUVEGARDE] Échec de la copie avant mise à jour : ${err?.message}`);
+      throw new ErreurMetier(
+        'SAUVEGARDE_ECHOUEE',
+        `Impossible de créer la sauvegarde avant-maj : ${err?.message}`
+      );
+    }
+  }
+
+  /**
    * Liste les fichiers de sauvegarde existants, triés du plus récent au plus ancien.
    */
   listerSauvegardes(): FichierSauvegarde[] {

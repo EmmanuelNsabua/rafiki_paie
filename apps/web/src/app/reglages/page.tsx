@@ -745,6 +745,53 @@ export default function ReglagesPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Mises à jour du logiciel (Lot 2) */}
+            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[0.857rem]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-[0.571rem]">
+                  <Download className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
+                  <h3 className="font-semibold text-[1rem] text-[var(--text)]">
+                    Mises à jour du logiciel
+                  </h3>
+                </div>
+                <span className="text-[0.786rem] px-2 py-0.5 rounded-full bg-[var(--hover)] text-[var(--text-2)] font-mono">
+                  v0.1.0
+                </span>
+              </div>
+              <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
+                Recherchez les dernières versions stables et installez-les en un clic en toute
+                sécurité.
+              </p>
+              <div className="pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      toast.info('Recherche de mises à jour…');
+                      const info = await api.maj.verifier();
+                      if (info.statut === 'telecharge') {
+                        toast.success(
+                          `Mise à jour ${info.versionDisponible || ''} prête à installer !`
+                        );
+                      } else if (info.statut === 'telechargement') {
+                        toast.info(
+                          `Téléchargement de la mise à jour en cours (${info.progression || 0}%)…`
+                        );
+                      } else {
+                        toast.success('Starclip est à jour (v0.1.0).');
+                      }
+                    } catch (err: any) {
+                      toast.error(`Erreur vérification : ${err?.message || err}`);
+                    }
+                  }}
+                  className="w-full h-[2.286rem] text-[0.857rem] font-medium"
+                >
+                  Rechercher une mise à jour
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

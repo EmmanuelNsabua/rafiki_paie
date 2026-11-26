@@ -188,6 +188,18 @@ const api: ElectronApi = {
       };
     },
   },
+  maj: {
+    verifier: () => ipcRenderer.invoke(CANAUX_IPC.MAJ_VERIFIER),
+    installer: () => ipcRenderer.invoke(CANAUX_IPC.MAJ_INSTALLER),
+    obtenirEtat: () => ipcRenderer.invoke(CANAUX_IPC.MAJ_OBTENIR_ETAT),
+    surChangementEtat: (callback: (info: any) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, info: any) => callback(info);
+      ipcRenderer.on('maj:changementEtat', handler);
+      return () => {
+        ipcRenderer.removeListener('maj:changementEtat', handler);
+      };
+    },
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);

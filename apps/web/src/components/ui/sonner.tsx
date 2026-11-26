@@ -4,6 +4,14 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
+interface ToastOptions {
+  duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+}
+
 interface ToastItem {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
@@ -22,36 +30,43 @@ function notifier() {
   listeners.forEach((l) => l([...toasts]));
 }
 
-export const toast = {
-  success: (message: string) => {
+const toastFn = (message: string, options?: any) => {
+  return toast.info(message, options);
+};
+export const toast = Object.assign(toastFn, {
+  custom: (
+    message: string,
+    type: 'success' | 'error' | 'warning' | 'info',
+    options?: ToastOptions
+  ) => {
     const id = Math.random().toString(36).slice(2);
-    toasts = [...toasts, { id, type: 'success', message }];
+    toasts = [...toasts, { id, type, message, action: options?.action }];
     notifier();
-    setTimeout(() => toast.dismiss(id), 4000);
+    const duration = options?.duration ?? 4000;
+    if (duration !== Infinity && duration > 0) {
+      setTimeout(() => toast.dismiss(id), duration);
+    }
+    return id;
   },
-  error: (message: string, action?: { label: string; onClick: () => void }) => {
-    const id = Math.random().toString(36).slice(2);
-    toasts = [...toasts, { id, type: 'error', message, action }];
-    notifier();
-    setTimeout(() => toast.dismiss(id), 6000);
+  success: (message: string, options?: ToastOptions) => toast.custom(message, 'success', options),
+  error: (
+    message: string,
+    actionOrOptions?: { label: string; onClick: () => void } | ToastOptions
+  ) => {
+    const opts: ToastOptions =
+      actionOrOptions && 'label' in actionOrOptions
+        ? { action: actionOrOptions, duration: 6000 }
+        : (actionOrOptions as ToastOptions) || { duration: 6000 };
+    return toast.custom(message, 'error', opts);
   },
-  warning: (message: string) => {
-    const id = Math.random().toString(36).slice(2);
-    toasts = [...toasts, { id, type: 'warning', message }];
-    notifier();
-    setTimeout(() => toast.dismiss(id), 5000);
-  },
-  info: (message: string) => {
-    const id = Math.random().toString(36).slice(2);
-    toasts = [...toasts, { id, type: 'info', message }];
-    notifier();
-    setTimeout(() => toast.dismiss(id), 4000);
-  },
+  warning: (message: string, options?: ToastOptions) =>
+    toast.custom(message, 'warning', { duration: 5000, ...options }),
+  info: (message: string, options?: ToastOptions) => toast.custom(message, 'info', options),
   dismiss: (id: string) => {
     toasts = toasts.filter((t) => t.id !== id);
     notifier();
   },
-};
+});
 
 export function Toaster() {
   const [items, setItems] = React.useState<ToastItem[]>([]);

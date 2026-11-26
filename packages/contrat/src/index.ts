@@ -491,6 +491,29 @@ export interface ElectronApi {
     restaurerFichier: (cheminFichier: string) => Promise<ReponseIpc<void>>;
   };
   fenetre: ApiFenetre;
+  maj: ApiMiseAJour;
+}
+
+// ============================================================================
+// Mises à jour automatiques (Lot 2)
+// ============================================================================
+
+export type StatutMiseAJour =
+  'inactif' | 'verification' | 'disponible' | 'telechargement' | 'telecharge' | 'a-jour' | 'erreur';
+
+export interface InfoMiseAJour {
+  statut: StatutMiseAJour;
+  versionActuelle: string;
+  versionDisponible?: string;
+  progression?: number;
+  message?: string;
+}
+
+export interface ApiMiseAJour {
+  verifier: () => Promise<ReponseIpc<InfoMiseAJour>>;
+  installer: () => Promise<ReponseIpc<void>>;
+  obtenirEtat: () => Promise<ReponseIpc<InfoMiseAJour>>;
+  surChangementEtat: (callback: (info: InfoMiseAJour) => void) => () => void;
 }
 
 // ============================================================================

@@ -92,6 +92,21 @@ export function executerMigrations(
     mapExistantes.set(m.numero, { nom: m.nom, somme_controle: m.somme_controle });
   }
 
+  // Protection du schéma (Lot 2) : si la base contient des migrations inconnues de cette version
+  const maxNumeroLocal = fichiers.reduce((max, f) => {
+    const m = f.match(/^(\d{4})_/);
+    return m ? Math.max(max, parseInt(m[1], 10)) : max;
+  }, 0);
+
+  for (const m of migrationsExistantes) {
+    if (m.numero > maxNumeroLocal) {
+      throw new ErreurMigration(
+        'BASE_TROP_RECENTE',
+        'Cette version de Starclip est plus ancienne que vos données. Installez la dernière version.'
+      );
+    }
+  }
+
   const appliquees: string[] = [];
 
   const fkInitial = (db.pragma('foreign_keys', { simple: true }) as number) === 1;

@@ -37,6 +37,10 @@ export const CANAUX_IPC = {
   EXPORTS_BORDEREAU: 'exports.bordereau',
   SAUVEGARDE_EXPORTER: 'sauvegarde.exporter',
   SAUVEGARDE_RESTAURER_FICHIER: 'sauvegarde.restaurerFichier',
+  // Canaux MISES À JOUR (Lot 2)
+  MAJ_VERIFIER: 'maj.verifier',
+  MAJ_INSTALLER: 'maj.installer',
+  MAJ_OBTENIR_ETAT: 'maj.obtenirEtat',
 } as const;
 
 export type CanauxIpc = typeof CANAUX_IPC;

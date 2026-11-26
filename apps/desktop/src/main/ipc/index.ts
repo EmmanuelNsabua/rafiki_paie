@@ -32,6 +32,7 @@ import {
   BordereauService,
   ImportExcelService,
   ExportService,
+  UpdateService,
   ErreurMetier,
 } from '../domain';
 import {
@@ -138,7 +139,8 @@ export function creerGestionnaireSecurise<TIn, TOut>(
  */
 export function enregistrerGestionnairesIpc(
   db: Database.Database,
-  sauvegardeService?: SauvegardeService
+  sauvegardeService?: SauvegardeService,
+  updateService?: UpdateService
 ): void {
   const employeService = new EmployeService(db);
   const operationService = new OperationService(db, undefined, undefined, sauvegardeService);
@@ -380,4 +382,46 @@ export function enregistrerGestionnairesIpc(
       }
     )
   );
+
+  // --- Lot 2 : Mises à jour automatiques ---
+  ipcMain.handle(CANAUX_IPC.MAJ_VERIFIER, async () => {
+    if (!updateService) {
+      return {
+        ok: false,
+        erreur: {
+          code: 'SERVICE_INDISPONIBLE',
+          message: 'Service de mise à jour non disponible.',
+        },
+      };
+    }
+    const info = await updateService.verifierMiseAJour();
+    return { ok: true, donnees: info };
+  });
+
+  ipcMain.handle(CANAUX_IPC.MAJ_INSTALLER, async () => {
+    if (!updateService) {
+      return {
+        ok: false,
+        erreur: {
+          code: 'SERVICE_INDISPONIBLE',
+          message: 'Service de mise à jour non disponible.',
+        },
+      };
+    }
+    await updateService.installerEtRedemarrer();
+    return { ok: true, donnees: undefined };
+  });
+
+  ipcMain.handle(CANAUX_IPC.MAJ_OBTENIR_ETAT, () => {
+    if (!updateService) {
+      return {
+        ok: false,
+        erreur: {
+          code: 'SERVICE_INDISPONIBLE',
+          message: 'Service de mise à jour non disponible.',
+        },
+      };
+    }
+    return { ok: true, donnees: updateService.obtenirEtat() };
+  });
 }

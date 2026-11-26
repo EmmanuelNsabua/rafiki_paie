@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Sidebar } from './sidebar';
 import { Topbar } from './topbar';
 import { BarreTitre } from './barre-titre';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster, toast } from '@/components/ui/sonner';
 import { api, estDansElectron } from '@/lib/api';
 import { ShieldAlert } from 'lucide-react';
 
@@ -28,6 +28,34 @@ export function Shell({ children }: { children: React.ReactNode }) {
       }
       // Pause brève pour permettre le dispatch des événements change/blur React
       await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    return () => cleanup();
+  }, []);
+
+  // Écoute des notifications de mises à jour automatiques (Lot 2)
+  React.useEffect(() => {
+    if (!estDansElectron()) return;
+
+    const cleanup = api.maj.surChangementEtat((info) => {
+      if (info.statut === 'telecharge') {
+        toast(`Starclip ${info.versionDisponible || ''} est prête.`, {
+          description: 'La mise à jour a été téléchargée. Vous pouvez redémarrer pour l installer.',
+          duration: Infinity,
+          action: {
+            label: 'Redémarrer et installer',
+            onClick: () => {
+              api.maj.installer().catch((err) => {
+                console.error('Échec installation MAJ:', err);
+              });
+            },
+          },
+          cancel: {
+            label: 'Plus tard',
+            onClick: () => {},
+          },
+        });
+      }
     });
 
     return () => cleanup();

@@ -9,3 +9,4 @@ export * from './sauvegarde-service';
 export * from './bordereau-service';
 export * from './import-excel-service';
 export * from './export-service';
+export * from './update-service';

@@ -36,6 +36,7 @@ import type {
   ipcLignesModifierInput,
   ipcParametresModifierInput,
   ipcJournalListerInput,
+  InfoMiseAJour,
 } from '@rafiki/contrat';
 import { z } from 'zod';
 
@@ -204,6 +205,18 @@ export const api = {
     surAvantFermeture: (callback: () => Promise<void> | void) => {
       if (typeof window !== 'undefined' && window.api?.fenetre?.surAvantFermeture) {
         return window.api.fenetre.surAvantFermeture(callback);
+      }
+      return () => {};
+    },
+  },
+
+  maj: {
+    verifier: (): Promise<InfoMiseAJour> => executerIpc((a) => a.maj.verifier()),
+    installer: (): Promise<void> => executerIpc((a) => a.maj.installer()),
+    obtenirEtat: (): Promise<InfoMiseAJour> => executerIpc((a) => a.maj.obtenirEtat()),
+    surChangementEtat: (callback: (info: InfoMiseAJour) => void) => {
+      if (typeof window !== 'undefined' && window.api?.maj?.surChangementEtat) {
+        return window.api.maj.surChangementEtat(callback);
       }
       return () => {};
     },

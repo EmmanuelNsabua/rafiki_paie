@@ -91,4 +91,29 @@ describe('Migrateur SQLite (schema_migrations & intégrité)', () => {
 
     db.close();
   });
+
+  it('refuse d ouvrir une base plus récente que l application (protection du schéma Lot 2)', () => {
+    const db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
+
+    // Appliquer les migrations normales
+    executerMigrations(db);
+
+    // Simuler l'insertion d'une migration future (ex: 9999) issue d'une version ultérieure de Starclip
+    db.prepare(
+      `INSERT INTO schema_migrations (numero, nom, somme_controle, appliquee_le)
+       VALUES (?, ?, ?, ?)`
+    ).run(9999, 'future_migration', 'fake_hash', new Date().toISOString());
+
+    // Vérifier que toute tentative d'exécution ultérieure refuse strictement la base
+    expect(() => executerMigrations(db)).toThrow(ErreurMigration);
+    try {
+      executerMigrations(db);
+    } catch (e: any) {
+      expect(e.code).toBe('BASE_TROP_RECENTE');
+      expect(e.message).toContain('Cette version de Starclip est plus ancienne que vos données');
+    }
+
+    db.close();
+  });
 });
