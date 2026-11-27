@@ -4,6 +4,7 @@ export const CANAUX_IPC = {
   EMPLOYES_CREER: 'employes.creer',
   EMPLOYES_MODIFIER: 'employes.modifier',
   EMPLOYES_DESACTIVER: 'employes.desactiver',
+  EMPLOYES_SUPPRIMER: 'employes.supprimer',
   OPERATIONS_LISTER: 'operations.lister',
   OPERATIONS_OUVRIR: 'operations.ouvrir',
   OPERATIONS_OBTENIR: 'operations.obtenir',
@@ -37,6 +38,10 @@ export const CANAUX_IPC = {
   EXPORTS_BORDEREAU: 'exports.bordereau',
   SAUVEGARDE_EXPORTER: 'sauvegarde.exporter',
   SAUVEGARDE_RESTAURER_FICHIER: 'sauvegarde.restaurerFichier',
+  SAUVEGARDE_CHOISIR_DOSSIER_EXPORT: 'sauvegarde.choisirDossierExport',
+  SAUVEGARDE_REINITIALISER_POINT_ZERO: 'sauvegarde.reinitialiserPointZero',
+  SAUVEGARDE_IMPORTER_FICHIER_DIALOG: 'sauvegarde.importerFichierDialog',
+  LOGS_OUVRIR_VISIONNEUSE: 'logs.ouvrirVisionneuse',
   // Canaux MISES À JOUR (Lot 2)
   MAJ_VERIFIER: 'maj.verifier',
   MAJ_INSTALLER: 'maj.installer',

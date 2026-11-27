@@ -6,7 +6,15 @@ import { api } from '@/lib/api';
 import { formaterDate } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { toast } from '@/components/ui/sonner';
 import {
   History,
@@ -17,11 +25,10 @@ import {
   Database,
   Download,
   Upload,
-  FileSpreadsheet,
-  CheckCircle2,
-  AlertCircle,
+  RotateCcw,
+  FileText,
+  AlertTriangle,
 } from 'lucide-react';
-import type { PrevisualisationImportResult } from '@rafiki/contrat';
 import { cn } from '@/lib/utils';
 
 interface StepperLigneProps {
@@ -94,75 +101,27 @@ export default function ReglagesPage() {
     'parametres'
   );
 
-  // États pour Import & Sauvegarde
-  const [cheminImport, setCheminImport] = React.useState('');
-  const [previsuImport, setPrevisuImport] = React.useState<PrevisualisationImportResult | null>(
-    null
-  );
-  const [anneeImport, setAnneeImport] = React.useState(2026);
-  const [moisImport, setMoisImport] = React.useState(11);
-  const [modeDoublon, setModeDoublon] = React.useState<'mettre_a_jour' | 'ignorer' | 'refuser'>(
-    'mettre_a_jour'
-  );
-  const [chargementPrevisu, setChargementPrevisu] = React.useState(false);
-  const [chargementImport, setChargementImport] = React.useState(false);
-
-  const [cheminExportSauvegarde, setCheminExportSauvegarde] = React.useState('');
-  const [cheminRestauration, setCheminRestauration] = React.useState('');
+  // États pour Sauvegarde, Restauration Point Zéro & Import .db
   const [chargementSauvegarde, setChargementSauvegarde] = React.useState(false);
-  const [chargementRestauration, setChargementRestauration] = React.useState(false);
+  const [chargementImportDb, setChargementImportDb] = React.useState(false);
+  const [dialogueResetOuvert, setDialogueResetOuvert] = React.useState(false);
+  const [confirmationResetTexte, setConfirmationResetTexte] = React.useState('');
+  const [chargementReset, setChargementReset] = React.useState(false);
 
-  const handlePrevisualiser = async () => {
-    if (!cheminImport.trim()) {
-      toast.warning('Veuillez saisir le chemin du fichier .xlsx');
-      return;
-    }
-    setChargementPrevisu(true);
-    try {
-      const res = await api.importExcel.previsualiser(cheminImport.trim());
-      setPrevisuImport(res);
-      toast.success(`${res.totalLignes} ligne(s) détectée(s).`);
-    } catch (err: any) {
-      toast.error(`Échec d analyse : ${err?.message || err}`);
-    } finally {
-      setChargementPrevisu(false);
-    }
-  };
-
-  const handleExecuterImport = async () => {
-    if (!cheminImport.trim()) return;
-    setChargementImport(true);
-    try {
-      const res = await api.importExcel.executer({
-        cheminFichier: cheminImport.trim(),
-        annee: anneeImport,
-        mois: moisImport,
-        modeDoublon,
-        creerOperation: true,
-        lignesAExclure: [],
-      });
-      toast.success(
-        `${res.employesCrees} employé(s) créé(s), ${res.lignesPaieCrees} ligne(s) de paie importée(s).`
-      );
-      queryClient.invalidateQueries({ queryKey: ['employes-liste'] });
-      queryClient.invalidateQueries({ queryKey: ['operations-liste'] });
-      setPrevisuImport(null);
-    } catch (err: any) {
-      toast.error(err?.message || String(err));
-    } finally {
-      setChargementImport(false);
-    }
-  };
+  // Version dynamique de l'application
+  const { data: infosFenetre } = useQuery({
+    queryKey: ['infos-fenetre'],
+    queryFn: () => api.fenetre.lirePreferences(),
+  });
+  const versionApp = infosFenetre?.version || '0.1.2';
 
   const handleExporterSauvegarde = async () => {
-    if (!cheminExportSauvegarde.trim()) {
-      toast.warning('Veuillez saisir le chemin de destination pour la sauvegarde.');
-      return;
-    }
     setChargementSauvegarde(true);
     try {
-      const cheminCible = await api.sauvegarde.exporter(cheminExportSauvegarde.trim());
-      toast.success(`Sauvegarde exportée vers : ${cheminCible}`);
+      const res = await api.sauvegarde.choisirDossierExport();
+      if (!res.annule && res.chemin) {
+        toast.success(`Sauvegarde exportée avec succès : ${res.chemin}`);
+      }
     } catch (err: any) {
       toast.error(`Échec de sauvegarde : ${err?.message || err}`);
     } finally {
@@ -170,20 +129,41 @@ export default function ReglagesPage() {
     }
   };
 
-  const handleRestaurerSauvegarde = async () => {
-    if (!cheminRestauration.trim()) {
-      toast.warning('Veuillez saisir le chemin de la sauvegarde à restaurer.');
+  const handleImporterDb = async () => {
+    setChargementImportDb(true);
+    try {
+      const res = await api.sauvegarde.importerFichierDialog();
+      if (!res.annule && res.chemin) {
+        toast.success('Base de données importée avec succès. Redémarrage de l’application…');
+        setTimeout(() => {
+          api.fenetre.redemarrer().catch(() => {
+            queryClient.invalidateQueries();
+          });
+        }, 1200);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || String(err));
+    } finally {
+      setChargementImportDb(false);
+    }
+  };
+
+  const handleReinitialiserPointZero = async () => {
+    if (confirmationResetTexte.trim() !== 'Supprimer toutes les données') {
+      toast.error('Veuillez saisir exactement « Supprimer toutes les données » pour confirmer.');
       return;
     }
-    setChargementRestauration(true);
+    setChargementReset(true);
     try {
-      await api.sauvegarde.restaurerFichier(cheminRestauration.trim());
-      toast.success('La base a été restaurée avec succès. Données actualisées.');
+      await api.sauvegarde.reinitialiserPointZero();
+      toast.success('La base de données a été restaurée au point zéro.');
+      setDialogueResetOuvert(false);
+      setConfirmationResetTexte('');
       queryClient.invalidateQueries();
     } catch (err: any) {
       toast.error(err?.message || String(err));
     } finally {
-      setChargementRestauration(false);
+      setChargementReset(false);
     }
   };
 
@@ -361,7 +341,7 @@ export default function ReglagesPage() {
             )}
           >
             <Database className="w-[1rem] h-[1rem]" />
-            <span>Import & Sauvegarde</span>
+            <span>Données &amp; Mises à jour</span>
           </button>
         </div>
       </div>
@@ -567,234 +547,224 @@ export default function ReglagesPage() {
           </div>
         </div>
       ) : (
-        /* Onglet Import Excel & Sauvegarde / Restauration */
+        /* Onglet Sauvegarde, Restauration, Import .db & Mises à jour */
         <div className="space-y-[1.714rem]">
-          {/* Section 1 : Importation du classeur historique Excel */}
-          <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[1.143rem]">
-            <div className="flex items-center gap-[0.571rem] border-b border-[var(--border)] pb-[0.857rem]">
-              <FileSpreadsheet className="w-[1.286rem] h-[1.286rem] text-[var(--primary)]" />
-              <div>
-                <h2 className="text-[1.143rem] font-semibold text-[var(--text)]">
-                  Importation du classeur Excel historique
-                </h2>
-                <p className="text-[0.786rem] text-[var(--text-2)]">
-                  Importez les employés et les données de paie à partir d’un fichier .xlsx
-                  historique
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-[0.857rem]">
-              <div>
-                <label className="text-[0.857rem] font-medium text-[var(--text)] block mb-[0.286rem]">
-                  Chemin d’accès complet au fichier .xlsx sur votre ordinateur :
-                </label>
-                <div className="flex items-center gap-[0.571rem]">
-                  <input
-                    type="text"
-                    value={cheminImport}
-                    onChange={(e) => setCheminImport(e.target.value)}
-                    placeholder="Ex: C:\Users\Documents\02-GESTION_PAIE_ECOLE_RAFIKI_COMPLET.xlsx"
-                    className="flex-1 h-[2.286rem] px-[0.714rem] rounded-[0.429rem] bg-[var(--page)] border border-[var(--border)] text-[0.857rem] text-[var(--text)] outline-none"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handlePrevisualiser}
-                    disabled={chargementPrevisu || !cheminImport.trim()}
-                    className="h-[2.286rem] px-[1rem] bg-[var(--primary)] text-[var(--primary-foreground)] text-[0.857rem] font-medium cursor-pointer"
-                  >
-                    {chargementPrevisu ? 'Analyse…' : 'Prévisualiser'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Aperçu si prévisualisation chargée */}
-              {previsuImport && (
-                <div className="mt-[1rem] p-[1.143rem] rounded-[0.429rem] border border-[var(--border)] bg-[var(--page)] space-y-[0.857rem]">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-[0.929rem] text-[var(--text)] flex items-center gap-[0.429rem]">
-                      <CheckCircle2 className="w-[1rem] h-[1rem] text-emerald-500" />
-                      Feuille détectée : « {previsuImport.feuilleNom} » ({previsuImport.totalLignes}{' '}
-                      ligne(s))
-                    </span>
-                    <span className="text-[0.786rem] text-[var(--text-2)]">
-                      Total salaires de base : {previsuImport.recapitulatif.totalSalaireBase} $
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-[0.857rem] pt-[0.571rem]">
-                    <div>
-                      <label className="text-[0.786rem] text-[var(--text-2)] block mb-[0.286rem]">
-                        Année de paie :
-                      </label>
-                      <input
-                        type="number"
-                        value={anneeImport}
-                        onChange={(e) => setAnneeImport(parseInt(e.target.value, 10) || 2026)}
-                        className="w-full h-[2rem] px-[0.571rem] rounded-[0.286rem] bg-[var(--surface)] border border-[var(--border)] text-[0.857rem]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[0.786rem] text-[var(--text-2)] block mb-[0.286rem]">
-                        Mois de paie :
-                      </label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={12}
-                        value={moisImport}
-                        onChange={(e) => setMoisImport(parseInt(e.target.value, 10) || 1)}
-                        className="w-full h-[2rem] px-[0.571rem] rounded-[0.286rem] bg-[var(--surface)] border border-[var(--border)] text-[0.857rem]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[0.786rem] text-[var(--text-2)] block mb-[0.286rem]">
-                        Gestion des doublons :
-                      </label>
-                      <select
-                        value={modeDoublon}
-                        onChange={(e) => setModeDoublon(e.target.value as any)}
-                        className="w-full h-[2rem] px-[0.571rem] rounded-[0.286rem] bg-[var(--surface)] border border-[var(--border)] text-[0.857rem]"
-                      >
-                        <option value="mettre_a_jour">Mettre à jour l existant</option>
-                        <option value="ignorer">Conserver sans écraser</option>
-                        <option value="refuser">Refuser si doublon</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-[0.571rem]">
-                    <Button
-                      type="button"
-                      onClick={handleExecuterImport}
-                      disabled={chargementImport}
-                      className="h-[2.286rem] px-[1.429rem] bg-[var(--primary)] text-[var(--primary-foreground)] text-[0.857rem] font-semibold cursor-pointer"
-                    >
-                      {chargementImport
-                        ? 'Importation atomique en cours…'
-                        : 'Confirmer et Importer'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Section 2 : Sauvegarde et Restauration */}
+          {/* Ligne 1 : Exporter une sauvegarde & Restaurer la base (Point Zéro) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.714rem]">
-            {/* Export d'une sauvegarde */}
-            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[0.857rem]">
-              <div className="flex items-center gap-[0.571rem]">
-                <Download className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
-                <h3 className="font-semibold text-[1rem] text-[var(--text)]">
-                  Exporter une sauvegarde
-                </h3>
-              </div>
-              <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
-                Crée une copie de sécurité exacte et cohérente de la base SQLite vers l emplacement
-                de votre choix.
-              </p>
+            {/* Export d'une sauvegarde via explorateur de dossier */}
+            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] flex flex-col justify-between space-y-[1rem]">
               <div className="space-y-[0.571rem]">
-                <input
-                  type="text"
-                  value={cheminExportSauvegarde}
-                  onChange={(e) => setCheminExportSauvegarde(e.target.value)}
-                  placeholder="Ex: D:\Sauvegardes\paie_rafiki_backup.sqlite"
-                  className="w-full h-[2.286rem] px-[0.714rem] rounded-[0.429rem] bg-[var(--page)] border border-[var(--border)] text-[0.857rem]"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleExporterSauvegarde}
-                  disabled={chargementSauvegarde || !cheminExportSauvegarde.trim()}
-                  className="w-full h-[2.286rem] text-[0.857rem] font-medium"
-                >
-                  {chargementSauvegarde ? 'Sauvegarde…' : 'Exporter la sauvegarde'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Restauration d'une sauvegarde */}
-            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[0.857rem]">
-              <div className="flex items-center gap-[0.571rem]">
-                <Upload className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
-                <h3 className="font-semibold text-[1rem] text-[var(--text)]">
-                  Restaurer une sauvegarde
-                </h3>
-              </div>
-              <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
-                Restaure la base avec vérification d intégrité préalable et sauvegarde de sécurité
-                automatique.
-              </p>
-              <div className="space-y-[0.571rem]">
-                <input
-                  type="text"
-                  value={cheminRestauration}
-                  onChange={(e) => setCheminRestauration(e.target.value)}
-                  placeholder="Ex: D:\Sauvegardes\rafiki_paie_2026.sqlite"
-                  className="w-full h-[2.286rem] px-[0.714rem] rounded-[0.429rem] bg-[var(--page)] border border-[var(--border)] text-[0.857rem]"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleRestaurerSauvegarde}
-                  disabled={chargementRestauration || !cheminRestauration.trim()}
-                  className="w-full h-[2.286rem] text-[0.857rem] font-medium text-amber-600 border-amber-300 hover:bg-amber-50"
-                >
-                  {chargementRestauration ? 'Vérification et restauration…' : 'Restaurer la base'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Mises à jour du logiciel (Lot 2) */}
-            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] space-y-[0.857rem]">
-              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-[0.571rem]">
                   <Download className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
                   <h3 className="font-semibold text-[1rem] text-[var(--text)]">
-                    Mises à jour du logiciel
+                    Exporter une sauvegarde
                   </h3>
                 </div>
-                <span className="text-[0.786rem] px-2 py-0.5 rounded-full bg-[var(--hover)] text-[var(--text-2)] font-mono">
-                  v0.1.0
-                </span>
+                <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
+                  Sélectionnez un répertoire sur votre ordinateur pour générer instantanément un
+                  fichier de sauvegarde complet (.db) de la base de données.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleExporterSauvegarde}
+                disabled={chargementSauvegarde}
+                className="w-full h-[2.429rem] text-[0.857rem] font-medium cursor-pointer"
+              >
+                {chargementSauvegarde
+                  ? 'Exportation en cours…'
+                  : 'Choisir un répertoire et exporter (.db)'}
+              </Button>
+            </div>
+
+            {/* Restauration au point zéro */}
+            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] flex flex-col justify-between space-y-[1rem]">
+              <div className="space-y-[0.571rem]">
+                <div className="flex items-center gap-[0.571rem]">
+                  <RotateCcw className="w-[1.143rem] h-[1.143rem] text-rose-500" />
+                  <h3 className="font-semibold text-[1rem] text-[var(--text)]">
+                    Restaurer la base (Point zéro)
+                  </h3>
+                </div>
+                <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
+                  Remet la base de données à son état initial (point zéro). Toutes les données
+                  actuelles (employés, paies, historique) seront supprimées après confirmation.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setConfirmationResetTexte('');
+                  setDialogueResetOuvert(true);
+                }}
+                className="w-full h-[2.429rem] text-[0.857rem] font-medium text-rose-600 border-rose-500/30 hover:bg-rose-500/10 cursor-pointer"
+              >
+                Restaurer la base
+              </Button>
+            </div>
+          </div>
+
+          {/* Ligne 2 : Mises à jour du logiciel & Importer un fichier .db */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.714rem]">
+            {/* Mises à jour du logiciel */}
+            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] flex flex-col justify-between space-y-[1rem]">
+              <div className="space-y-[0.571rem]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-[0.571rem]">
+                    <Download className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
+                    <h3 className="font-semibold text-[1rem] text-[var(--text)]">
+                      Mises à jour du logiciel
+                    </h3>
+                  </div>
+                  <span className="text-[0.786rem] px-2.5 py-0.5 rounded-full bg-[var(--hover)] text-[var(--text)] font-mono border border-[var(--border)]">
+                    v{versionApp}
+                  </span>
+                </div>
+                <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
+                  Recherchez les dernières versions stables et installez-les en un clic en toute
+                  sécurité.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    toast.info('Recherche de mises à jour…');
+                    const info = await api.maj.verifier();
+                    if (info?.statut === 'telecharge') {
+                      toast.success(
+                        `Mise à jour ${info.versionDisponible || ''} prête à installer !`
+                      );
+                    } else if (info?.statut === 'telechargement') {
+                      toast.info(
+                        `Téléchargement de la mise à jour en cours (${info.progression || 0}%)…`
+                      );
+                    } else if (info?.statut === 'disponible') {
+                      toast.info(
+                        `Nouvelle version ${info.versionDisponible || ''} détectée, téléchargement lancé…`
+                      );
+                    } else {
+                      toast.success(`L'application École RAFIKI est à jour (v${versionApp}).`);
+                    }
+                  } catch (err: any) {
+                    toast.error(`Erreur vérification : ${err?.message || err}`);
+                  }
+                }}
+                className="w-full h-[2.429rem] text-[0.857rem] font-medium cursor-pointer"
+              >
+                Rechercher une mise à jour
+              </Button>
+            </div>
+
+            {/* Importer une base de données *.db */}
+            <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] flex flex-col justify-between space-y-[1rem]">
+              <div className="space-y-[0.571rem]">
+                <div className="flex items-center gap-[0.571rem]">
+                  <Upload className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
+                  <h3 className="font-semibold text-[1rem] text-[var(--text)]">
+                    Importer une base de données (.db)
+                  </h3>
+                </div>
+                <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
+                  Sélectionnez un fichier de base de données (*.db ou *.sqlite) pour récupérer des
+                  données précises d’opérations et d’employés.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleImporterDb}
+                disabled={chargementImportDb}
+                className="w-full h-[2.429rem] text-[0.857rem] font-medium cursor-pointer"
+              >
+                {chargementImportDb ? 'Importation en cours…' : 'Importer un fichier .db'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Ligne 3 : Fiche Journal des Logs techniques */}
+          <div className="rounded-[0.571rem] bg-[var(--surface)] border border-[var(--border)] shadow-xs p-[1.714rem] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[1rem]">
+            <div className="space-y-[0.286rem]">
+              <div className="flex items-center gap-[0.571rem]">
+                <FileText className="w-[1.143rem] h-[1.143rem] text-[var(--primary)]" />
+                <h3 className="font-semibold text-[1rem] text-[var(--text)]">
+                  Fiche Journal des Logs techniques
+                </h3>
               </div>
               <p className="text-[0.786rem] text-[var(--text-2)] leading-relaxed">
-                Recherchez les dernières versions stables et installez-les en un clic en toute
-                sécurité.
+                Consultez et copiez les journaux d’erreurs détaillés (importation, système) pour le
+                support technique. Également accessible depuis le raccourci sur votre Bureau.
               </p>
-              <div className="pt-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      toast.info('Recherche de mises à jour…');
-                      const info = await api.maj.verifier();
-                      if (info.statut === 'telecharge') {
-                        toast.success(
-                          `Mise à jour ${info.versionDisponible || ''} prête à installer !`
-                        );
-                      } else if (info.statut === 'telechargement') {
-                        toast.info(
-                          `Téléchargement de la mise à jour en cours (${info.progression || 0}%)…`
-                        );
-                      } else {
-                        toast.success("L'application École RAFIKI est à jour (v0.1.1).");
-                      }
-                    } catch (err: any) {
-                      toast.error(`Erreur vérification : ${err?.message || err}`);
-                    }
-                  }}
-                  className="w-full h-[2.286rem] text-[0.857rem] font-medium"
-                >
-                  Rechercher une mise à jour
-                </Button>
-              </div>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => api.logs.ouvrirVisionneuse().catch((e) => toast.error(String(e)))}
+              className="h-[2.429rem] px-[1.143rem] text-[0.857rem] font-medium shrink-0 cursor-pointer"
+            >
+              Ouvrir la fiche journal
+            </Button>
           </div>
         </div>
       )}
+
+      {/* Modale de confirmation stricte pour réinitialisation au point zéro */}
+      <Dialog
+        open={dialogueResetOuvert}
+        onOpenChange={(open) => {
+          if (!chargementReset) setDialogueResetOuvert(open);
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-[0.571rem] text-rose-500">
+            <AlertTriangle className="w-[1.286rem] h-[1.286rem]" />
+            <span>Restaurer la base au point zéro</span>
+          </DialogTitle>
+          <DialogDescription>
+            Cette action est irréversible. Tous les employés, opérations de paie et journaux actuels
+            seront supprimés et l’application reviendra à son état vierge d’origine.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-[0.857rem] py-[0.571rem]">
+          <p className="text-[0.857rem] text-[var(--text)]">
+            Pour confirmer, veuillez saisir exactement{' '}
+            <strong className="font-mono text-rose-500">Supprimer toutes les données</strong>{' '}
+            ci-dessous :
+          </p>
+          <Input
+            type="text"
+            value={confirmationResetTexte}
+            onChange={(e) => setConfirmationResetTexte(e.target.value)}
+            placeholder="Supprimer toutes les données"
+            className="w-full"
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={chargementReset}
+            onClick={() => setDialogueResetOuvert(false)}
+          >
+            Annuler
+          </Button>
+          <Button
+            type="button"
+            disabled={
+              chargementReset || confirmationResetTexte.trim() !== 'Supprimer toutes les données'
+            }
+            onClick={handleReinitialiserPointZero}
+            className="bg-rose-600 hover:bg-rose-700 text-white cursor-pointer disabled:opacity-50"
+          >
+            {chargementReset ? 'Réinitialisation…' : 'Confirmer la suppression'}
+          </Button>
+        </DialogFooter>
+      </Dialog>
     </div>
   );
 }

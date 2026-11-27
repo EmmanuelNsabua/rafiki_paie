@@ -39,6 +39,9 @@ const api: ElectronApi = {
     desactiver: (input): Promise<ReponseIpc<Employe>> => {
       return ipcRenderer.invoke(CANAUX_IPC.EMPLOYES_DESACTIVER, input);
     },
+    supprimer: (input): Promise<ReponseIpc<void>> => {
+      return ipcRenderer.invoke(CANAUX_IPC.EMPLOYES_SUPPRIMER, input);
+    },
   },
   operations: {
     lister: (): Promise<ReponseIpc<ResumeOperationLister[]>> => {
@@ -121,6 +124,20 @@ const api: ElectronApi = {
     },
     restaurerFichier: (cheminFichier) => {
       return ipcRenderer.invoke(CANAUX_IPC.SAUVEGARDE_RESTAURER_FICHIER, { cheminFichier });
+    },
+    choisirDossierExport: () => {
+      return ipcRenderer.invoke(CANAUX_IPC.SAUVEGARDE_CHOISIR_DOSSIER_EXPORT);
+    },
+    reinitialiserPointZero: () => {
+      return ipcRenderer.invoke(CANAUX_IPC.SAUVEGARDE_REINITIALISER_POINT_ZERO);
+    },
+    importerFichierDialog: () => {
+      return ipcRenderer.invoke(CANAUX_IPC.SAUVEGARDE_IMPORTER_FICHIER_DIALOG);
+    },
+  },
+  logs: {
+    ouvrirVisionneuse: () => {
+      return ipcRenderer.invoke(CANAUX_IPC.LOGS_OUVRIR_VISIONNEUSE);
     },
   },
   fenetre: {

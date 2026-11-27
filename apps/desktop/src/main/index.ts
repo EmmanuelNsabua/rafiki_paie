@@ -19,6 +19,11 @@ import {
 import { SauvegardeService, UpdateService } from './domain';
 import { enregistrerSchemaApp, enregistrerGestionnaireApp, obtenirDossierWebOut } from './protocol';
 import { creerSplashScreen, mettreAJourSplashScreen } from './splash';
+import {
+  obtenirCheminFichierLog,
+  assurerRaccourciLogsSurBureau,
+  ouvrirVisionneuseLogs,
+} from './logs-viewer';
 
 log.initialize();
 log.transports.console.level = 'info';
@@ -54,16 +59,20 @@ if (!verrouInstanceUnique) {
 // Configuration du schéma de protocole privilégié AVANT app.whenReady()
 enregistrerSchemaApp();
 
-// Configuration du fichier de log pour audit et vérification
+// Configuration du fichier de log pour audit et vérification (dans userData/logs)
 try {
-  const dossierLogs = path.resolve(process.cwd(), 'logs');
-  if (!fs.existsSync(dossierLogs)) {
-    fs.mkdirSync(dossierLogs, { recursive: true });
-  }
-  log.transports.file.resolvePathFn = () => path.join(dossierLogs, 'main.log');
+  log.transports.file.resolvePathFn = () => obtenirCheminFichierLog();
 } catch {
   // Ignorer si échec
 }
+
+process.on('uncaughtException', (err) => {
+  log.error('[MAIN] Exception non capturée :', err?.stack || err?.message || err);
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  log.error('[MAIN] Promesse rejetée non gérée :', reason?.stack || reason?.message || reason);
+});
 
 log.info('[MAIN] Process starting up');
 
@@ -311,7 +320,17 @@ function createWindow(splashWindow: BrowserWindow | null = null): void {
 log.info('[MAIN] Registering app.whenReady');
 
 app.whenReady().then(async () => {
-  log.info('[MAIN] app.whenReady resolved! Démarrage avec Splash Screen...');
+  const modeLogsSeulement = process.argv.includes('--logs');
+  log.info(`[MAIN] app.whenReady resolved! (modeLogs=${modeLogsSeulement})`);
+
+  // Assurer la présence du raccourci Journal Logs sur le Bureau Windows
+  assurerRaccourciLogsSurBureau();
+
+  if (modeLogsSeulement) {
+    Menu.setApplicationMenu(null);
+    ouvrirVisionneuseLogs();
+    return;
+  }
 
   // 1. Affichage immédiat du Splash Screen inspiré de DBeaver
   const splashWindow = creerSplashScreen();
@@ -393,7 +412,11 @@ app.whenReady().then(async () => {
     }
   });
 
-  app.on('second-instance', () => {
+  app.on('second-instance', (_event, argv) => {
+    if (argv.includes('--logs')) {
+      ouvrirVisionneuseLogs();
+      return;
+    }
     if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isMinimized()) {
         mainWindow.restore();

@@ -26,6 +26,7 @@ import type {
   ipcEmployesCreerInput,
   ipcEmployesModifierInput,
   ipcEmployesDesactiverInput,
+  ipcEmployesSupprimerInput,
   ipcOperationsOuvrirInput,
   ipcOperationsObtenirInput,
   ipcOperationsTerminerInput,
@@ -112,6 +113,9 @@ export const api = {
 
     desactiver: (input: z.infer<typeof ipcEmployesDesactiverInput>): Promise<Employe> =>
       executerIpc((a) => a.employes.desactiver(input)),
+
+    supprimer: (input: z.infer<typeof ipcEmployesSupprimerInput>): Promise<void> =>
+      executerIpc((a) => a.employes.supprimer(input)),
   },
 
   operations: {
@@ -192,6 +196,16 @@ export const api = {
       executerIpc((a) => a.sauvegarde.exporter(cheminDestination)),
     restaurerFichier: (cheminFichier: string): Promise<void> =>
       executerIpc((a) => a.sauvegarde.restaurerFichier(cheminFichier)),
+    choisirDossierExport: (): Promise<{ annule: boolean; chemin: string }> =>
+      executerIpc((a) => a.sauvegarde.choisirDossierExport()),
+    reinitialiserPointZero: (): Promise<void> =>
+      executerIpc((a) => a.sauvegarde.reinitialiserPointZero()),
+    importerFichierDialog: (): Promise<{ annule: boolean; chemin: string }> =>
+      executerIpc((a) => a.sauvegarde.importerFichierDialog()),
+  },
+
+  logs: {
+    ouvrirVisionneuse: (): Promise<void> => executerIpc((a) => a.logs.ouvrirVisionneuse()),
   },
 
   obtenirCheminFichier,

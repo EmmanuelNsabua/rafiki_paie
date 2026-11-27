@@ -390,4 +390,58 @@ export class SauvegardeService {
       );
     }
   }
+
+  /**
+   * Réinitialise la base de données au point zéro :
+   * - Crée une sauvegarde de sécurité préalable
+   * - Vide toutes les tables de données métier (lignes, opérations, employés, journal)
+   * - Restaure les paramètres par défaut
+   */
+  async reinitialiserPointZero(): Promise<void> {
+    // 1. Sauvegarde de sécurité automatique avant effacement
+    try {
+      this.assurerDossierExiste();
+      const nomSecu = `rafiki_paie_avant-reset_${Date.now()}.sqlite`;
+      const cheminSecu = path.join(this.dossierSauvegardes, nomSecu);
+      await this.options.db.backup(cheminSecu);
+      log.info(`[SAUVEGARDE] Sauvegarde de sécurité avant réinitialisation créée : ${nomSecu}`);
+    } catch (err: any) {
+      log.warn(`[SAUVEGARDE] Échec sauvegarde pré-réinitialisation : ${err?.message}`);
+    }
+
+    // 2. Effacement transactionnel complet et retour aux paramètres initiaux
+    const maintenant = new Date().toISOString();
+    const tx = this.options.db.transaction(() => {
+      this.options.db.prepare('DELETE FROM ligne_paie').run();
+      this.options.db.prepare('DELETE FROM operation_paie').run();
+      this.options.db.prepare('DELETE FROM employe').run();
+      this.options.db.prepare('DELETE FROM journal_activite').run();
+
+      this.options.db
+        .prepare(
+          `UPDATE parametre
+           SET jours_ouvrables_defaut = 22,
+               diviseur_retenue = 3,
+               unite_arrondi = 10,
+               code_banque_defaut = '840',
+               mis_a_jour_le = ?
+           WHERE id = 1`
+        )
+        .run(maintenant);
+
+      this.options.db
+        .prepare(
+          `INSERT INTO journal_activite (id, action, entite, entite_id, detail, cree_le)
+           VALUES (?, 'REINITIALISATION_BASE', 'parametre', '1', ?, ?)`
+        )
+        .run(
+          crypto.randomUUID(),
+          'Réinitialisation complète de la base de données au point zéro',
+          maintenant
+        );
+    });
+
+    tx();
+    log.info('[SAUVEGARDE] Base de données réinitialisée au point zéro avec succès.');
+  }
 }

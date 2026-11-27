@@ -5,6 +5,22 @@ Ce journal est rédigé en français pour être clair et accessible à l'équipe
 
 ---
 
+## [0.1.3] — 2026-11-27
+
+### Nouveau
+
+- **Suppression d'employés** : Ajout de l'action « Supprimer » dans le menu de la liste des employés avec boîte de dialogue de confirmation (protégée si l'employé figure dans une paie existante).
+- **Restauration au point zéro** : Réinitialisation complète de la base de données après sauvegarde de sécurité et saisie de confirmation explicite (`Supprimer toutes les données`).
+- **Importation directe d'un fichier de base de données (`.db` / `.sqlite`)** : Nouveau sélecteur natif placé à côté des mises à jour dans les Réglages.
+- **Outil Fiche Journal des Logs & Raccourci Bureau** : Enregistrement persistant des erreurs et événements dans `%APPDATA%\rafiki-paie\logs\rafiki-paie.log`, fenêtre de consultation dédiée avec filtre et bouton « Copier tout », et création automatique d'un raccourci `Journal Logs École RAFIKI` sur le Bureau Windows.
+
+### Amélioré
+
+- **Exportation de sauvegarde via explorateur natif** : Remplacement du champ de saisie manuelle par un sélecteur de dossier générant automatiquement un fichier `.db`.
+- **Écran Réglages simplifié** : Suppression de l'ancienne section d'import Excel redondante et affichage dynamique exact de la version de l'application (`v0.1.3`).
+
+---
+
 ## [0.1.2] — 2026-11-27
 
 ### Corrigé

@@ -1,4 +1,5 @@
-import { ipcMain, type IpcMainInvokeEvent } from 'electron';
+import { ipcMain, dialog, BrowserWindow, type IpcMainInvokeEvent } from 'electron';
+import * as path from 'path';
 import type Database from 'better-sqlite3';
 import { z } from 'zod';
 import log from 'electron-log/main';
@@ -9,6 +10,7 @@ import {
   ipcEmployesCreerInput,
   ipcEmployesModifierInput,
   ipcEmployesDesactiverInput,
+  ipcEmployesSupprimerInput,
   ipcOperationsOuvrirInput,
   ipcOperationsObtenirInput,
   ipcOperationsTerminerInput,
@@ -35,6 +37,7 @@ import {
   UpdateService,
   ErreurMetier,
 } from '../domain';
+import { ouvrirVisionneuseLogs } from '../logs-viewer';
 import {
   executionImportParamsSchema,
   optionsExportEmployesSchema,
@@ -107,6 +110,9 @@ export function creerGestionnaireSecurise<TIn, TOut>(
       };
     } catch (err: any) {
       if (err instanceof ErreurMetier) {
+        if (process.env.NODE_ENV !== 'test') {
+          log.warn(`[IPC MÉTIER] Canal: ${nomCanal} | Code: ${err.code} | Message: ${err.message}`);
+        }
         return {
           ok: false,
           erreur: {
@@ -183,6 +189,13 @@ export function enregistrerGestionnairesIpc(
     CANAUX_IPC.EMPLOYES_DESACTIVER,
     creerGestionnaireSecurise(CANAUX_IPC.EMPLOYES_DESACTIVER, ipcEmployesDesactiverInput, (input) =>
       employeService.desactiver(input.id)
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.EMPLOYES_SUPPRIMER,
+    creerGestionnaireSecurise(CANAUX_IPC.EMPLOYES_SUPPRIMER, ipcEmployesSupprimerInput, (input) =>
+      employeService.supprimer(input.id)
     )
   );
 
@@ -383,6 +396,78 @@ export function enregistrerGestionnairesIpc(
     )
   );
 
+  ipcMain.handle(
+    CANAUX_IPC.SAUVEGARDE_CHOISIR_DOSSIER_EXPORT,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.SAUVEGARDE_CHOISIR_DOSSIER_EXPORT,
+      z.unknown(),
+      async () => {
+        if (!sauvegardeService) {
+          throw new ErreurMetier('SERVICE_INDISPONIBLE', 'Service de sauvegarde non initialisé.');
+        }
+        const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+        const res = await dialog.showOpenDialog(win, {
+          title: 'Sélectionner un répertoire pour exporter la sauvegarde',
+          properties: ['openDirectory', 'createDirectory'],
+        });
+        if (res.canceled || res.filePaths.length === 0) {
+          return { annule: true, chemin: '' };
+        }
+        const now = new Date();
+        const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+        const cheminFichier = path.join(res.filePaths[0], `rafiki_paie_backup_${stamp}.db`);
+        await sauvegardeService.exporterVers(cheminFichier);
+        return { annule: false, chemin: cheminFichier };
+      }
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.SAUVEGARDE_REINITIALISER_POINT_ZERO,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.SAUVEGARDE_REINITIALISER_POINT_ZERO,
+      z.unknown(),
+      async () => {
+        if (!sauvegardeService) {
+          throw new ErreurMetier('SERVICE_INDISPONIBLE', 'Service de sauvegarde non initialisé.');
+        }
+        await sauvegardeService.reinitialiserPointZero();
+      }
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.SAUVEGARDE_IMPORTER_FICHIER_DIALOG,
+    creerGestionnaireSecurise(
+      CANAUX_IPC.SAUVEGARDE_IMPORTER_FICHIER_DIALOG,
+      z.unknown(),
+      async () => {
+        if (!sauvegardeService) {
+          throw new ErreurMetier('SERVICE_INDISPONIBLE', 'Service de sauvegarde non initialisé.');
+        }
+        const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+        const res = await dialog.showOpenDialog(win, {
+          title: 'Importer un fichier de base de données (.db / .sqlite)',
+          filters: [{ name: 'Base de données SQLite', extensions: ['db', 'sqlite'] }],
+          properties: ['openFile'],
+        });
+        if (res.canceled || res.filePaths.length === 0) {
+          return { annule: true, chemin: '' };
+        }
+        const cheminSelectionne = res.filePaths[0];
+        sauvegardeService.restaurer(cheminSelectionne);
+        return { annule: false, chemin: cheminSelectionne };
+      }
+    )
+  );
+
+  ipcMain.handle(
+    CANAUX_IPC.LOGS_OUVRIR_VISIONNEUSE,
+    creerGestionnaireSecurise(CANAUX_IPC.LOGS_OUVRIR_VISIONNEUSE, z.unknown(), () => {
+      ouvrirVisionneuseLogs();
+    })
+  );
+
   // --- Lot 2 : Mises à jour automatiques ---
   ipcMain.handle(CANAUX_IPC.MAJ_VERIFIER, async () => {
     if (!updateService) {
@@ -395,7 +480,7 @@ export function enregistrerGestionnairesIpc(
       };
     }
     const info = await updateService.verifierMiseAJour();
-    return { ok: true, donnees: info };
+    return { ok: true, data: info };
   });
 
   ipcMain.handle(CANAUX_IPC.MAJ_INSTALLER, async () => {
@@ -409,7 +494,7 @@ export function enregistrerGestionnairesIpc(
       };
     }
     await updateService.installerEtRedemarrer();
-    return { ok: true, donnees: undefined };
+    return { ok: true, data: undefined };
   });
 
   ipcMain.handle(CANAUX_IPC.MAJ_OBTENIR_ETAT, () => {
@@ -422,6 +507,6 @@ export function enregistrerGestionnairesIpc(
         },
       };
     }
-    return { ok: true, donnees: updateService.obtenirEtat() };
+    return { ok: true, data: updateService.obtenirEtat() };
   });
 }

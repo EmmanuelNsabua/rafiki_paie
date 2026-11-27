@@ -9,6 +9,7 @@ import { formaterMontant } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { AlertDialog } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FicheEmployeSheet } from '@/components/employes/fiche-employe-sheet';
 import { Plus, MoreHorizontal, AlertTriangle, Users, Upload } from 'lucide-react';
@@ -24,6 +25,7 @@ function EmployesContenu() {
   const [afficherInactifs, setAfficherInactifs] = React.useState(false);
   const [ficheOuverte, setFicheOuverte] = React.useState(false);
   const [employeSelectionne, setEmployeSelectionne] = React.useState<Employe | null>(null);
+  const [employeASupprimer, setEmployeASupprimer] = React.useState<Employe | null>(null);
 
   // 1. Liste des employés
   const { data: employes = [], isLoading } = useQuery({
@@ -86,6 +88,20 @@ function EmployesContenu() {
     },
   });
 
+  const mutationSupprimer = useMutation({
+    mutationFn: (id: string) => api.employes.supprimer({ id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employes-liste'] });
+      queryClient.invalidateQueries({ queryKey: ['employes-actifs'] });
+      toast.success('Employé supprimé avec succès');
+      setEmployeASupprimer(null);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Erreur lors de la suppression de l’employé');
+      setEmployeASupprimer(null);
+    },
+  });
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [importEnCours, setImportEnCours] = React.useState(false);
 
@@ -116,6 +132,8 @@ function EmployesContenu() {
         `Importation réussie : ${res.employesCrees} employé(s) créé(s), ${res.employesMisAJour} mis à jour.`
       );
       queryClient.invalidateQueries({ queryKey: ['employes'] });
+      queryClient.invalidateQueries({ queryKey: ['employes-liste'] });
+      queryClient.invalidateQueries({ queryKey: ['employes-actifs'] });
     } catch (err: any) {
       toast.error(`Échec de l import : ${err?.message || err}`);
     } finally {
@@ -341,8 +359,12 @@ function EmployesContenu() {
                             },
                             {
                               label: estActif ? 'Désactiver' : 'Réactiver',
-                              destructive: estActif,
                               onClick: () => handleBasculerActif(emp),
+                            },
+                            {
+                              label: 'Supprimer',
+                              destructive: true,
+                              onClick: () => setEmployeASupprimer(emp),
                             },
                           ]}
                         />
@@ -390,6 +412,41 @@ function EmployesContenu() {
               code_banque: donnees.code_banque,
               salaire_base: donnees.salaire_base,
             });
+          }
+        }}
+      />
+
+      {/* 4. Confirmation de suppression d'employé */}
+      <AlertDialog
+        open={Boolean(employeASupprimer)}
+        onOpenChange={(open) => {
+          if (!open) setEmployeASupprimer(null);
+        }}
+        title="Supprimer l'employé"
+        description={
+          employeASupprimer ? (
+            <div className="space-y-[0.571rem] text-[0.857rem] text-[var(--text-2)]">
+              <p>
+                Êtes-vous sûr de vouloir supprimer{' '}
+                <strong className="text-[var(--text)]">
+                  {employeASupprimer.nom} {employeASupprimer.postnom || ''}{' '}
+                  {employeASupprimer.prenom || ''}
+                </strong>{' '}
+                ?
+              </p>
+              <p className="text-[0.786rem]">
+                Si cet employé figure déjà dans une opération de paie, la suppression sera refusée
+                pour préserver l’historique comptable (vous pourrez le désactiver).
+              </p>
+            </div>
+          ) : null
+        }
+        actionText={mutationSupprimer.isPending ? 'Suppression…' : 'Supprimer'}
+        cancelText="Annuler"
+        destructive
+        onAction={() => {
+          if (employeASupprimer) {
+            mutationSupprimer.mutateAsync(employeASupprimer.id).catch(() => {});
           }
         }}
       />

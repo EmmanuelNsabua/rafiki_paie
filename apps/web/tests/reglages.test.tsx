@@ -16,6 +16,16 @@ describe('Écran Réglages (Section 6.7)', () => {
     window.api = {
       env: { estDev: true },
       pingDb: vi.fn().mockResolvedValue({ success: true, sqlite_version: '3.54.0' }),
+      fenetre: {
+        lirePreferences: vi.fn().mockResolvedValue({
+          ok: true,
+          data: {
+            version: '0.1.2',
+            estAgrandi: false,
+            preferences: { theme: 'systeme', zoom: 1, tailleTexte: 14 },
+          },
+        }),
+      },
       parametres: {
         lire: vi.fn().mockResolvedValue({
           ok: true,

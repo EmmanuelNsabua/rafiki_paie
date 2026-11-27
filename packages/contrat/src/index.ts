@@ -263,6 +263,10 @@ export const ipcEmployesDesactiverInput = z.object({
   id: uuidSchema,
 });
 
+export const ipcEmployesSupprimerInput = z.object({
+  id: uuidSchema,
+});
+
 export const ipcOperationsOuvrirInput = z.object({
   annee: z.number().int().min(2000).max(2100),
   mois: z.number().int().min(1).max(12),
@@ -434,6 +438,7 @@ export interface ElectronApi {
     creer: (input: z.infer<typeof ipcEmployesCreerInput>) => Promise<ReponseIpc<Employe>>;
     modifier: (input: z.infer<typeof ipcEmployesModifierInput>) => Promise<ReponseIpc<Employe>>;
     desactiver: (input: z.infer<typeof ipcEmployesDesactiverInput>) => Promise<ReponseIpc<Employe>>;
+    supprimer: (input: z.infer<typeof ipcEmployesSupprimerInput>) => Promise<ReponseIpc<void>>;
   };
   operations: {
     lister: () => Promise<ReponseIpc<ResumeOperationLister[]>>;
@@ -489,6 +494,12 @@ export interface ElectronApi {
   sauvegarde: {
     exporter: (cheminDestination: string) => Promise<ReponseIpc<string>>;
     restaurerFichier: (cheminFichier: string) => Promise<ReponseIpc<void>>;
+    choisirDossierExport: () => Promise<ReponseIpc<{ annule: boolean; chemin: string }>>;
+    reinitialiserPointZero: () => Promise<ReponseIpc<void>>;
+    importerFichierDialog: () => Promise<ReponseIpc<{ annule: boolean; chemin: string }>>;
+  };
+  logs: {
+    ouvrirVisionneuse: () => Promise<ReponseIpc<void>>;
   };
   fenetre: ApiFenetre;
   maj: ApiMiseAJour;
