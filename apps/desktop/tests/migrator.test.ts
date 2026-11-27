@@ -99,7 +99,7 @@ describe('Migrateur SQLite (schema_migrations & intégrité)', () => {
     // Appliquer les migrations normales
     executerMigrations(db);
 
-    // Simuler l'insertion d'une migration future (ex: 9999) issue d'une version ultérieure de Starclip
+    // Simuler l'insertion d'une migration future (ex: 9999) issue d'une version ultérieure de l'application École RAFIKI
     db.prepare(
       `INSERT INTO schema_migrations (numero, nom, somme_controle, appliquee_le)
        VALUES (?, ?, ?, ?)`
@@ -111,7 +111,9 @@ describe('Migrateur SQLite (schema_migrations & intégrité)', () => {
       executerMigrations(db);
     } catch (e: any) {
       expect(e.code).toBe('BASE_TROP_RECENTE');
-      expect(e.message).toContain('Cette version de Starclip est plus ancienne que vos données');
+      expect(e.message).toContain(
+        'Cette version de l application École RAFIKI est plus ancienne que vos données'
+      );
     }
 
     db.close();

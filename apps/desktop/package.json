@@ -1,6 +1,6 @@
 {
   "name": "@rafiki/desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "repository": {
     "type": "git",
@@ -37,12 +37,12 @@
     "typescript": "5.8.2",
     "wait-on": "8.0.4"
   },
-  "author": "Starclip",
-  "description": "Starclip — Gestionnaire de paie École Rafiki",
+  "author": "École RAFIKI",
+  "description": "École RAFIKI — Gestionnaire de paie",
   "build": {
     "appId": "com.starclip.paie",
-    "productName": "Starclip",
-    "copyright": "© 2026 Starclip",
+    "productName": "École RAFIKI",
+    "copyright": "© 2026 École RAFIKI",
     "publish": {
       "provider": "github",
       "owner": "EmmanuelNsabua",
@@ -68,9 +68,9 @@
         }
       ],
       "icon": "build/icon.ico",
-      "executableName": "Starclip",
-      "artifactName": "Starclip-Setup-${version}.${ext}",
-      "legalTrademarks": "© 2026 Starclip",
+      "executableName": "Ecole-RAFIKI",
+      "artifactName": "Ecole-RAFIKI-Setup-${version}.${ext}",
+      "legalTrademarks": "© 2026 École RAFIKI",
       "verifyUpdateCodeSignature": false
     },
     "nsis": {
@@ -80,7 +80,7 @@
       "deleteAppDataOnUninstall": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Starclip",
+      "shortcutName": "École RAFIKI",
       "runAfterFinish": true,
       "installerLanguages": [
         "fr_FR"

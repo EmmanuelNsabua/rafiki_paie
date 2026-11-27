@@ -1,6 +1,6 @@
-# Procédure de Publication d'une Version — Starclip
+# Procédure de Publication d'une Version — École RAFIKI
 
-Ce document décrit pas à pas la procédure stricte pour préparer, tester et publier une nouvelle version de Starclip.
+Ce document décrit pas à pas la procédure stricte pour préparer, tester et publier une nouvelle version de École RAFIKI.
 
 > [!IMPORTANT]
 > **Règle d'or :** Ne publiez jamais une mise à jour sans l'avoir testée au préalable sur un poste d'essai représentatif de l'environnement de l'école (Windows 10/11 64 bits).
@@ -49,7 +49,7 @@ Ce document décrit pas à pas la procédure stricte pour préparer, tester et p
    node scripts/generate-checksums.mjs
    ```
 
-   Vérifiez que le fichier `release/SHA256SUMS.txt` contient bien l'empreinte de `Starclip-Setup-<version>.exe`.
+   Vérifiez que le fichier `release/SHA256SUMS.txt` contient bien l'empreinte de `Ecole-RAFIKI-Setup-<version>.exe`.
 
 3. **Test d'installation sur poste de test** :
    - Exécutez l'installeur généré dans un environnement vierge.

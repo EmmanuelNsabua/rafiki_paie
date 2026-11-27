@@ -39,7 +39,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
     const cleanup = api.maj.surChangementEtat((info) => {
       if (info.statut === 'telecharge') {
-        toast(`Starclip ${info.versionDisponible || ''} est prête.`, {
+        toast(`École RAFIKI ${info.versionDisponible || ''} est prête.`, {
           description: 'La mise à jour a été téléchargée. Vous pouvez redémarrer pour l installer.',
           duration: Infinity,
           action: {

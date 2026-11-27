@@ -1,4 +1,4 @@
-name: Release Starclip
+name: Release École RAFIKI
 
 on:
   push:

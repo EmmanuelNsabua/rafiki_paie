@@ -1,13 +1,22 @@
-# Journal des versions — Starclip
+# Journal des versions — École RAFIKI
 
-Toutes les modifications notables apportées au logiciel Starclip sont consignées dans ce document.
+Toutes les modifications notables apportées au logiciel École RAFIKI sont consignées dans ce document.
 Ce journal est rédigé en français pour être clair et accessible à l'équipe administrative de l'école.
+
+---
+
+## [0.1.1] — 2026-11-27
+
+### Modifié
+
+- **Renommage officiel de l'application** : Adoption intégrale du nom **École RAFIKI** à travers l'interface utilisateur, la barre de titre, le splash screen, les raccourcis Windows, l'installeur NSIS et la landing page.
+- **Landing page mise à jour** : Nouvelle structure modulaire et refonte des libellés pour refléter la release `v0.1.1` et l'installeur `Ecole-RAFIKI-Setup-0.1.1.exe`.
 
 ---
 
 ## [0.1.0] — 2026-11-27
 
-Première version officielle de **Starclip - Gestionnaire de paie** pour l'École Rafiki.
+Première version officielle du gestionnaire de paie pour l'École Rafiki.
 
 ### Nouveau
 

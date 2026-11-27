@@ -43,7 +43,7 @@ export function Sidebar() {
       className="fixed left-0 top-[2.286rem] bottom-0 w-[16.571rem] bg-[var(--fenetre)] border-r border-[var(--trait)] z-30 flex flex-col justify-between select-none"
     >
       <div>
-        {/* Marque : Tuile Starclip */}
+        {/* Marque : Tuile École RAFIKI */}
         <div className="pt-[1.143rem] px-[1rem] flex items-center gap-[0.714rem]">
           <div
             className="w-[2.286rem] h-[2.286rem] rounded-[0.429rem] overflow-hidden flex items-center justify-center shrink-0 border border-[var(--border)] shadow-xs bg-white"
@@ -53,7 +53,7 @@ export function Sidebar() {
           </div>
           <div className="min-w-0">
             <h1 className="text-[1.143rem] font-bold text-[var(--text)] leading-[1.429rem] truncate">
-              Starclip
+              École RAFIKI
             </h1>
             <p className="text-[0.857rem] font-normal text-[var(--text-2)] leading-[1.143rem] truncate">
               Gestionnaire de paie

@@ -102,7 +102,7 @@ export function executerMigrations(
     if (m.numero > maxNumeroLocal) {
       throw new ErreurMigration(
         'BASE_TROP_RECENTE',
-        'Cette version de Starclip est plus ancienne que vos données. Installez la dernière version.'
+        'Cette version de l application École RAFIKI est plus ancienne que vos données. Installez la dernière version.'
       );
     }
   }

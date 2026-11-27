@@ -7,7 +7,7 @@ export function StarclipLogo({ className = 'w-full h-full' }: { className?: stri
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="Starclip Logo"
+      aria-label="Logo École RAFIKI"
     >
       <rect width="150" height="150" rx="16" fill="white" />
       <path

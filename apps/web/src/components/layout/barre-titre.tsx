@@ -13,7 +13,7 @@ export function BarreTitre() {
   const [tailleTexte, setTailleTexte] = React.useState(14);
   const [zoom, setZoom] = React.useState(1.0);
   const [theme, setTheme] = React.useState<ThemePreference>('systeme');
-  const [version, setVersion] = React.useState('0.1.0');
+  const [version, setVersion] = React.useState('0.1.1');
   const popoverRef = React.useRef<HTMLDivElement>(null);
   const boutonLogoRef = React.useRef<HTMLButtonElement>(null);
 
@@ -45,7 +45,7 @@ export function BarreTitre() {
       .lirePreferences()
       .then((infos) => {
         setEstAgrandi(infos.estAgrandi);
-        setVersion(infos.version || '0.1.0');
+        setVersion(infos.version || '0.1.1');
         if (infos.preferences) {
           const { tailleTexte: t, zoom: z, theme: th } = infos.preferences;
           if (t) appliquerTailleTexte(t);
@@ -209,7 +209,7 @@ export function BarreTitre() {
 
         {/* Titre de la fenêtre */}
         <span className="text-[12px] leading-[16px] font-medium text-[var(--texte)]">
-          Starclip — Gestionnaire de paie
+          École RAFIKI — Gestionnaire de paie
         </span>
       </div>
 

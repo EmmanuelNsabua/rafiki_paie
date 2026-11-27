@@ -45,7 +45,9 @@ if (app?.setAppUserModelId) {
 const verrouInstanceUnique =
   typeof app?.requestSingleInstanceLock === 'function' ? app.requestSingleInstanceLock() : true;
 if (!verrouInstanceUnique) {
-  log.warn('[MAIN] Une instance de Starclip est déjà en cours d exécution. Fermeture immédiate.');
+  log.warn(
+    '[MAIN] Une instance de l École RAFIKI est déjà en cours d exécution. Fermeture immédiate.'
+  );
   app.quit();
 }
 
@@ -101,7 +103,7 @@ function createWindow(splashWindow: BrowserWindow | null = null): void {
   Menu.setApplicationMenu(null);
 
   mainWindow = new BrowserWindow({
-    title: 'Starclip',
+    title: 'École RAFIKI',
     frame: false,
     show: false,
     autoHideMenuBar: true,
@@ -328,9 +330,9 @@ app.whenReady().then(async () => {
     if (err?.code === 'BASE_TROP_RECENTE') {
       log.error(`[MAIN] Échec démarrage : ${err.message}`);
       dialog.showErrorBox(
-        'Version de Starclip obsolète',
+        'Version de l École RAFIKI obsolète',
         err.message ||
-          'Cette version de Starclip est plus ancienne que vos données. Installez la dernière version.'
+          'Cette version de l application École RAFIKI est plus ancienne que vos données. Installez la dernière version.'
       );
       if (splashWindow && !splashWindow.isDestroyed()) {
         splashWindow.destroy();

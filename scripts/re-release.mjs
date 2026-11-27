@@ -1,8 +1,8 @@
 import { execSync } from 'node:child_process';
 
-const tag = process.argv[2] || 'v0.1.0';
+const tag = process.argv[2] || 'v0.1.1';
 const commitMessage =
-  process.argv[3] || `chore(release): ${tag} - compilation de apps/desktop avant les tests CI`;
+  process.argv[3] || `chore(release): ${tag} - renommage en École RAFIKI et release ${tag}`;
 
 function run(cmd, ignoreError = false) {
   console.log(`\n> ${cmd}`);

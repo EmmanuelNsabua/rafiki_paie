@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { obtenirHtmlSplashScreen } from '../src/main/splash';
 
 describe('Splash Screen (Démarrage élégant type DBeaver)', () => {
-  it('génère un HTML valide avec la structure visuelle Starclip et DBeaver', () => {
+  it('génère un HTML valide avec la structure visuelle École RAFIKI et DBeaver', () => {
     const html = obtenirHtmlSplashScreen();
 
-    expect(html).toContain('Starclip');
-    expect(html).toContain('STARCLIP');
+    expect(html).toContain('École RAFIKI');
+    expect(html).toContain('ÉCOLE RAFIKI');
     expect(html).toContain('Gestionnaire de paie');
     expect(html).toContain('status-text');
     expect(html).toContain('progress-bar');

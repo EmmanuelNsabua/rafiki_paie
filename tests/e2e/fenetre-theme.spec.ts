@@ -52,7 +52,7 @@ test.describe.serial('Groupe G — Fenêtre sans cadre, barre de titre et thème
     }
   });
 
-  test('1. Menu.getApplicationMenu() vaut null et fenêtre sans cadre nommée "Starclip"', async () => {
+  test('1. Menu.getApplicationMenu() vaut null et fenêtre sans cadre nommée "École RAFIKI"', async () => {
     const menuEstNull = await app.evaluate(({ Menu }) => Menu.getApplicationMenu() === null);
     expect(menuEstNull).toBe(true);
 
@@ -60,7 +60,7 @@ test.describe.serial('Groupe G — Fenêtre sans cadre, barre de titre et thème
       const win = BrowserWindow.getAllWindows()[0];
       return win?.getTitle();
     });
-    expect(titreFenetre).toMatch(/Starclip|Gestionnaire de paie/);
+    expect(titreFenetre).toMatch(/École RAFIKI|RAFIKI|Gestionnaire de paie/);
 
     // Page d'accueil par défaut est Journal de paie
     await page.waitForURL(/\/journal-de-paie/, { timeout: 5000 });

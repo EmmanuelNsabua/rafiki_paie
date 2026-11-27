@@ -1,6 +1,6 @@
-# Guide d'Installation et d'Utilisation — Starclip
+# Guide d'Installation et d'Utilisation — École RAFIKI
 
-Bienvenue dans le guide officiel de **Starclip - Gestionnaire de paie** pour l'École Rafiki.
+Bienvenue dans le guide officiel de **École RAFIKI - Gestionnaire de paie**.
 Ce guide a été rédigé sans jargon technique pour vous accompagner pas à pas lors de la première installation et de l'utilisation quotidienne du logiciel.
 
 ---
@@ -23,11 +23,11 @@ Pour faire fonctionner Starclip dans les meilleures conditions :
 
 ## 2. Téléchargement et Somme de contrôle
 
-1. Téléchargez le fichier d'installation officiel : `Starclip-Setup-<version>.exe` depuis la page des publications (Releases).
+1. Téléchargez le fichier d'installation officiel : `Ecole-RAFIKI-Setup-<version>.exe` depuis la page des publications (Releases).
 2. _(Optionnel mais recommandé)_ **Vérification de l'intégrité (SHA256)** :
    Pour vérifier que le fichier téléchargé n'a pas été altéré, vous pouvez ouvrir une invite PowerShell et taper :
    ```powershell
-   Get-FileHash .\Starclip-Setup-0.1.0.exe -Algorithm SHA256
+   Get-FileHash .\Ecole-RAFIKI-Setup-0.1.1.exe -Algorithm SHA256
    ```
    L'empreinte obtenue doit être rigoureusement identique à celle indiquée dans le fichier `SHA256SUMS.txt`.
 

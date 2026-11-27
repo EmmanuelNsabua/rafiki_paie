@@ -58,7 +58,7 @@ export function obtenirCheminFichier(file: File): string {
   if (typeof window === 'undefined' || !window.api) {
     throw new ErreurMetierClient(
       'ENVIRONNEMENT_INVALIDE',
-      'Ouvrez cette page dans l application Starclip'
+      'Ouvrez cette page dans l application École RAFIKI'
     );
   }
   if (typeof window.api.obtenirCheminFichier === 'function') {
@@ -70,7 +70,7 @@ export function obtenirCheminFichier(file: File): string {
 
   throw new ErreurMetierClient(
     'FONCTION_NON_GEREE',
-    'Cette version de Starclip ne gère pas encore cette fonction, mettez-la à jour'
+    'Cette version de l application École RAFIKI ne gère pas encore cette fonction, mettez-la à jour'
   );
 }
 
@@ -78,7 +78,7 @@ async function executerIpc<T>(appel: (api: ElectronApi) => Promise<ReponseIpc<T>
   if (typeof window === 'undefined' || !window.api) {
     throw new ErreurMetierClient(
       'ENVIRONNEMENT_INVALIDE',
-      'Ouvrez cette page dans l application Starclip'
+      'Ouvrez cette page dans l application École RAFIKI'
     );
   }
 

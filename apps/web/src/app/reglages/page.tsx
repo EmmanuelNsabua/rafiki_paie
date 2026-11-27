@@ -780,7 +780,7 @@ export default function ReglagesPage() {
                           `Téléchargement de la mise à jour en cours (${info.progression || 0}%)…`
                         );
                       } else {
-                        toast.success('Starclip est à jour (v0.1.0).');
+                        toast.success("L'application École RAFIKI est à jour (v0.1.1).");
                       }
                     } catch (err: any) {
                       toast.error(`Erreur vérification : ${err?.message || err}`);

@@ -1,6 +1,6 @@
 {
   "name": "rafiki-paie",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "repository": {
     "type": "git",
@@ -34,6 +34,9 @@
     "test:e2e": "playwright test",
     "test:api": "node scripts/run-api.mjs composer test",
     "api:serve": "node scripts/run-api.mjs php artisan serve",
+    "dev:landing": "npm --prefix landing run dev",
+    "build:landing": "npm --prefix landing run build",
+    "preview:landing": "npm --prefix landing run preview",
     "postinstall": "npm run postinstall --workspace=apps/desktop --if-present",
     "release": "node scripts/re-release.mjs"
   },

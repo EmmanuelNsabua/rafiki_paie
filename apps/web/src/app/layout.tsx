@@ -4,8 +4,8 @@ import { Providers } from '@/components/providers';
 import { Shell } from '@/components/layout/shell';
 
 export const metadata: Metadata = {
-  title: 'Starclip - Gestionnaire de paie',
-  description: "Starclip - Logiciel de paie de l'École Rafiki",
+  title: 'École RAFIKI - Gestionnaire de paie',
+  description: "Logiciel de paie de l'École RAFIKI",
   icons: {
     icon: '/icon_starclip.svg',
   },

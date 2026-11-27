@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>École RAFIKI | Logiciel de gestion de paie</title>
+    <meta
+      name="description"
+      content="Simplifiez le calcul des salaires, gardez vos habitudes de gestion et générez vos fichiers bancaires en quelques clics."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              starclip: {
+                cyan: '#00b4d8',
+                blue: '#0096c7',
+                navy: '#007791',
+                dark: '#0c0d10',
+                surface: '#111318',
+                card: '#161920',
+                'card-hover': '#1c202a',
+                border: 'rgba(255, 255, 255, 0.08)',
+                'border-highlight': 'rgba(0, 180, 216, 0.35)',
+                text: '#f3f4f6',
+                muted: '#9ca3af',
+                dim: '#6b7280',
+              },
+            },
+            fontFamily: {
+              sans: ['Poppins', 'Segoe UI', 'system-ui', 'sans-serif'],
+              mono: ['"IBM Plex Sans"', 'monospace'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #0c0d10;
+        color: #f3f4f6;
+        font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      ::selection {
+        background: rgba(0, 180, 216, 0.3);
+        color: #ffffff;
+      }
+
+      /* Custom glowing subtle gradient backdrop like OpenAI Codex */
+      .codex-grid-bg {
+        background-image:
+          radial-gradient(circle at 50% 0%, rgba(0, 180, 216, 0.12) 0%, transparent 60%),
+          linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size:
+          100% 100%,
+          48px 48px,
+          48px 48px;
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-starclip-dark text-starclip-text antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
