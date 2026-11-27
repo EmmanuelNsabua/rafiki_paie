@@ -26,6 +26,11 @@ jobs:
       - name: Installation des dépendances
         run: npm ci
 
+      - name: Construction des packages internes (contrat et calcul)
+        run: |
+          npm run build --workspace=@rafiki/contrat
+          npm run build --workspace=@rafiki/calcul
+
       - name: Vérification du typage TypeScript
         run: npm run typecheck
 

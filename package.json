@@ -20,7 +20,7 @@
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:desktop": "npm run dev --workspace=apps/desktop",
     "db:seed": "npm run db:seed --workspace=apps/desktop",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build --workspace=@rafiki/contrat && npm run build --workspace=@rafiki/calcul && npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
