@@ -2,6 +2,10 @@
   "name": "@rafiki/desktop",
   "version": "0.1.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EmmanuelNsabua/rafiki_paie.git"
+  },
   "main": "./dist/main/index.js",
   "scripts": {
     "build": "tsup && node -e \"require('fs').cpSync('migrations', 'dist/main/migrations', { recursive: true })\"",
@@ -39,6 +43,11 @@
     "appId": "com.starclip.paie",
     "productName": "Starclip",
     "copyright": "© 2026 Starclip",
+    "publish": {
+      "provider": "github",
+      "owner": "EmmanuelNsabua",
+      "repo": "rafiki_paie"
+    },
     "directories": {
       "output": "release",
       "buildResources": "build"
