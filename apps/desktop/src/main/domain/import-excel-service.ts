@@ -248,8 +248,6 @@ export class ImportExcelService {
       const maladieVal = colIndices['maladie'] !== undefined ? row[colIndices['maladie']] : 0;
       const congeVal = colIndices['conge'] !== undefined ? row[colIndices['conge']] : 0;
       const absenceVal = colIndices['absence'] !== undefined ? row[colIndices['absence']] : 0;
-      const numeroVal =
-        colIndices['numero'] !== undefined ? Number(row[colIndices['numero']]) : undefined;
 
       const erreurs: string[] = [];
       const avertissements: string[] = [];
@@ -330,10 +328,7 @@ export class ImportExcelService {
       }
 
       const donnees: DonneesLigneImportExcel = {
-        numero:
-          Number.isFinite(numeroVal) && (numeroVal as number) > 0
-            ? (numeroVal as number)
-            : undefined,
+        numero: undefined, // Laisser l'auto-incrémentation à SQLite
         nom: nomBrut,
         postnom: postnomBrut || undefined,
         prenom: prenomBrut || undefined,
@@ -433,9 +428,8 @@ export class ImportExcelService {
             mapLigneVersEmployeId.set(ligne.indexLigne, employeExistantId);
           }
         } else {
-          // Création du nouvel employé
+          // Création du nouvel employé (numéro auto-incrémenté par SQLite)
           const nouvelEmploye = this.employeService.creer({
-            numero: donnees.numero,
             nom: donnees.nom,
             postnom: donnees.postnom,
             prenom: donnees.prenom,

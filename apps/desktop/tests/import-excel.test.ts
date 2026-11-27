@@ -163,4 +163,40 @@ describe('ImportExcelService (Phase 3)', () => {
     const employes = employeService.lister();
     expect(employes[0].salaire_base).toBe('400.00');
   });
+
+  it('ne provoque aucune collision si un employé avec le numéro 1 existe déjà en base', () => {
+    // Insérer un employé existant qui a le numéro 1
+    const emp1 = employeService.creer({
+      nom: 'MUKENDI',
+      postnom: 'TSHIBANGU',
+      prenom: 'JEAN',
+      salaire_base: '350.00',
+    });
+    expect(emp1.numero).toBe(1);
+
+    // Importer le classeur réel (contenant KABONGO ILUNGA GLOIRE avec N°=1 dans Excel)
+    const res = importService.executer({
+      cheminFichier: cheminClasseurReel,
+      annee: 2026,
+      mois: 11,
+      modeDoublon: 'mettre_a_jour',
+      creerOperation: true,
+      lignesAExclure: [],
+    });
+
+    expect(res.succes).toBe(true);
+    expect(res.employesCrees).toBe(1);
+
+    const tousEmployes = employeService.lister();
+    expect(tousEmployes).toHaveLength(2);
+
+    const mukendi = tousEmployes.find((e) => e.nom === 'MUKENDI');
+    const kabongo = tousEmployes.find((e) => e.nom === 'KABONGO');
+
+    expect(mukendi).toBeDefined();
+    expect(mukendi?.numero).toBe(1);
+
+    expect(kabongo).toBeDefined();
+    expect(kabongo?.numero).toBe(2); // Auto-incrémenté sans collision !
+  });
 });

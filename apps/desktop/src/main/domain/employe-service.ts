@@ -97,17 +97,18 @@ export class EmployeService {
         .prepare('SELECT coalesce(max(numero), 0) as max_num FROM employe')
         .get() as { max_num: number };
       numeroFinal = maxRow.max_num + 1;
-    }
-
-    // Vérifier l'unicité du numéro
-    const existant = this.db
-      .prepare('SELECT id FROM employe WHERE numero = ? AND supprime_le IS NULL')
-      .get(numeroFinal);
-    if (existant) {
-      throw new ErreurMetier(
-        'NUMERO_EMPLOYE_DEJA_UTILISE',
-        `Le numéro d employé ${numeroFinal} est déjà attribué.`
-      );
+    } else {
+      // Si un numéro a été fourni, vérifier s'il est déjà utilisé pour éviter les collisions
+      const existant = this.db
+        .prepare('SELECT id FROM employe WHERE numero = ? AND supprime_le IS NULL')
+        .get(numeroFinal);
+      if (existant) {
+        // En cas de collision, attribuer automatiquement le numéro suivant
+        const maxRow = this.db
+          .prepare('SELECT coalesce(max(numero), 0) as max_num FROM employe')
+          .get() as { max_num: number };
+        numeroFinal = maxRow.max_num + 1;
+      }
     }
 
     const id = crypto.randomUUID();

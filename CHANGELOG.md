@@ -5,6 +5,14 @@ Ce journal est rédigé en français pour être clair et accessible à l'équipe
 
 ---
 
+## [0.1.2] — 2026-11-27
+
+### Corrigé
+
+- **Importation Excel sans collision de numéros** : L'attribution des numéros d'employés est désormais entièrement gérée par la base de données locale SQLite de manière auto-incrémentale (`coalesce(max(numero), 0) + 1`). Le numéro de ligne Excel n'est plus forcé comme matricule système, éliminant tout risque de collision ou de rejet d'importation lorsqu'un employé de numéro 1 ou identique existe déjà dans l'application.
+
+---
+
 ## [0.1.1] — 2026-11-27
 
 ### Modifié
