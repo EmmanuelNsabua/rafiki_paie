@@ -26,7 +26,9 @@ log.transports.console.level = 'info';
 // Stabilisation absolue du dossier userData pour préserver la base SQLite et les sauvegardes
 if (app?.getPath && app?.setPath) {
   try {
-    const dossierUserDataStable = path.join(app.getPath('appData'), 'rafiki-paie');
+    const customUserData = process.env.ELECTRON_USER_DATA || process.env.RAFIKI_USER_DATA;
+    const dossierUserDataStable =
+      customUserData || path.join(app.getPath('appData'), 'rafiki-paie');
     app.setPath('userData', dossierUserDataStable);
     log.info(`[MAIN] Chemin userData stabilisé : ${dossierUserDataStable}`);
   } catch (err: any) {

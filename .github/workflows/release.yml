@@ -1,0 +1,66 @@
+name: Release Starclip
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release Windows (NSIS)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Configuration de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Installation des dépendances
+        run: npm ci
+
+      - name: Vérification du typage TypeScript
+        run: npm run typecheck
+
+      - name: Contrôle de conformité ESLint
+        run: npm run lint
+
+      - name: Contrôle de formatage Prettier
+        run: npm run format:check
+
+      - name: Tests unitaires du moteur de calcul
+        run: npm run test:calcul
+
+      - name: Tests unitaires et d'intégration Desktop
+        run: npm run test --workspace=apps/desktop
+
+      - name: Tests unitaires Web
+        run: cd apps/web && npx vitest run
+
+      - name: Construction de l'installeur Windows (NSIS)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:desktop
+
+      - name: Génération des sommes de contrôle SHA256
+        run: node scripts/generate-checksums.mjs
+
+      - name: Publication de la Release GitHub
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.yml
+            apps/desktop/release/*.blockmap
+            apps/desktop/release/SHA256SUMS.txt
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false

@@ -54,11 +54,31 @@ export function estDansElectron(): boolean {
   return typeof window !== 'undefined' && typeof window.api !== 'undefined';
 }
 
+export function obtenirCheminFichier(file: File): string {
+  if (typeof window === 'undefined' || !window.api) {
+    throw new ErreurMetierClient(
+      'ENVIRONNEMENT_INVALIDE',
+      'Ouvrez cette page dans l application Starclip'
+    );
+  }
+  if (typeof window.api.obtenirCheminFichier === 'function') {
+    const chemin = window.api.obtenirCheminFichier(file);
+    if (chemin) return chemin;
+  }
+  const cheminLegacy = (file as any)?.path;
+  if (cheminLegacy) return cheminLegacy;
+
+  throw new ErreurMetierClient(
+    'FONCTION_NON_GEREE',
+    'Cette version de Starclip ne gère pas encore cette fonction, mettez-la à jour'
+  );
+}
+
 async function executerIpc<T>(appel: (api: ElectronApi) => Promise<ReponseIpc<T>>): Promise<T> {
   if (typeof window === 'undefined' || !window.api) {
     throw new ErreurMetierClient(
       'ENVIRONNEMENT_INVALIDE',
-      'Cette page doit être ouverte dans l application Paie Rafiki.'
+      'Ouvrez cette page dans l application Starclip'
     );
   }
 
@@ -173,6 +193,8 @@ export const api = {
     restaurerFichier: (cheminFichier: string): Promise<void> =>
       executerIpc((a) => a.sauvegarde.restaurerFichier(cheminFichier)),
   },
+
+  obtenirCheminFichier,
 
   fenetre: {
     lirePreferences: (): Promise<InfosFenetre> => executerIpc((a) => a.fenetre.lirePreferences()),

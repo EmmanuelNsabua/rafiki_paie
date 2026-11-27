@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import { CANAUX_IPC } from '@rafiki/contrat/canaux';
 import type {
   ElectronApi,
@@ -199,6 +199,16 @@ const api: ElectronApi = {
         ipcRenderer.removeListener('maj:changementEtat', handler);
       };
     },
+  },
+  obtenirCheminFichier: (file: File): string => {
+    try {
+      if (typeof webUtils !== 'undefined' && typeof webUtils.getPathForFile === 'function') {
+        return webUtils.getPathForFile(file);
+      }
+    } catch {
+      // Fallback
+    }
+    return (file as any)?.path || '';
   },
 };
 

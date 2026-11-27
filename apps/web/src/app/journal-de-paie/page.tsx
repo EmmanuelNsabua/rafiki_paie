@@ -78,9 +78,12 @@ export default function JournalDePaiePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const cheminFichier = (file as any).path;
-    if (!cheminFichier) {
-      toast.error('Veuillez exécuter l application desktop pour importer un classeur local.');
+    let cheminFichier = '';
+    try {
+      cheminFichier = api.obtenirCheminFichier(file);
+    } catch (err: any) {
+      toast.error(err?.message || 'Impossible d obtenir le chemin du fichier sélectionné.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 

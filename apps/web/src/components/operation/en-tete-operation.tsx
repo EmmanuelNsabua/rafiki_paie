@@ -129,7 +129,6 @@ export function EnTeteOperation({
             title="Retour au Journal de paie"
           >
             <ArrowLeft className="w-[1rem] h-[1rem]" />
-            <span>Journal de paie</span>
           </Button>
           <h1 className="text-[1.714rem] font-bold text-[var(--text)] leading-[2.286rem] tracking-tight">
             Opération mensuelle

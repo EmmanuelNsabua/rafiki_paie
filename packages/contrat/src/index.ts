@@ -492,6 +492,7 @@ export interface ElectronApi {
   };
   fenetre: ApiFenetre;
   maj: ApiMiseAJour;
+  obtenirCheminFichier?: (file: File) => string;
 }
 
 // ============================================================================

@@ -93,10 +93,12 @@ function EmployesContenu() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Dans Electron, file.path contient le chemin absolu du fichier
-    const cheminFichier = (file as any).path;
-    if (!cheminFichier) {
-      toast.error('Veuillez exécuter l application desktop pour importer un fichier local.');
+    let cheminFichier = '';
+    try {
+      cheminFichier = api.obtenirCheminFichier(file);
+    } catch (err: any) {
+      toast.error(err?.message || 'Impossible d obtenir le chemin du fichier sélectionné.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
