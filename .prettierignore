@@ -5,6 +5,9 @@ dist/
 out/
 .next/
 release/
+apps/desktop/release/
 vendor/
 next-env.d.ts
 *.tsbuildinfo
+supabase/
+
