@@ -29,10 +29,11 @@ jobs:
       - name: Téléchargement du binaire Electron
         run: node node_modules/electron/install.js
 
-      - name: Construction des packages internes (contrat et calcul)
+      - name: Construction des packages (contrat, calcul et desktop)
         run: |
           npm run build --workspace=@rafiki/contrat
           npm run build --workspace=@rafiki/calcul
+          npm run build --workspace=apps/desktop
 
       - name: Vérification du typage TypeScript
         run: npm run typecheck

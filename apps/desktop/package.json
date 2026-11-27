@@ -11,7 +11,7 @@
     "dev": "npm run build && concurrently -k \"npm run dev --workspace=@rafiki/web\" \"wait-on http://localhost:3000 && node ../../scripts/run-electron-gui.mjs\"",
     "build:electron": "electron-builder --win nsis",
     "build:electron:dir": "electron-builder --dir",
-    "test": "node ../../scripts/run-desktop-tests.mjs run apps/desktop/tests",
+    "test": "npm run build && node ../../scripts/run-desktop-tests.mjs run apps/desktop/tests",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

@@ -30,7 +30,8 @@
     "test:e2e": "playwright test",
     "test:api": "node scripts/run-api.mjs composer test",
     "api:serve": "node scripts/run-api.mjs php artisan serve",
-    "postinstall": "npm run postinstall --workspace=apps/desktop --if-present"
+    "postinstall": "npm run postinstall --workspace=apps/desktop --if-present",
+    "release": "node scripts/re-release.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.1",
