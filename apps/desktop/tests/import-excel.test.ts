@@ -199,4 +199,33 @@ describe('ImportExcelService (Phase 3)', () => {
     expect(kabongo).toBeDefined();
     expect(kabongo?.numero).toBe(2); // Auto-incrémenté sans collision !
   });
+
+  it('réimporte sans erreur SQLITE_CONSTRAINT_UNIQUE après suppression logique d une opération de la même période', () => {
+    const res1 = importService.executer({
+      cheminFichier: cheminClasseurReel,
+      annee: 2026,
+      mois: 11,
+      modeDoublon: 'mettre_a_jour',
+      creerOperation: true,
+      lignesAExclure: [],
+    });
+    expect(res1.operationCreeeId).toBeDefined();
+
+    // Supprimer l'opération (soft-delete)
+    operationService.supprimer(res1.operationCreeeId!);
+    expect(operationService.lister()).toHaveLength(0);
+
+    // Ré-importer pour la même période (11/2026) : ne doit pas lever SQLITE_CONSTRAINT_UNIQUE
+    const res2 = importService.executer({
+      cheminFichier: cheminClasseurReel,
+      annee: 2026,
+      mois: 11,
+      modeDoublon: 'mettre_a_jour',
+      creerOperation: true,
+      lignesAExclure: [],
+    });
+    expect(res2.succes).toBe(true);
+    expect(res2.operationCreeeId).toBeDefined();
+    expect(operationService.lister()).toHaveLength(1);
+  });
 });

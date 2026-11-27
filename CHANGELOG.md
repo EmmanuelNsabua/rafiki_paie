@@ -5,6 +5,16 @@ Ce journal est rédigé en français pour être clair et accessible à l'équipe
 
 ---
 
+## [0.1.4] — 2026-11-27
+
+### Corrigé
+
+- **Erreur `SQLITE_CONSTRAINT_UNIQUE` lors de l'import Excel** : Lorsqu'une opération de paie pour une période donnée (mois/année) avait été précédemment supprimée, la réouverture ou la ré-importation sur cette même période échouait sur la contrainte d'unicité SQLite. La période supprimée est désormais purgée proprement avant réouverture.
+- **Réinitialisation au point zéro (`sauvegarde-service.ts`)** : Correction des noms de tables et d'identifiants (`journal`, `parametre.id = 'default'`) lors de la réinitialisation complète.
+- **Logs techniques enrichis** : Inclusion du message SQLite exact (sans données personnelles) dans la Fiche Journal des Logs pour un diagnostic immédiat.
+
+---
+
 ## [0.1.3] — 2026-11-27
 
 ### Nouveau

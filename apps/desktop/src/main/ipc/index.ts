@@ -125,8 +125,11 @@ export function creerGestionnaireSecurise<TIn, TOut>(
       // Erreur inattendue : log technique anonymisé (ZÉRO montant, nom, téléphone, code banque)
       const errNom = err?.name || 'Error';
       const errCode = err?.code || 'INATTENDUE';
+      const errMsg = err?.message ? String(err.message).slice(0, 180) : '';
       if (process.env.NODE_ENV !== 'test') {
-        log.error(`[IPC ERREUR TECHNIQUE] Canal: ${nomCanal} | Type: ${errNom} | Code: ${errCode}`);
+        log.error(
+          `[IPC ERREUR TECHNIQUE] Canal: ${nomCanal} | Type: ${errNom} | Code: ${errCode} | Détail: ${errMsg}`
+        );
       }
 
       return {

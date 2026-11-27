@@ -415,7 +415,7 @@ export class SauvegardeService {
       this.options.db.prepare('DELETE FROM ligne_paie').run();
       this.options.db.prepare('DELETE FROM operation_paie').run();
       this.options.db.prepare('DELETE FROM employe').run();
-      this.options.db.prepare('DELETE FROM journal_activite').run();
+      this.options.db.prepare('DELETE FROM journal').run();
 
       this.options.db
         .prepare(
@@ -425,19 +425,19 @@ export class SauvegardeService {
                unite_arrondi = 10,
                code_banque_defaut = '840',
                mis_a_jour_le = ?
-           WHERE id = 1`
+           WHERE id = 'default'`
         )
         .run(maintenant);
 
       this.options.db
         .prepare(
-          `INSERT INTO journal_activite (id, action, entite, entite_id, detail, cree_le)
-           VALUES (?, 'REINITIALISATION_BASE', 'parametre', '1', ?, ?)`
+          `INSERT INTO journal (id, horodatage, action, entite, entite_id, detail)
+           VALUES (?, ?, 'REINITIALISATION_BASE', 'parametre', 'default', ?)`
         )
         .run(
           crypto.randomUUID(),
-          'Réinitialisation complète de la base de données au point zéro',
-          maintenant
+          maintenant,
+          'Réinitialisation complète de la base de données au point zéro'
         );
     });
 

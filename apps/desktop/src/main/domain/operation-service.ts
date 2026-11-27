@@ -310,6 +310,18 @@ export class OperationService {
     const maintenant = new Date().toISOString();
 
     const tx = this.db.transaction(() => {
+      // 0. Purger une éventuelle ancienne opération supprimée logiquement sur la même période
+      // pour éviter une collision sur la contrainte UNIQUE(annee, mois)
+      const opSupprimee = this.db
+        .prepare(
+          'SELECT id FROM operation_paie WHERE annee = ? AND mois = ? AND supprime_le IS NOT NULL'
+        )
+        .get(annee, mois) as { id: string } | undefined;
+      if (opSupprimee) {
+        this.db.prepare('DELETE FROM ligne_paie WHERE operation_id = ?').run(opSupprimee.id);
+        this.db.prepare('DELETE FROM operation_paie WHERE id = ?').run(opSupprimee.id);
+      }
+
       // 1. Insérer l'opération
       this.db
         .prepare(
@@ -402,6 +414,9 @@ export class OperationService {
     const maintenant = new Date().toISOString();
 
     const tx = this.db.transaction(() => {
+      const stmtDeleteSupprimee = this.db.prepare(
+        'DELETE FROM ligne_paie WHERE operation_id = ? AND employe_id = ? AND supprime_le IS NOT NULL'
+      );
       const stmt = this.db.prepare(`
         INSERT INTO ligne_paie (
           id, operation_id, employe_id, numero, nom, postnom, prenom, fonction,
@@ -414,6 +429,7 @@ export class OperationService {
       `);
 
       for (const e of aAjouter) {
+        stmtDeleteSupprimee.run(operationId, e.id);
         stmt.run(
           crypto.randomUUID(),
           operationId,

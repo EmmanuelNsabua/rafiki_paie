@@ -458,6 +458,8 @@ export class ImportExcelService {
             );
           }
           operationId = op.id;
+          // Ajouter les éventuels employés nouvellement créés à l'opération ouverte
+          this.operationService.ajouterNouveauxEmployes(operationId);
         } else {
           // Déterminer jours ouvrables par défaut de l'opération
           const joursOuvrablesPremier = lignesAImporter[0]?.donnees.jours_ouvrables || 22;
