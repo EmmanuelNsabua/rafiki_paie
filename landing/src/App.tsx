@@ -5,14 +5,14 @@ import Hero from './components/Hero';
 import DownloadSection from './components/DownloadSection';
 
 export default function App() {
-  const releaseVersion = 'v0.1.4';
+  const releaseVersion = 'v0.1.5';
   const downloadUrl =
-    'https://github.com/EmmanuelNsabua/rafiki_paie/releases/download/v0.1.4/Ecole-RAFIKI-Setup-0.1.4.exe';
-  const releaseUrl = 'https://github.com/EmmanuelNsabua/rafiki_paie/releases/tag/v0.1.4';
+    'https://github.com/EmmanuelNsabua/rafiki_paie/releases/download/v0.1.5/Ecole-RAFIKI-Setup-0.1.5.exe';
+  const releaseUrl = 'https://github.com/EmmanuelNsabua/rafiki_paie/releases/tag/v0.1.5';
   const repoUrl = 'https://github.com/EmmanuelNsabua/rafiki_paie';
   const sha256 = 'Calculé automatiquement à chaque release';
   const psCommand =
-    'Get-FileHash "$HOME\\Downloads\\Ecole-RAFIKI-Setup-0.1.4.exe" -Algorithm SHA256';
+    'Get-FileHash "$HOME\\Downloads\\Ecole-RAFIKI-Setup-0.1.5.exe" -Algorithm SHA256';
 
   return (
     <div className="min-h-screen bg-[#0c0d10] text-[#f3f4f6] selection:bg-[#00b4d8]/30 selection:text-white">

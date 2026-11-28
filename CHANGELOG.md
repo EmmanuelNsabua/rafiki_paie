@@ -5,6 +5,14 @@ Ce journal est rédigé en français pour être clair et accessible à l'équipe
 
 ---
 
+## [0.1.5] — 2026-11-27
+
+### Amélioré
+
+- **Splash Screen officiel de l'École RAFIKI** : Intégration du logo officiel de l'école tel quel, adoption de la charte couleur officielle (bleu `#168FB8`, vert `#8CD16D`, marron `#7A421D` sur fond blanc), et affichage dynamique de la version de l'application (`v0.1.5`).
+
+---
+
 ## [0.1.4] — 2026-11-27
 
 ### Corrigé

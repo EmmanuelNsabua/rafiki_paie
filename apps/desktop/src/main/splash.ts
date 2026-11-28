@@ -1,10 +1,28 @@
-import { BrowserWindow } from 'electron';
+import { app, BrowserWindow } from 'electron';
+import { LOGO_RAFIKI_DATA_URI } from './logo-rafiki';
 
 /**
- * Génère le code HTML complet du Splash Screen inspiré de DBeaver.
+ * Retourne la version courante de l'application de manière dynamique.
+ */
+function obtenirVersionApplication(): string {
+  try {
+    if (typeof app?.getVersion === 'function') {
+      const v = app.getVersion();
+      if (v) return v;
+    }
+  } catch {
+    // Fallback hors contexte Electron complet (ex: tests unitaires)
+  }
+  return process.env.npm_package_version || '0.1.4';
+}
+
+/**
+ * Génère le code HTML complet du Splash Screen aux couleurs et avec le logo officiel de l'École RAFIKI.
  * Tout est embarqué en inline pour une exécution instantanée sans accès disque.
  */
 export function obtenirHtmlSplashScreen(): string {
+  const version = obtenirVersionApplication();
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -24,158 +42,153 @@ export function obtenirHtmlSplashScreen(): string {
       height: 100vh;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #091412;
-      color: #ffffff;
+      background: #ffffff;
+      color: #1e293b;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
       position: relative;
+    }
+    .top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #8CD16D 0%, #168FB8 55%, #7A421D 100%);
     }
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 24px 28px 0 28px;
+      padding: 22px 28px 0 28px;
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .brand-icon {
-      width: 24px;
-      height: 24px;
-      color: #ffffff;
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
     }
     .brand-name {
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: 2px;
-      color: #e2e8f0;
+      letter-spacing: 1.5px;
+      color: #7A421D;
       text-transform: uppercase;
     }
     .version-badge {
       font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
+      font-weight: 700;
+      padding: 3px 10px;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #94a3b8;
+      background: rgba(22, 143, 184, 0.10);
+      border: 1px solid rgba(22, 143, 184, 0.25);
+      color: #168FB8;
+      font-family: Consolas, monospace;
     }
     .main-content {
       padding: 0 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
     }
     .title-group {
-      max-width: 330px;
+      max-width: 315px;
     }
     .app-title {
-      font-size: 34px;
+      font-size: 32px;
       font-weight: 900;
       letter-spacing: -0.5px;
       line-height: 1.1;
-      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #168FB8;
     }
     .app-subtitle {
       font-size: 13px;
       font-weight: 700;
-      color: #96a2b3ff;
+      color: #7A421D;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      margin-top: 5px;
-    }
-    .app-desc {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-top: 8px;
-      line-height: 1.4;
+      margin-top: 6px;
     }
     .hero-graphic {
-      width: 130px;
-      height: 130px;
+      width: 155px;
+      height: 175px;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
+      flex-shrink: 0;
     }
-    .hero-svg {
-      width: 105px;
-      height: 105px;
-      color: #ffffff;
-      filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.45));
-      animation: float 4s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-4px) rotate(2deg); }
+    .hero-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
     .footer {
-      padding: 0 28px 24px 28px;
+      padding: 0 28px 22px 28px;
     }
     .status-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 8px;
-      font-size: 11px;
+      font-size: 11.5px;
     }
     .status-left {
       display: flex;
       align-items: center;
-      gap: 7px;
-      color: #cbd5e1;
+      gap: 8px;
+      color: #475569;
+      font-weight: 500;
     }
     .pulse-dot {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
+      background: #8CD16D;
+      box-shadow: 0 0 8px rgba(140, 209, 109, 0.8);
       animation: pulse 1.5s infinite;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
+      50% { opacity: 0.45; transform: scale(0.85); }
     }
     .percent-text {
-      color: #94a3b8;
-      font-weight: 600;
+      color: #168FB8;
+      font-weight: 700;
       font-variant-numeric: tabular-nums;
     }
     .progress-track {
       width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 5px;
       overflow: hidden;
       position: relative;
     }
     .progress-bar {
       height: 100%;
       width: 10%;
-      background: #10b981;
-      border-radius: 4px;
+      background: linear-gradient(90deg, #168FB8 0%, #8CD16D 100%);
+      border-radius: 5px;
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
     }
   </style>
 </head>
 <body>
+  <div class="top-accent"></div>
   <div class="header">
     <div class="brand">
-      <svg class="brand-icon" viewBox="0 0 150 150" fill="none">
-        <path d="M74.6649 81.2903L60.5557 75.4387C56.9045 73.9244 52.8866 76.6078 52.8866 80.5606C52.8866 82.7669 54.1946 84.7632 56.2173 85.6442L76.5991 94.5213C79.1861 95.6481 82.2086 94.82 83.86 92.532L90.3045 83.6034C92.5783 80.4531 91.3041 76.0053 87.707 74.5369L54.851 61.1245C53.58 60.6056 52.1694 60.5384 50.8547 60.9339L22.8754 69.352C17.9051 70.8474 17.0497 77.5209 21.4823 80.2215L51.5607 98.547C52.4303 99.0768 53.1508 99.8193 53.6542 100.704L70.7568 130.773C73.0645 134.83 78.9177 134.814 81.2035 130.744L99.6698 97.8654C100.19 96.9395 100.946 96.1682 101.862 95.6303L127.916 80.3245C132.467 77.6514 131.598 70.829 126.523 69.3813L97.6845 61.1545C95.8507 60.6314 94.3747 59.2677 93.7085 57.4809L81.2301 24.0136C79.34 18.9441 72.2339 18.769 70.0963 23.7392L58.2474 51.2903" stroke-width="8.5" stroke-linecap="round" stroke="currentColor"/>
-      </svg>
+      <img class="brand-logo" src="${LOGO_RAFIKI_DATA_URI}" alt="Logo École RAFIKI" />
       <span class="brand-name">École RAFIKI</span>
     </div>
-    <div class="version-badge">v0.1.1</div>
+    <div class="version-badge">v${version}</div>
   </div>
 
   <div class="main-content">
@@ -184,9 +197,7 @@ export function obtenirHtmlSplashScreen(): string {
       <div class="app-subtitle">Gestionnaire de paie</div>
     </div>
     <div class="hero-graphic">
-      <svg class="hero-svg" viewBox="0 0 150 150" fill="none">
-        <path d="M74.6649 81.2903L60.5557 75.4387C56.9045 73.9244 52.8866 76.6078 52.8866 80.5606C52.8866 82.7669 54.1946 84.7632 56.2173 85.6442L76.5991 94.5213C79.1861 95.6481 82.2086 94.82 83.86 92.532L90.3045 83.6034C92.5783 80.4531 91.3041 76.0053 87.707 74.5369L54.851 61.1245C53.58 60.6056 52.1694 60.5384 50.8547 60.9339L22.8754 69.352C17.9051 70.8474 17.0497 77.5209 21.4823 80.2215L51.5607 98.547C52.4303 99.0768 53.1508 99.8193 53.6542 100.704L70.7568 130.773C73.0645 134.83 78.9177 134.814 81.2035 130.744L99.6698 97.8654C100.19 96.9395 100.946 96.1682 101.862 95.6303L127.916 80.3245C132.467 77.6514 131.598 70.829 126.523 69.3813L97.6845 61.1545C95.8507 60.6314 94.3747 59.2677 93.7085 57.4809L81.2301 24.0136C79.34 18.9441 72.2339 18.769 70.0963 23.7392L58.2474 51.2903" stroke-width="8.5" stroke-linecap="round" stroke="currentColor"/>
-      </svg>
+      <img class="hero-logo" src="${LOGO_RAFIKI_DATA_URI}" alt="Logo officiel École RAFIKI" />
     </div>
   </div>
 
@@ -223,12 +234,12 @@ export function obtenirHtmlSplashScreen(): string {
 export function creerSplashScreen(): BrowserWindow {
   const splash = new BrowserWindow({
     width: 560,
-    height: 330,
+    height: 340,
     frame: false,
     resizable: false,
     center: true,
     show: false,
-    backgroundColor: '#091412',
+    backgroundColor: '#ffffff',
     alwaysOnTop: true,
     skipTaskbar: false,
     webPreferences: {
