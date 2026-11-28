@@ -5,6 +5,14 @@ Ce journal est rédigé en français pour être clair et accessible à l'équipe
 
 ---
 
+## [0.1.6] — 2026-11-28
+
+### Amélioré
+
+- **Logo officiel unifié** : Remplacement complet de l'ancien logo dans l'application (barre de titre, barre latérale) et sur la landing page (en-tête, pied de page et favicon) par le logo officiel de l'École RAFIKI.
+
+---
+
 ## [0.1.5] — 2026-11-27
 
 ### Amélioré
